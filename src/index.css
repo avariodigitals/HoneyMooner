@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600&family=Great+Vibes&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #fdf8f6;
+  --color-brand-100: #f2e8e5;
+  --color-brand-200: #eaddd7;
+  --color-brand-300: #e0cec7;
+  --color-brand-400: #d2bab0;
+  --color-brand-500: #bfa094;
+  --color-brand-600: #a18072;
+  --color-brand-700: #83635a;
+  --color-brand-800: #644a42;
+  --color-brand-900: #4a352f;
+  --color-brand-accent: #c18a7b;
+
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+  --font-script: "Great Vibes", cursive;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-50 text-brand-900 font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-8 py-3 bg-brand-accent text-white rounded-full font-medium 
+           transition-all duration-300 hover:bg-brand-700 hover:shadow-lg 
+           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply px-8 py-3 border border-brand-accent text-brand-accent rounded-full 
+           font-medium transition-all duration-300 hover:bg-brand-accent 
+           hover:text-white active:scale-95;
+  }
+
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24;
+  }
+
+  .romantic-card {
+    @apply bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl 
+           transition-shadow duration-500 border border-brand-100;
+  }
+
+  .script-font {
+    @apply font-script text-3xl text-brand-accent;
+  }
+}

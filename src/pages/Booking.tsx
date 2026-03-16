@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../hooks/useData';
+import { useCurrency } from '../hooks/useCurrency';
 import type { Lead } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -126,6 +127,7 @@ const Booking = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { packages, addLead } = useData();
+  const { formatPrice } = useCurrency();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(() => {
     const pkgId = location.state?.packageId || '';
@@ -252,7 +254,7 @@ const Booking = () => {
                   value={formData.tierId}
                   options={selectedPkg?.tiers.map(t => ({
                     ...t,
-                    title: `${t.name} - $${t.price.toLocaleString()}`
+                    title: `${t.name} - ${formatPrice(t.price)}`
                   })) || []}
                   onChange={(tierId) => setFormData({ ...formData, tierId })}
                 />
@@ -389,7 +391,7 @@ const Booking = () => {
                   </div>
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-brand-400">Price ({selectedTier.basis})</span>
-                    <span className="text-lg sm:text-xl font-serif text-brand-900">${selectedTier.price.toLocaleString()}</span>
+                    <span className="text-lg sm:text-xl font-serif text-brand-900">{formatPrice(selectedTier.price)}</span>
                   </div>
                   <div className="pt-4 sm:pt-6 border-t border-brand-50 space-y-3 sm:space-y-4">
                     <div className="flex items-start gap-3 text-xs sm:text-sm text-brand-600">

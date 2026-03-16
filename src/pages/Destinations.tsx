@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useData } from '../hooks/useData';
+import { useCurrency } from '../hooks/useCurrency';
 import type { Destination } from '../types';
 import { motion } from 'framer-motion';
 import { ArrowRight, Globe, Compass, Calendar, Heart } from 'lucide-react';
@@ -9,6 +10,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 const Destinations = () => {
   const { slug } = useParams();
   const { destinations, packages } = useData();
+  const { formatPrice } = useCurrency();
   const [selectedContinent, setSelectedContinent] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -130,7 +132,7 @@ const Destinations = () => {
                       <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors">{pkg.title}</h3>
                       <p className="text-brand-600 text-sm leading-relaxed mb-6 line-clamp-2 flex-grow">{pkg.summary}</p>
                       <div className="pt-6 border-t border-brand-50 flex items-center justify-between">
-                        <p className="text-lg font-serif text-brand-900">${pkg.tiers[0].price.toLocaleString()}</p>
+                        <p className="text-lg font-serif text-brand-900">{formatPrice(pkg.tiers[0].price)}</p>
                         <Link to={`/packages/${pkg.slug}`} className="btn-primary py-2 px-6 text-xs">View Trip</Link>
                       </div>
                     </div>

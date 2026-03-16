@@ -72,13 +72,13 @@ const Footer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 pt-10 border-t border-brand-800 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-brand-400">
-        <div className="flex flex-col items-center md:items-start gap-2">
-          <p>© 2026 The Honeymooner. All rights reserved.</p>
-          <p className="text-xs text-brand-500 italic">Designed and developed by Avario Digitals</p>
-        </div>
-        <div className="flex items-center gap-8">
-          <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-          <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+        <p>© 2026 The Honeymooner. All rights reserved.</p>
+        <div className="flex flex-col items-center md:items-end gap-2">
+          <div className="flex items-center gap-8">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+          </div>
+          <p className="text-[10px] text-brand-500 italic">Designed and developed by Avario Digitals</p>
         </div>
       </div>
     </footer>

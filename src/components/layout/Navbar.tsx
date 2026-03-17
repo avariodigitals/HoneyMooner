@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, ArrowRight } from 'lucide-react';
+import { Menu, X, Globe, ArrowRight, Instagram, Facebook, Mail, MessageCircle } from 'lucide-react';
 import { useCurrency } from '../../hooks/useCurrency';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -151,35 +151,35 @@ const Navbar = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-[105] bg-brand-900 flex flex-col overflow-hidden"
+            className="fixed inset-0 z-[105] bg-brand-900 flex flex-col overflow-y-auto custom-scrollbar h-[100dvh]"
           >
             {/* Background Decorative Elements */}
-            <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-              <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-accent/20 rounded-full blur-[120px]" />
-              <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-accent/10 rounded-full blur-[120px]" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-20">
+            <div className="fixed inset-0 z-0 opacity-10 pointer-events-none overflow-hidden h-[100dvh]">
+              <div className="absolute top-[-10%] right-[-10%] w-[70%] h-[70%] bg-brand-accent/20 rounded-full blur-[120px]" />
+              <div className="absolute bottom-[-10%] left-[-10%] w-[70%] h-[70%] bg-brand-accent/10 rounded-full blur-[120px]" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-10">
                 <img 
                   src="https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015" 
                   alt=""
-                  className="w-[150%] max-w-none rotate-[-15deg]"
+                  className="w-[200%] max-w-none rotate-[-15deg] scale-150"
                 />
               </div>
             </div>
 
-            <div className="relative z-10 flex flex-col h-full p-8 pt-40 pb-12">
-              <div className="flex flex-col gap-8">
+            <div className="relative z-10 flex flex-col min-h-[100dvh] p-6 sm:p-10 pt-32 pb-12">
+              <div className="flex flex-col gap-6 sm:gap-8 mb-12">
                 {navLinks.map((link, idx) => (
                   <motion.div
                     key={link.path}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + idx * 0.1 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + idx * 0.1, ease: "easeOut" }}
                   >
                     <Link
                       to={link.path}
                       onClick={() => setIsOpen(false)}
                       className={cn(
-                        "text-5xl font-serif flex items-center justify-between group transition-all duration-500",
+                        "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-500",
                         location.pathname === link.path ? "text-brand-accent" : "text-white hover:text-brand-accent"
                       )}
                     >
@@ -188,76 +188,93 @@ const Navbar = () => {
                         {location.pathname === link.path && (
                           <motion.div 
                             layoutId="mobile-nav-indicator"
-                            className="absolute -bottom-2 left-0 w-12 h-0.5 bg-brand-accent"
+                            className="absolute -bottom-1 left-0 w-8 h-0.5 bg-brand-accent"
                           />
                         )}
                       </span>
                       <ArrowRight className={cn(
-                        "opacity-0 -translate-x-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-0",
-                        location.pathname === link.path && "opacity-50 translate-x-0"
-                      )} size={32} />
+                        "transition-all duration-500",
+                        location.pathname === link.path ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+                      )} size={28} />
                     </Link>
                   </motion.div>
                 ))}
               </div>
 
-              <div className="mt-auto space-y-10">
+              <div className="mt-auto pt-12 space-y-12">
+                {/* Concierge Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  <a 
+                    href="https://wa.me/234800HONEYMOON" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex flex-col gap-3 p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent group-hover:scale-110 transition-transform">
+                      <MessageCircle size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-brand-300 font-bold mb-1">WhatsApp</p>
+                      <p className="text-sm font-medium text-white">Concierge</p>
+                    </div>
+                  </a>
+                  <Link 
+                    to="/contact" 
+                    onClick={() => setIsOpen(false)}
+                    className="flex flex-col gap-3 p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent group-hover:scale-110 transition-transform">
+                      <Mail size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-brand-300 font-bold mb-1">Email Us</p>
+                      <p className="text-sm font-medium text-white">Inquiries</p>
+                    </div>
+                  </Link>
+                </motion.div>
+
+                {/* Footer of Menu */}
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.8 }}
-                  className="flex items-center justify-between p-8 bg-white/5 border border-white/10 rounded-[32px] backdrop-blur-sm"
+                  className="flex flex-col gap-8 border-t border-white/10 pt-12"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-brand-accent/20 flex items-center justify-center">
-                      <Globe className="text-brand-accent" size={20} />
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-6">
+                      <a href="#" className="text-white/40 hover:text-brand-accent transition-colors"><Instagram size={20} /></a>
+                      <a href="#" className="text-white/40 hover:text-brand-accent transition-colors"><Facebook size={20} /></a>
                     </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-brand-300 font-bold mb-1">Currency</p>
-                      <p className="font-medium text-white">{currency.code} ({currency.symbol})</p>
+                    
+                    {/* Minimalist Currency Switcher */}
+                    <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                      <Globe size={14} className="text-brand-300" />
+                      <div className="flex gap-3">
+                        {availableCurrencies.map(curr => (
+                          <button
+                            key={curr.code}
+                            onClick={() => setCurrency(curr.code)}
+                            className={cn(
+                              "text-[10px] font-bold transition-all",
+                              currency.code === curr.code ? "text-brand-accent" : "text-white/30 hover:text-white"
+                            )}
+                          >
+                            {curr.code}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {availableCurrencies.map(curr => (
-                      <button
-                        key={curr.code}
-                        onClick={() => setCurrency(curr.code)}
-                        className={cn(
-                          "w-12 h-10 rounded-xl text-xs font-bold transition-all flex items-center justify-center",
-                          currency.code === curr.code 
-                            ? "bg-brand-accent text-white shadow-lg shadow-brand-accent/20" 
-                            : "bg-white/5 text-white/40 hover:bg-white/10"
-                        )}
-                      >
-                        {curr.code}
-                      </button>
-                    ))}
+
+                  <div className="text-center space-y-4">
+                    <p className="script-font text-brand-accent text-3xl opacity-80">The Honeymooner</p>
+                    <p className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-medium italic">Bespoke Romantic Journeys &copy; 2026</p>
                   </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1 }}
-                >
-                  <Link
-                    to="/booking"
-                    onClick={() => setIsOpen(false)}
-                    className="btn-primary w-full py-6 text-xl text-center shadow-2xl shadow-brand-accent/30 flex items-center justify-center gap-4 group"
-                  >
-                    Start Your Journey
-                    <ArrowRight size={24} className="transition-transform group-hover:translate-x-2" />
-                  </Link>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2 }}
-                  className="text-center space-y-2"
-                >
-                  <p className="script-font text-brand-accent text-3xl">Love is in the air</p>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 font-medium">The Honeymooner &copy; 2026</p>
                 </motion.div>
               </div>
             </div>

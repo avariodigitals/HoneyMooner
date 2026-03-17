@@ -3,11 +3,16 @@ import { CurrencyContext, currencies as initialCurrencies } from './CurrencyCont
 
 const CACHE_KEY = 'honeymooner_rates_cache';
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+const DETECTION_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [currentCode, setCurrentCode] = useState<string>(() => {
-    const saved = localStorage.getItem('honeymooner_currency_code');
-    if (saved) return saved;
+    const manualChoice = localStorage.getItem('honeymooner_currency_manual');
+    if (manualChoice) return manualChoice;
+    
+    const autoDetected = localStorage.getItem('honeymooner_currency_auto');
+    if (autoDetected) return autoDetected;
+
     return initialCurrencies[0].code;
   });
 
@@ -28,6 +33,33 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let ignore = false;
+
+    const detectLocation = async () => {
+      // 1. Skip if user already manually selected a currency
+      if (localStorage.getItem('honeymooner_currency_manual')) return;
+
+      // 2. Check if we have a fresh auto-detection (within 7 days)
+      const lastDetection = localStorage.getItem('honeymooner_last_detection');
+      if (lastDetection) {
+        const timestamp = parseInt(lastDetection, 10);
+        if (Date.now() - timestamp < DETECTION_EXPIRY) return;
+      }
+
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.currency && !ignore) {
+          const matched = initialCurrencies.find(c => c.code === data.currency);
+          if (matched) {
+            setCurrentCode(data.currency);
+            localStorage.setItem('honeymooner_currency_auto', data.currency);
+            localStorage.setItem('honeymooner_last_detection', Date.now().toString());
+          }
+        }
+      } catch (error) {
+        console.error('Failed to detect location currency:', error);
+      }
+    };
 
     const performFetch = async () => {
       try {
@@ -56,6 +88,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    detectLocation();
     performFetch();
 
     return () => {
@@ -68,7 +101,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
   const setCurrency = (code: string) => {
     setCurrentCode(code);
-    localStorage.setItem('honeymooner_currency_code', code);
+    localStorage.setItem('honeymooner_currency_manual', code);
   };
 
   const formatPrice = (priceInUSD: number) => {

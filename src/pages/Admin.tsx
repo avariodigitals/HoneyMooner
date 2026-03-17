@@ -3,6 +3,8 @@ import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import type { TravelPackage, PricingTier, Lead, PricingBasis } from '../types';
 import { motion } from 'framer-motion';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import { 
   LayoutDashboard, 
   MapPin, 
@@ -14,8 +16,15 @@ import {
   MoreVertical,
   Search,
   X,
-  Save
+  Save,
+  Image as ImageIcon,
+  Loader2
 } from 'lucide-react';
+import { IKContext, IKUpload } from 'imagekitio-react';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 const Admin = () => {
   const { packages, destinations, leads, updatePackages, updateLeadStatus } = useData();
@@ -23,6 +32,10 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('packages');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPackage, setEditingPackage] = useState<TravelPackage | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const ikPublicKey = 'public_ZvsQ/Q2eZv45QUJYbHzTMM+SrOc=';
+  const ikUrlEndpoint = 'https://ik.imagekit.io/360t0n1jd9';
 
   const handleSavePackage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +44,21 @@ const Admin = () => {
     const newPackages = packages.map(p => p.id === editingPackage.id ? editingPackage : p);
     updatePackages(newPackages);
     setEditingPackage(null);
+  };
+
+  const onUploadError = (err: any) => {
+    console.error("Upload Error", err);
+    setIsUploading(false);
+    alert("Upload failed. For production, you'll need an authentication endpoint.");
+  };
+
+  const onUploadSuccess = (res: any) => {
+    if (!editingPackage) return;
+    setEditingPackage({
+      ...editingPackage,
+      featuredImage: res.url
+    });
+    setIsUploading(false);
   };
 
   const handleTierChange = (tierId: string, field: keyof PricingTier, value: string | number) => {
@@ -233,6 +261,57 @@ const Admin = () => {
               </div>
 
               <div className="p-8 space-y-12">
+                {/* Image Upload Section */}
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Featured Image</label>
+                  <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                    <div className="relative group w-full sm:w-48 h-32 rounded-2xl overflow-hidden shadow-sm bg-slate-200">
+                      <img 
+                        src={editingPackage.featuredImage} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-sm flex items-center justify-center">
+                          <Loader2 className="text-white animate-spin" size={24} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-grow space-y-2 text-center sm:text-left">
+                      <p className="text-sm font-medium text-slate-900">Upload a romantic photo</p>
+                      <p className="text-xs text-slate-500 mb-4">Recommended size: 1200x800px. JPG, PNG supported.</p>
+                      
+                      <IKContext publicKey={ikPublicKey} urlEndpoint={ikUrlEndpoint}>
+                        <div className="relative">
+                          <label 
+                            htmlFor="ik-upload"
+                            className={cn(
+                              "inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold cursor-pointer transition-all",
+                              isUploading 
+                                ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                                : "bg-white text-brand-accent border border-brand-100 hover:border-brand-accent shadow-sm"
+                            )}
+                          >
+                            <ImageIcon size={18} />
+                            {isUploading ? "Uploading..." : "Select New Image"}
+                          </label>
+                          <IKUpload
+                            id="ik-upload"
+                            className="hidden"
+                            fileName={`${editingPackage.slug}-hero.jpg`}
+                            tags={['package', 'travel']}
+                            useUniqueFileName={true}
+                            folder="/packages"
+                            onStartUpload={() => setIsUploading(true)}
+                            onSuccess={onUploadSuccess}
+                            onError={onUploadError}
+                          />
+                        </div>
+                      </IKContext>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Package Title</label>

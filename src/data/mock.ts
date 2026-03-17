@@ -1,10 +1,12 @@
 import type { Destination, TravelPackage, PricingTier, Lead, PricingBasis, PackageInclusion, PackageCategory, Testimonial } from '../types';
 
+export const DATA_VERSION = '1.0.1';
+
 export const initialDestinations: Destination[] = [
   // Indian Ocean
   { id: 'd1', name: 'Maldives', country: 'Maldives', continent: 'Asia', description: 'Pristine beaches and overwater villas.', image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80', slug: 'maldives' },
-  { id: 'd2', name: 'Mauritius', country: 'Mauritius', continent: 'Africa', description: 'Tropical paradise in the Indian Ocean.', image: 'https://images.unsplash.com/photo-1589979482817-4fed7bbac7e3?auto=format&fit=crop&q=80', slug: 'mauritius' },
-  { id: 'd3', name: 'Seychelles', country: 'Seychelles', continent: 'Africa', description: 'Stunning islands and unique wildlife.', image: 'https://images.unsplash.com/photo-1589394815804-964ed7be2eb5?auto=format&fit=crop&q=80', slug: 'seychelles' },
+  { id: 'd2', name: 'Mauritius', country: 'Mauritius', continent: 'Africa', description: 'Tropical paradise in the Indian Ocean.', image: 'https://images.unsplash.com/photo-1513415277900-a62401e19be4?auto=format&fit=crop&q=80', slug: 'mauritius' },
+  { id: 'd3', name: 'Seychelles', country: 'Seychelles', continent: 'Africa', description: 'Stunning islands and unique wildlife.', image: 'https://images.unsplash.com/photo-1506405211174-1c41d7bc9ed6?auto=format&fit=crop&q=80', slug: 'seychelles' },
   { id: 'd4', name: 'Zanzibar', country: 'Tanzania', continent: 'Africa', description: 'Exotic spice island with white sand beaches.', image: 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&q=80', slug: 'zanzibar' },
   { id: 'd5', name: 'Sri Lanka', country: 'Sri Lanka', continent: 'Asia', description: 'Lush jungles and ancient temples.', image: 'https://images.unsplash.com/photo-1524230507669-e29a75c60243?auto=format&fit=crop&q=80', slug: 'sri-lanka' },
 

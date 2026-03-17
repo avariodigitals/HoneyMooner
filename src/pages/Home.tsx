@@ -234,7 +234,7 @@ const Home = () => {
             <div className="relative order-2 lg:order-1">
               <div className="aspect-[4/5] rounded-[60px] overflow-hidden shadow-2xl relative z-10">
                 <img
-                  src="https://images.unsplash.com/photo-1573843225234-ad44788a420d?auto=format&fit=crop&q=80"
+                  src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80"
                   alt="Romantic Moment"
                   className="w-full h-full object-cover"
                 />

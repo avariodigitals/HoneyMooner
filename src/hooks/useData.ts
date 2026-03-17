@@ -1,8 +1,23 @@
-import { useState } from 'react';
-import { initialDestinations, initialPackages, initialTestimonials } from '../data/mock';
+import { useState, useEffect } from 'react';
+import { initialDestinations, initialPackages, initialTestimonials, DATA_VERSION } from '../data/mock';
 import type { Destination, TravelPackage, Lead, Testimonial } from '../types';
 
 export const useData = () => {
+  // Check for data version and clear stale storage if needed
+  useEffect(() => {
+    const storedVersion = localStorage.getItem('honeymooner_data_version');
+    if (storedVersion !== DATA_VERSION) {
+      // Version mismatch - clear specific items to force reload from mock
+      localStorage.removeItem('honeymooner_destinations');
+      localStorage.removeItem('honeymooner_packages');
+      localStorage.removeItem('honeymooner_testimonials');
+      localStorage.setItem('honeymooner_data_version', DATA_VERSION);
+      
+      // Reload the page to ensure state is fresh
+      window.location.reload();
+    }
+  }, []);
+
   const [destinations, setDestinations] = useState<Destination[]>(() => {
     const stored = localStorage.getItem('honeymooner_destinations');
     if (stored) return JSON.parse(stored);

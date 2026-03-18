@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
@@ -14,11 +14,36 @@ const PackageDetail = () => {
   const pkg = packages.find(p => p.slug === slug);
   const destination = destinations.find(d => d.id === pkg?.destinationId);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
-  const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers[0].id);
+  const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+
+  useEffect(() => {
+    if (pkg) {
+      const savedWishlist = localStorage.getItem('hm_wishlist');
+      if (savedWishlist) {
+        const items = JSON.parse(savedWishlist);
+        setIsInWishlist(items.includes(pkg.id));
+      }
+    }
+  }, [pkg]);
 
   if (!pkg) return <div className="pt-32 min-h-screen section-container">Package not found</div>;
 
   const selectedTier = pkg.tiers.find(t => t.id === selectedTierId) || pkg.tiers[0];
+
+  const toggleWishlist = () => {
+    const savedWishlist = localStorage.getItem('hm_wishlist');
+    let items = savedWishlist ? JSON.parse(savedWishlist) : [];
+    
+    if (isInWishlist) {
+      items = items.filter((id: string) => id !== pkg.id);
+    } else {
+      items.push(pkg.id);
+    }
+    
+    localStorage.setItem('hm_wishlist', JSON.stringify(items));
+    setIsInWishlist(!isInWishlist);
+  };
 
   return (
     <motion.div 
@@ -315,8 +340,14 @@ const PackageDetail = () => {
             </div>
 
             <div className="flex items-center justify-between pt-4">
-              <button className="flex items-center gap-2 text-xs font-bold text-brand-400 uppercase tracking-widest hover:text-brand-accent transition-colors">
-                <Heart size={16} /> Save to wishlist
+              <button 
+                onClick={toggleWishlist}
+                className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-all duration-300 ${
+                  isInWishlist ? 'text-brand-accent scale-105' : 'text-brand-400 hover:text-brand-accent'
+                }`}
+              >
+                <Heart size={16} fill={isInWishlist ? "currentColor" : "none"} /> 
+                {isInWishlist ? 'Saved to wishlist' : 'Save to wishlist'}
               </button>
               <button className="flex items-center gap-2 text-xs font-bold text-brand-400 uppercase tracking-widest hover:text-brand-accent transition-colors">
                 <Share2 size={16} /> Share trip

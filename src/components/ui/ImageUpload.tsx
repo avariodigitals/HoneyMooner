@@ -5,13 +5,13 @@ const publicKey = 'public_ZvsQ/Q2eZv45QUJYbHzTMM+SrOc=';
 const urlEndpoint = 'https://ik.imagekit.io/360t0n1jd9'; // Derived from your provided asset URLs
 const authenticationEndpoint = 'http://localhost:3001/auth'; // You will need a backend for this in production
 
-interface ImageKitError {
+export interface ImageKitError {
   message: string;
   help?: string;
   [key: string]: string | number | boolean | undefined | null;
 }
 
-interface ImageKitUploadResponse {
+export interface ImageKitUploadResponse {
   fileId: string;
   name: string;
   url: string;

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, ArrowRight, Instagram, Facebook, Mail, MessageCircle } from 'lucide-react';
+import { Menu, X, Globe, ArrowRight, Instagram, Facebook, Mail, MessageCircle, User as UserIcon, LogOut, Heart as HeartIcon, LayoutDashboard } from 'lucide-react';
 import { useCurrency } from '../../hooks/useCurrency';
+import { useUser } from '../../hooks/useUser';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -14,7 +15,9 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCurrency, setShowCurrency] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const { currency, setCurrency, availableCurrencies } = useCurrency();
+  const { user, isAuthenticated, logout } = useUser();
   const location = useLocation();
 
   useEffect(() => {
@@ -45,7 +48,7 @@ const Navbar = () => {
     { name: 'Contact', path: '/contact' },
   ];
 
-  const isTransparent = !isScrolled && location.pathname === '/' && !isOpen;
+  const isTransparent = !isScrolled && (location.pathname === '/' || location.pathname === '/sanctuary') && !isOpen;
 
   const logoUrl = isTransparent 
     ? "https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015" 
@@ -118,6 +121,91 @@ const Navbar = () => {
                   </button>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* User Account / Sanctuary */}
+          <div className="relative">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full transition-all border",
+                    isTransparent 
+                      ? "bg-white/10 border-white/20 text-white hover:bg-white/20" 
+                      : "bg-brand-50 border-brand-100 text-brand-900 hover:border-brand-accent/30"
+                  )}
+                >
+                  <div className="w-6 h-6 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent overflow-hidden">
+                    {user?.avatar_urls ? (
+                      <img src={user.avatar_urls['96']} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <UserIcon size={14} />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    {user?.first_name}
+                  </span>
+                </button>
+                
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-brand-100 py-3 z-[120]"
+                    >
+                      <div className="px-4 py-2 border-b border-brand-50 mb-2">
+                        <p className="text-[10px] uppercase tracking-widest text-brand-400 font-bold">Welcome,</p>
+                        <p className="text-sm font-medium text-brand-900 truncate">
+                          {user?.full_name || user?.first_name}
+                        </p>
+                      </div>
+                      <Link 
+                        to="/sanctuary/wishlist" 
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50 hover:text-brand-accent transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <HeartIcon size={16} />
+                        My Wish List
+                      </Link>
+                      {user?.roles?.includes('administrator') && (
+                        <Link 
+                          to="/admin" 
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50 hover:text-brand-accent transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <LayoutDashboard size={16} />
+                          Admin Suite
+                        </Link>
+                      )}
+                      <button 
+                        onClick={() => {
+                          logout();
+                          setShowUserMenu(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors mt-2 border-t border-brand-50 pt-3"
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link 
+                to="/sanctuary"
+                className={cn(
+                  'flex items-center gap-2 text-sm font-medium transition-all duration-300 uppercase tracking-widest',
+                  isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent'
+                )}
+              >
+                <UserIcon size={16} />
+                Sanctuary
+              </Link>
             )}
           </div>
 
@@ -199,6 +287,30 @@ const Navbar = () => {
                     </Link>
                   </motion.div>
                 ))}
+                
+                {/* Sanctuary Link in Mobile Menu */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + navLinks.length * 0.1, ease: "easeOut" }}
+                >
+                  <Link
+                    to={isAuthenticated ? "/sanctuary/wishlist" : "/sanctuary"}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-500",
+                      location.pathname.startsWith('/sanctuary') ? "text-brand-accent" : "text-white/60 hover:text-brand-accent"
+                    )}
+                  >
+                    <span className="relative">
+                      {isAuthenticated ? "My Sanctuary" : "The Sanctuary"}
+                    </span>
+                    <UserIcon className={cn(
+                      "transition-all duration-500",
+                      location.pathname.startsWith('/sanctuary') ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+                    )} size={28} />
+                  </Link>
+                </motion.div>
               </div>
 
               <div className="mt-auto pt-12 space-y-12">

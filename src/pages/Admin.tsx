@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
+import { useUser } from '../hooks/useUser';
+import { authService } from '../services/authService';
 import type { TravelPackage, PricingTier, Lead, PricingBasis } from '../types';
 import { motion } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -18,9 +20,15 @@ import {
   X,
   Save,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  Lock,
+  User as UserIcon
 } from 'lucide-react';
-import { IKContext, IKUpload } from 'imagekitio-react';
+import { 
+  IKContext, 
+  IKUpload 
+} from 'imagekitio-react';
+import type { ImageKitError, ImageKitUploadResponse } from '../components/ui/ImageUpload';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,13 +37,113 @@ function cn(...inputs: ClassValue[]) {
 const Admin = () => {
   const { packages, destinations, leads, updatePackages, updateLeadStatus } = useData();
   const { formatPrice } = useCurrency();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState('packages');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPackage, setEditingPackage] = useState<TravelPackage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Auth State
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginFormError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const ikPublicKey = 'public_ZvsQ/Q2eZv45QUJYbHzTMM+SrOc=';
   const ikUrlEndpoint = 'https://ik.imagekit.io/360t0n1jd9';
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginFormError('');
+    setIsLoggingIn(true);
+    try {
+      await authService.login(loginForm.username, loginForm.password);
+      setIsAuthenticated(true);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed. Please check your credentials.';
+      setLoginFormError(message);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsAuthenticated(false);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-brand-100 w-full max-w-md"
+        >
+          <div className="text-center mb-10">
+            <div className="w-20 h-20 bg-brand-900 rounded-3xl flex items-center justify-center text-brand-accent mx-auto mb-6 shadow-xl shadow-brand-900/20">
+              <Lock size={32} />
+            </div>
+            <h1 className="text-3xl font-serif text-brand-900 mb-2">Concierge Login</h1>
+            <p className="text-brand-500 text-sm italic">Access the luxury travel management suite.</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Username</label>
+              <div className="relative">
+                <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={18} />
+                <input
+                  type="text"
+                  required
+                  autoComplete="username"
+                  className="w-full pl-14 pr-6 py-4 bg-brand-50 border-none rounded-2xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all"
+                  placeholder="admin"
+                  value={loginForm.username}
+                  onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={18} />
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  className="w-full pl-14 pr-6 py-4 bg-brand-50 border-none rounded-2xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all"
+                  placeholder="••••••••"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {loginError && (
+              <p className="text-red-500 text-xs text-center italic font-medium">{loginError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="btn-primary w-full py-4 text-lg shadow-xl shadow-brand-accent/20 flex items-center justify-center gap-3 disabled:opacity-50"
+            >
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} />
+                  Authenticating...
+                </>
+              ) : (
+                'Access Dashboard'
+              )}
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
 
   const handleSavePackage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +154,13 @@ const Admin = () => {
     setEditingPackage(null);
   };
 
-  const onUploadError = (err: any) => {
+  const onUploadError = (err: ImageKitError) => {
     console.error("Upload Error", err);
     setIsUploading(false);
     alert("Upload failed. For production, you'll need an authentication endpoint.");
   };
 
-  const onUploadSuccess = (res: any) => {
+  const onUploadSuccess = (res: ImageKitUploadResponse) => {
     if (!editingPackage) return;
     setEditingPackage({
       ...editingPackage,
@@ -73,7 +181,7 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
       {/* Sidebar - Hidden on mobile, toggleable or drawer would be better but let's make it stack for now */}
-      <aside className="w-full lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24">
+      <aside className="w-full lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 lg:h-screen lg:sticky lg:top-0">
         <div className="p-4 lg:p-8 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-2 h-full">
           <div className="hidden lg:block mb-10 px-4">
             <img 
@@ -103,8 +211,30 @@ const Admin = () => {
               </button>
             ))}
           </div>
+
+          {/* User Profile in Admin Sidebar */}
+          <div className="hidden lg:flex flex-col gap-4 px-4 py-6 border-t border-slate-100 mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent overflow-hidden">
+                {user?.avatar_urls ? (
+                  <img src={user.avatar_urls['96']} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <UserIcon size={20} />
+                )}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-xs font-bold text-slate-900 truncate">
+                  {user?.first_name}
+                </p>
+                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Administrator</p>
+              </div>
+            </div>
+          </div>
           
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-all whitespace-nowrap mt-0 lg:mt-auto">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-all whitespace-nowrap mt-0 lg:mt-auto"
+          >
             <LogOut size={18} />
             Logout
           </button>

@@ -14,6 +14,7 @@
   --color-brand-800: #644a42;
   --color-brand-900: #4a352f;
   --color-brand-accent: #c18a7b;
+  --color-brand-accent-light: #e2c2b9;
 
   --font-serif: "Playfair Display", serif;
   --font-sans: "Inter", sans-serif;
@@ -59,7 +60,9 @@
   }
 
   .script-font {
-    @apply font-script text-3xl text-brand-accent;
+    @apply font-script text-4xl text-brand-accent-light drop-shadow-md;
+    filter: saturate(1.2);
+    letter-spacing: 0.05em;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

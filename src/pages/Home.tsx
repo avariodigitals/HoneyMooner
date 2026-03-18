@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { Heart, MapPin, Calendar, Star, ArrowRight, Sun, Anchor, Mountain, Coffee } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { ASSETS } from '../config/images';
+
 const Home = () => {
   const { packages, destinations, testimonials, homeContent } = useData();
   const { formatPrice } = useCurrency();
@@ -31,7 +33,7 @@ const Home = () => {
       {/* Featured Destinations */}
       <section className="section-container">
         <div className="text-center mb-16 max-w-2xl mx-auto">
-          <p className="script-font mb-4 text-brand-accent italic">{homeContent.destinations.subtitle}</p>
+          <p className="script-font mb-4">{homeContent.destinations.subtitle}</p>
           <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">
             {homeContent.destinations.title}
           </h2>
@@ -79,7 +81,7 @@ const Home = () => {
         <div className="section-container">
           <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-8">
             <div className="max-w-2xl">
-              <p className="script-font mb-4 text-brand-accent italic">{homeContent.packages.subtitle}</p>
+              <p className="script-font mb-4">{homeContent.packages.subtitle}</p>
               <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">
                 {homeContent.packages.title}
               </h2>
@@ -106,7 +108,7 @@ const Home = () => {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
+                    target.src = ASSETS.FALLBACK_DESTINATION;
                   }}
                 />
                   <div className="absolute top-6 right-6 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent">
@@ -173,32 +175,32 @@ const Home = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { 
-                label: 'Beach Romance', 
+                label: 'Beach Bliss', 
                 icon: <Sun size={32} />, 
                 color: 'from-orange-500/20 to-brand-accent/20',
-                image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80',
-                count: packages.filter(p => p.tags.includes('Beach Romance')).length
+                image: ASSETS.HOME_EXPERIENCES.BEACH,
+                count: 12
               },
               { 
-                label: 'Island Bliss', 
+                label: 'Island Sanctuary', 
                 icon: <Anchor size={32} />, 
                 color: 'from-blue-500/20 to-cyan-500/20',
-                image: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&q=80',
-                count: packages.filter(p => p.tags.includes('Island Bliss')).length
+                image: ASSETS.HOME_EXPERIENCES.ISLAND,
+                count: 8
               },
               { 
-                label: 'Mountain Escape', 
+                label: 'Romantic Adventure', 
                 icon: <Mountain size={32} />, 
                 color: 'from-emerald-500/20 to-teal-500/20',
-                image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80',
-                count: packages.filter(p => p.tags.includes('Mountain Escape')).length
+                image: ASSETS.HOME_EXPERIENCES.ADVENTURE,
+                count: 5
               },
               { 
-                label: 'City Intimacy', 
+                label: 'City Romance', 
                 icon: <Coffee size={32} />, 
                 color: 'from-purple-500/20 to-pink-500/20',
-                image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80',
-                count: packages.filter(p => p.tags.includes('City Intimacy')).length
+                image: ASSETS.HOME_EXPERIENCES.CITY,
+                count: 15
               },
             ].map((style, idx) => (
               <Link
@@ -242,7 +244,7 @@ const Home = () => {
             <div className="relative order-2 lg:order-1">
               <div className="aspect-[4/5] rounded-[60px] overflow-hidden shadow-2xl relative z-10">
                 <img
-                  src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80"
+                  src={ASSETS.ROMANTIC_MOMENT_HOME}
                   alt="Romantic Moment"
                   className="w-full h-full object-cover"
                 />
@@ -388,10 +390,10 @@ const Home = () => {
             Schedule a complimentary consultation with our romantic travel specialists today and start your journey together.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link to="/booking" className="btn-primary px-12 py-5 text-lg">
+            <Link to="/booking" className="btn-primary px-10 py-4 text-sm uppercase tracking-widest font-bold">
               Book a Consultation
             </Link>
-            <Link to="/packages" className="text-white border-b border-white/30 hover:border-white transition-all py-2 text-lg">
+            <Link to="/packages" className="text-white border-b border-white/30 hover:border-white transition-all py-2 text-sm uppercase tracking-widest font-bold">
               Explore All Packages
             </Link>
           </div>

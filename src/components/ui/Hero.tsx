@@ -3,6 +3,8 @@ import { ArrowRight, Sparkles, MessageCircleHeart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../../hooks/useData';
 
+import { ASSETS } from '../../config/images';
+
 const Hero = () => {
   const { homeContent } = useData();
 
@@ -16,7 +18,7 @@ const Hero = () => {
           alt="Luxury Honeymoon"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070";
+            target.src = ASSETS.FALLBACK_HERO;
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-900/40 via-transparent to-brand-900/80" />
@@ -59,7 +61,7 @@ const Hero = () => {
               <div className="absolute -inset-1 bg-brand-accent/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
               <Link 
                 to="/destinations" 
-                className="relative bg-brand-accent text-white py-5 px-16 rounded-full text-lg font-bold uppercase tracking-[0.2em] shadow-[0_20px_50px_rgba(196,154,108,0.3)] flex items-center gap-4 overflow-hidden border border-brand-accent hover:bg-brand-700 transition-all duration-500 group"
+                className="relative bg-brand-accent text-white py-4 px-10 rounded-full text-sm font-bold uppercase tracking-[0.2em] shadow-[0_15px_40px_rgba(196,154,108,0.2)] flex items-center gap-3 overflow-hidden border border-brand-accent hover:bg-brand-700 transition-all duration-500 group"
               >
                 <span className="relative z-10">{homeContent.hero.cta}</span>
                 <ArrowRight className="relative z-10 group-hover:translate-x-2 transition-transform duration-500" />
@@ -78,7 +80,7 @@ const Hero = () => {
             >
               <Link 
                 to="/sanctuary" 
-                className="relative px-12 py-5 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full text-white font-bold text-sm uppercase tracking-[0.3em] hover:bg-white/10 hover:border-brand-accent/50 transition-all duration-500 flex items-center gap-3 group"
+                className="relative px-8 py-4 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full text-white font-bold text-xs uppercase tracking-[0.3em] hover:bg-white/10 hover:border-brand-accent/50 transition-all duration-500 flex items-center gap-2 group"
               >
                 <div className="absolute inset-0 rounded-full border border-white/0 group-hover:border-brand-accent/30 transition-all duration-700 scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100" />
                 <MessageCircleHeart size={20} className="text-brand-accent group-hover:scale-125 group-hover:rotate-12 transition-all duration-500" />

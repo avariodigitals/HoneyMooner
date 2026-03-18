@@ -223,7 +223,7 @@ const Booking = () => {
           {/* Form Side */}
           <div className="space-y-10 lg:space-y-12">
             <div>
-              <p className="script-font text-brand-accent italic mb-4">The First Step</p>
+              <p className="script-font mb-4">The First Step</p>
               <h1 className="text-3xl md:text-5xl font-serif text-brand-900 mb-6">Plan Your Dream Escape</h1>
               <p className="text-brand-600 leading-relaxed text-base sm:text-lg">
                 Fill out the form below and our specialists will create a personalized itinerary for your romantic journey.

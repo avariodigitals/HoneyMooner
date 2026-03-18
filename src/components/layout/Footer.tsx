@@ -9,9 +9,9 @@ const Footer = () => {
         <div className="space-y-6">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Full%20Logo%20No%20BG%20-%20White%20only.png" 
+              src="https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20White%20only.png" 
               alt="The Honeymooner" 
-              className="h-28 sm:h-36 w-auto object-contain"
+              className="h-16 sm:h-20 w-auto object-contain"
             />
           </Link>
           <p className="text-brand-300 leading-relaxed text-sm">

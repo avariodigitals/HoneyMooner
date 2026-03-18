@@ -42,7 +42,7 @@ const categoryIcons: { [key: string]: LucideIcon } = {
 
 const PackageDetail = () => {
   const { slug } = useParams();
-  const { packages, destinations } = useData();
+  const { packages, destinations, posts } = useData();
   const { formatPrice } = useCurrency();
   const pkg = packages.find(p => p.slug === slug);
   const destination = destinations.find(d => d.id === pkg?.destinationId);
@@ -77,7 +77,7 @@ const PackageDetail = () => {
   };
 
   // Find related articles (same category or general)
-  const relatedPosts = useData().posts
+  const relatedPosts = posts
     .filter(post => post.category === pkg.category || post.category === 'Destinations')
     .slice(0, 3);
 
@@ -447,7 +447,7 @@ const PackageDetail = () => {
           <div className="section-container">
             <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-8">
               <div className="max-w-2xl">
-                <p className="script-font mb-4 text-brand-accent italic text-3xl">Expand Your Journey</p>
+                <p className="script-font mb-4">Expand Your Journey</p>
                 <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">
                   Related Inspiration
                 </h2>

@@ -43,7 +43,7 @@ const Journal = () => {
           <motion.span 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="script-font text-brand-accent text-4xl mb-4 block"
+            className="script-font mb-4 block"
           >
             The Honeymooner Journal
           </motion.span>

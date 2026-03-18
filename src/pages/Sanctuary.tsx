@@ -57,7 +57,7 @@ const Sanctuary = () => {
   };
 
   return (
-    <div className="min-h-screen pt-44 pb-20 px-4 flex items-center justify-center relative overflow-hidden bg-brand-900">
+    <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden bg-brand-900">
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -72,195 +72,206 @@ const Sanctuary = () => {
         <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-accent/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {/* Left Side: Branding/Messaging */}
-        <motion.div 
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="hidden lg:block space-y-8"
-        >
-          <div className="space-y-4">
-            <p className="script-font text-brand-accent text-4xl">Enter Your Sanctuary</p>
-            <h1 className="text-5xl md:text-7xl font-serif text-white leading-tight">
-              Where Your Love <br />
-              <span className="italic">Finds its Home.</span>
-            </h1>
-          </div>
-          
-          <p className="text-brand-200 text-lg leading-relaxed max-w-md">
-            Join our exclusive community of romantic travelers. Save your dream destinations, 
-            receive bespoke itineraries, and unlock a world of intimate experiences.
-          </p>
-
-          <div className="flex items-center gap-6 pt-4">
-            <div className="flex -space-x-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="w-12 h-12 rounded-full border-2 border-brand-900 bg-brand-100 overflow-hidden">
-                  <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="" />
-                </div>
-              ))}
+      {/* Main Content Container - Account for Header height */}
+      <div className="relative z-10 flex-grow flex items-center justify-center px-6 lg:px-12 pt-32 pb-12">
+        <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+          {/* Left Side: Branding/Messaging */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="hidden lg:block space-y-8"
+          >
+            <div className="space-y-4">
+              <p className="script-font text-brand-accent text-3xl xl:text-4xl">Enter Your Sanctuary</p>
+              <h1 className="text-5xl xl:text-7xl font-serif text-white leading-[1.15]">
+                Where Your Love <br />
+                <span className="italic text-brand-accent/90">Finds its Home.</span>
+              </h1>
             </div>
-            <p className="text-brand-300 text-sm font-medium">Joined by 1,200+ couples this month</p>
-          </div>
-        </motion.div>
+            
+            <p className="text-brand-200 text-base xl:text-lg font-light leading-relaxed max-w-lg opacity-80">
+              Join our exclusive community of romantic travelers. Save your dream destinations, 
+              receive bespoke itineraries, and unlock a world of intimate experiences.
+            </p>
 
-        {/* Right Side: Auth Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white/95 backdrop-blur-2xl rounded-[48px] shadow-2xl overflow-hidden border border-white/20"
-        >
-          <div className="p-8 md:p-12">
-            <div className="flex justify-center mb-10">
-              <div className="relative">
-                <div className="w-20 h-20 bg-brand-900 rounded-3xl flex items-center justify-center text-brand-accent shadow-xl shadow-brand-900/20 rotate-12">
-                  <Heart size={32} fill="currentColor" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-brand-accent rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
-                  <Sparkles size={16} />
-                </div>
+            <div className="flex items-center gap-6 pt-2">
+              <div className="flex -space-x-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="w-12 h-12 rounded-full border-2 border-brand-900 bg-brand-100 overflow-hidden shadow-xl">
+                    <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-white font-serif text-lg italic">1,200+ couples</p>
+                <p className="text-brand-400 text-[10px] font-bold uppercase tracking-widest">Joined this month</p>
               </div>
             </div>
+          </motion.div>
 
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-serif text-brand-900 mb-2">
-                {isLogin ? "Welcome Back" : "Start Your Journey"}
-              </h2>
-              <p className="text-brand-500 text-sm italic">
-                {isLogin ? "Your sanctuary awaits..." : "Begin the opening chapter of your forever."}
-              </p>
-            </div>
+          {/* Right Side: Auth Card */}
+          <div className="flex justify-center lg:justify-end items-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white/95 backdrop-blur-2xl rounded-[40px] shadow-2xl overflow-hidden border border-white/20 w-full max-w-md xl:max-w-lg relative flex flex-col"
+              style={{ maxHeight: 'min(700px, 85vh)' }}
+            >
+              <div className="flex-grow p-6 md:p-8 xl:p-10 overflow-y-auto custom-scrollbar relative">
+                {/* Header elements inside the scroll area */}
+                <div className="flex justify-center mb-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-brand-900 rounded-2xl flex items-center justify-center text-brand-accent shadow-xl shadow-brand-900/20 rotate-12">
+                      <Heart size={28} fill="currentColor" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-brand-accent rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
+                      <Sparkles size={12} />
+                    </div>
+                  </div>
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <AnimatePresence mode="wait">
-                {!isLogin && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2"
-                  >
-                    <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Email Address</label>
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-serif text-brand-900 mb-1">
+                    {isLogin ? "Welcome Back" : "Start Your Journey"}
+                  </h2>
+                  <p className="text-brand-50 text-xs italic opacity-80">
+                    {isLogin ? "Your sanctuary awaits..." : "Begin the opening chapter of your forever."}
+                  </p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <AnimatePresence mode="wait">
+                    {!isLogin && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-1.5"
+                      >
+                        <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Email Address</label>
+                        <div className="relative">
+                          <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
+                          <input
+                            type="email"
+                            required
+                            autoComplete="email"
+                            className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
+                            placeholder="love@example.com"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Username</label>
                     <div className="relative">
-                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={18} />
+                      <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
                       <input
-                        type="email"
+                        type="text"
                         required
-                        autoComplete="email"
-                        className="w-full pl-14 pr-6 py-4 bg-brand-50 border-none rounded-2xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all"
-                        placeholder="love@example.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        autoComplete="username"
+                        className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
+                        placeholder="Your unique name"
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                       />
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Username</label>
-                <div className="relative">
-                  <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={18} />
-                  <input
-                    type="text"
-                    required
-                    autoComplete="username"
-                    className="w-full pl-14 pr-6 py-4 bg-brand-50 border-none rounded-2xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all"
-                    placeholder="Your unique name"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Secret Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={18} />
-                  <input
-                    type="password"
-                    required
-                    autoComplete={isLogin ? "current-password" : "new-password"}
-                    className="w-full pl-14 pr-6 py-4 bg-brand-50 border-none rounded-2xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {!isLogin && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2"
-                  >
-                    <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Confirm Secret</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Secret Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={18} />
+                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
                       <input
                         type="password"
                         required
-                        autoComplete="new-password"
-                        className="w-full pl-14 pr-6 py-4 bg-brand-50 border-none rounded-2xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all"
+                        autoComplete={isLogin ? "current-password" : "new-password"}
+                        className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
                         placeholder="••••••••"
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       />
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
 
-              {error && (
-                <div className="bg-red-50/50 border border-red-100 rounded-xl p-4 mb-2">
-                  <p className="text-red-500 text-xs text-center italic font-medium">
-                    {error.includes('already exists') || error.includes('user_exists') 
-                      ? "This love story has already begun! Please login to your account instead."
-                      : error}
-                  </p>
-                </div>
-              )}
+                  <AnimatePresence mode="wait">
+                    {!isLogin && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-1.5"
+                      >
+                        <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Confirm Secret</label>
+                        <div className="relative">
+                          <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
+                          <input
+                            type="password"
+                            required
+                            autoComplete="new-password"
+                            className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
+                            placeholder="••••••••"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn-primary w-full py-5 text-lg shadow-xl shadow-brand-accent/20 flex items-center justify-center gap-3 disabled:opacity-50 group"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="animate-spin" size={20} />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    {isLogin ? "Enter Sanctuary" : "Start Your Journey"}
-                    <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
-                  </>
-                )}
-              </button>
-            </form>
+                  {error && (
+                    <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 mb-1">
+                      <p className="text-red-500 text-[10px] text-center italic font-medium">
+                        {error.includes('already exists') || error.includes('user_exists') 
+                          ? "This love story has already begun! Please login instead."
+                          : error}
+                      </p>
+                    </div>
+                  )}
 
-            <div className="mt-10 pt-8 border-t border-brand-50 text-center">
-              <p className="text-brand-400 text-sm mb-4">
-                {isLogin ? "Don't have an account yet?" : "Already part of the community?"}
-              </p>
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-brand-900 font-bold text-sm uppercase tracking-widest hover:text-brand-accent transition-colors inline-flex items-center gap-2 group"
-              >
-                {isLogin ? "Create Your Love Story" : "Login to Your Account"}
-                <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="btn-primary w-full py-4 text-base shadow-xl shadow-brand-accent/20 flex items-center justify-center gap-3 disabled:opacity-50 group mt-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        {isLogin ? "Enter Sanctuary" : "Start Your Journey"}
+                        <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Fixed Footer for a more professional feel */}
+              <div className="p-6 bg-brand-50/30 border-t border-brand-50 text-center">
+                <p className="text-brand-400 text-xs mb-3">
+                  {isLogin ? "Don't have an account yet?" : "Already part of the community?"}
+                </p>
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="w-full py-3.5 px-6 bg-white hover:bg-brand-50 text-brand-900 font-bold text-xs uppercase tracking-widest transition-all rounded-xl inline-flex items-center justify-center gap-3 group border border-brand-100/50 shadow-sm"
+                >
+                  {isLogin ? "Create Your Love Story" : "Login to Your Account"}
+                  <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform opacity-60" />
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default Sanctuary;

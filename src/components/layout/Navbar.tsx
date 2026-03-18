@@ -51,8 +51,8 @@ const Navbar = () => {
   const isTransparent = !isScrolled && (location.pathname === '/' || location.pathname === '/sanctuary') && !isOpen;
 
   const logoUrl = isTransparent 
-    ? "https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015" 
-    : "https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Full%20Logo%20No%20BG%20(1).png?updatedAt=1773691277034";
+    ? "https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20White%20only.png" 
+    : "https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png";
 
   return (
     <nav
@@ -68,9 +68,9 @@ const Navbar = () => {
             alt="The Honeymooner" 
             className={cn(
               "w-auto transition-all duration-500 block",
-              isTransparent ? "h-28 sm:h-36" : "h-20 sm:h-28"
+              isTransparent ? "h-16 sm:h-20" : "h-12 sm:h-16"
             )}
-            style={{ minHeight: isTransparent ? '112px' : '80px' }}
+            style={{ minHeight: isTransparent ? '64px' : '48px' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "https://placehold.co/400x120/4a352f/c18a7b?text=THE+HONEYMOONER&font=playfair-display";

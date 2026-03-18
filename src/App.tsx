@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ScrollToTop from './components/layout/ScrollToTop';
+import ScrollToTopButton from './components/ui/ScrollToTopButton';
 import Home from './pages/Home';
 import Destinations from './pages/Destinations';
 import Packages from './pages/Packages';
@@ -48,12 +49,13 @@ const AppContent = () => {
   const hideHeaderFooter = location.pathname === '/admin';
 
   return (
-    <div className="flex flex-col min-h-screen bg-brand-50 selection:bg-brand-accent selection:text-white">
+    <div className="flex flex-col min-h-screen bg-brand-50 selection:bg-brand-accent selection:text-white overflow-x-hidden">
       {!hideHeaderFooter && <Navbar />}
       <main className="flex-grow">
         <AnimatedRoutes />
       </main>
       {!hideHeaderFooter && <Footer />}
+      <ScrollToTopButton />
     </div>
   );
 };

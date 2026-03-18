@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useData } from '../hooks/useData';
+import { useState, useEffect } from 'react';
+import { useData, type HomeContent } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUser } from '../hooks/useUser';
 import { authService } from '../services/authService';
-import type { TravelPackage, PricingTier, Lead, PricingBasis } from '../types';
+import type { TravelPackage, PricingTier, Lead, PricingBasis, Destination } from '../types';
 import { motion } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -22,7 +22,10 @@ import {
   Image as ImageIcon,
   Loader2,
   Lock,
-  User as UserIcon
+  User as UserIcon,
+  Globe,
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import { 
   IKContext, 
@@ -35,13 +38,47 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const Admin = () => {
-  const { packages, destinations, leads, updatePackages, updateLeadStatus } = useData();
+  const { 
+    packages, 
+    destinations, 
+    leads, 
+    updatePackages, 
+    updateLeadStatus, 
+    updateDestinations,
+    homeContent,
+    updateHomeContent
+  } = useData();
   const { formatPrice } = useCurrency();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState('packages');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPackage, setEditingPackage] = useState<TravelPackage | null>(null);
+  const [editingDestination, setEditingDestination] = useState<Destination | null>(null);
+  const [localHomeContent, setLocalHomeContent] = useState<HomeContent>(homeContent);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadType, setUploadType] = useState<'package' | 'destination' | 'hero' | null>(null);
+
+  useEffect(() => {
+    setLocalHomeContent(homeContent);
+  }, [homeContent]);
+
+  const handleSaveHomeContent = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateHomeContent(localHomeContent);
+    alert('Homepage content updated successfully!');
+  };
+
+  const handleDeletePackage = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this package?')) {
+      updatePackages(packages.filter(p => p.id !== id));
+    }
+  };
+
+  const handleDeleteDestination = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this destination? All associated packages will lose their destination reference.')) {
+      updateDestinations(destinations.filter(d => d.id !== id));
+    }
+  };
   
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
@@ -149,9 +186,69 @@ const Admin = () => {
     e.preventDefault();
     if (!editingPackage) return;
     
-    const newPackages = packages.map(p => p.id === editingPackage.id ? editingPackage : p);
+    const exists = packages.find(p => p.id === editingPackage.id);
+    let newPackages;
+    if (exists) {
+      newPackages = packages.map(p => p.id === editingPackage.id ? editingPackage : p);
+    } else {
+      newPackages = [editingPackage, ...packages];
+    }
     updatePackages(newPackages);
     setEditingPackage(null);
+  };
+
+  const handleSaveDestination = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDestination) return;
+    
+    const exists = destinations.find(d => d.id === editingDestination.id);
+    let newDestinations;
+    if (exists) {
+      newDestinations = destinations.map(d => d.id === editingDestination.id ? editingDestination : d);
+    } else {
+      newDestinations = [editingDestination, ...destinations];
+    }
+    updateDestinations(newDestinations);
+    setEditingDestination(null);
+  };
+
+  const handleAddNew = () => {
+    if (activeTab === 'packages') {
+      const newPkg: TravelPackage = {
+        id: `pkg-${Date.now()}`,
+        title: 'New Romantic Package',
+        slug: 'new-package',
+        category: 'honeymoon',
+        summary: '',
+        description: '',
+        featuredImage: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57',
+        gallery: [],
+        destinationId: destinations[0]?.id || '',
+        duration: { days: 7, nights: 6 },
+        tiers: [
+          { id: 'tier-1', name: 'Premium', price: 2500, currency: 'USD', basis: 'per couple' },
+          { id: 'tier-2', name: 'Luxuria', price: 4500, currency: 'USD', basis: 'per couple' },
+          { id: 'tier-3', name: 'Ultra Luxuria', price: 7500, currency: 'USD', basis: 'per couple' }
+        ],
+        inclusions: [],
+        exclusions: [],
+        tags: [],
+        departures: [],
+        seo: { title: '', description: '', keywords: [] }
+      };
+      setEditingPackage(newPkg);
+    } else if (activeTab === 'destinations') {
+      const newDest: Destination = {
+        id: `dest-${Date.now()}`,
+        name: 'New Destination',
+        country: '',
+        continent: 'Africa',
+        description: '',
+        image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57',
+        slug: 'new-destination'
+      };
+      setEditingDestination(newDest);
+    }
   };
 
   const onUploadError = (err: ImageKitError) => {
@@ -161,12 +258,24 @@ const Admin = () => {
   };
 
   const onUploadSuccess = (res: ImageKitUploadResponse) => {
-    if (!editingPackage) return;
-    setEditingPackage({
-      ...editingPackage,
-      featuredImage: res.url
-    });
+    if (uploadType === 'package' && editingPackage) {
+      setEditingPackage({
+        ...editingPackage,
+        featuredImage: res.url
+      });
+    } else if (uploadType === 'destination' && editingDestination) {
+      setEditingDestination({
+        ...editingDestination,
+        image: res.url
+      });
+    } else if (uploadType === 'hero') {
+      setLocalHomeContent({
+        ...localHomeContent,
+        hero: { ...localHomeContent.hero, image: res.url }
+      });
+    }
     setIsUploading(false);
+    setUploadType(null);
   };
 
   const handleTierChange = (tierId: string, field: keyof PricingTier, value: string | number) => {
@@ -196,6 +305,7 @@ const Admin = () => {
               { id: 'packages', label: 'Packages', icon: Package },
               { id: 'destinations', label: 'Destinations', icon: MapPin },
               { id: 'leads', label: 'Enquiries', icon: Users },
+              { id: 'settings', label: 'Site Content', icon: Globe },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -261,7 +371,10 @@ const Admin = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="bg-brand-accent text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors">
+            <button 
+              onClick={handleAddNew}
+              className="bg-brand-accent text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors"
+            >
               <Plus size={16} />
               Add New
             </button>
@@ -310,12 +423,215 @@ const Admin = () => {
                           >
                             <Edit3 size={18} />
                           </button>
+                          <button 
+                            onClick={() => handleDeletePackage(pkg.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {activeTab === 'destinations' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Destination</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Continent</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Packages</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {destinations.map(dest => (
+                    <tr key={dest.id} className="hover:bg-slate-50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <img src={dest.image} className="w-12 h-12 rounded-lg object-cover" />
+                          <div>
+                            <p className="font-medium text-slate-900">{dest.name}</p>
+                            <p className="text-xs text-slate-500">{dest.country}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{dest.continent}</td>
+                      <td className="px-6 py-4 text-right text-sm text-slate-600">
+                        {packages.filter(p => p.destinationId === dest.id).length}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => setEditingDestination(dest)}
+                            className="p-2 text-slate-400 hover:text-brand-accent hover:bg-brand-50 rounded-lg"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteDestination(dest.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className="max-w-4xl">
+              <form onSubmit={handleSaveHomeContent} className="space-y-12">
+                {/* Hero Section Settings */}
+                <div className="bg-white p-8 rounded-3xl border border-slate-100 space-y-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-brand-accent/10 rounded-xl flex items-center justify-center text-brand-accent">
+                      <Sparkles size={20} />
+                    </div>
+                    <h3 className="text-xl font-serif text-slate-900">Hero Section</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Main Title</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                        value={localHomeContent.hero.title}
+                        onChange={(e) => setLocalHomeContent({
+                          ...localHomeContent,
+                          hero: { ...localHomeContent.hero, title: e.target.value }
+                        })}
+                      />
+                      <p className="text-[10px] text-slate-400 italic">Use '&' to create a line break with italic style.</p>
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Button Text</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                        value={localHomeContent.hero.cta}
+                        onChange={(e) => setLocalHomeContent({
+                          ...localHomeContent,
+                          hero: { ...localHomeContent.hero, cta: e.target.value }
+                        })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Subtitle / SEO Description</label>
+                    <textarea
+                      rows={2}
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                      value={localHomeContent.hero.subtitle}
+                      onChange={(e) => setLocalHomeContent({
+                        ...localHomeContent,
+                        hero: { ...localHomeContent.hero, subtitle: e.target.value }
+                      })}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hero Image</label>
+                    <div className="flex items-center gap-6 p-4 bg-slate-50 rounded-2xl">
+                      <img src={localHomeContent.hero.image} className="w-32 h-20 object-cover rounded-lg shadow-sm" />
+                      <IKContext publicKey={ikPublicKey} urlEndpoint={ikUrlEndpoint}>
+                        <div className="relative">
+                          <label 
+                            htmlFor="ik-hero-upload"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold cursor-pointer hover:border-brand-accent transition-all"
+                          >
+                            <ImageIcon size={14} />
+                            Change Image
+                          </label>
+                          <IKUpload
+                            id="ik-hero-upload"
+                            className="hidden"
+                            fileName="hero-bg.jpg"
+                            folder="/site-assets"
+                            onStartUpload={() => {
+                              setIsUploading(true);
+                              setUploadType('hero');
+                            }}
+                            onSuccess={onUploadSuccess}
+                            onError={onUploadError}
+                          />
+                        </div>
+                      </IKContext>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Destinations Section Settings */}
+                <div className="bg-white p-8 rounded-3xl border border-slate-100 space-y-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-brand-accent/10 rounded-xl flex items-center justify-center text-brand-accent">
+                      <MapPin size={20} />
+                    </div>
+                    <h3 className="text-xl font-serif text-slate-900">Destinations Section</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Section Title</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                        value={localHomeContent.destinations.title}
+                        onChange={(e) => setLocalHomeContent({
+                          ...localHomeContent,
+                          destinations: { ...localHomeContent.destinations, title: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Script Subtitle</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                        value={localHomeContent.destinations.subtitle}
+                        onChange={(e) => setLocalHomeContent({
+                          ...localHomeContent,
+                          destinations: { ...localHomeContent.destinations, subtitle: e.target.value }
+                        })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Description</label>
+                    <textarea
+                      rows={3}
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                      value={localHomeContent.destinations.description}
+                      onChange={(e) => setLocalHomeContent({
+                        ...localHomeContent,
+                        destinations: { ...localHomeContent.destinations, description: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <button
+                    type="submit"
+                    className="bg-brand-accent text-white px-10 py-4 rounded-full font-bold shadow-xl shadow-brand-accent/20 hover:bg-brand-700 transition-all flex items-center gap-3"
+                  >
+                    <Save size={20} />
+                    Publish Site Changes
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 
@@ -432,7 +748,10 @@ const Admin = () => {
                             tags={['package', 'travel']}
                             useUniqueFileName={true}
                             folder="/packages"
-                            onStartUpload={() => setIsUploading(true)}
+                            onStartUpload={() => {
+                              setIsUploading(true);
+                              setUploadType('package');
+                            }}
                             onSuccess={onUploadSuccess}
                             onError={onUploadError}
                           />
@@ -504,6 +823,164 @@ const Admin = () => {
                 >
                   <Save size={18} />
                   Save Changes
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Edit Destination Modal */}
+      {editingDestination && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-brand-900/60 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl"
+          >
+            <form onSubmit={handleSaveDestination}>
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h2 className="text-2xl font-serif text-slate-900">
+                  {destinations.find(d => d.id === editingDestination.id) ? 'Edit Destination' : 'Add New Destination'}
+                </h2>
+                <button 
+                  type="button" 
+                  onClick={() => setEditingDestination(null)}
+                  className="p-2 hover:bg-slate-100 rounded-full"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-12">
+                {/* Image Upload Section */}
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Destination Cover Image</label>
+                  <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                    <div className="relative group w-full sm:w-48 h-32 rounded-2xl overflow-hidden shadow-sm bg-slate-200">
+                      <img 
+                        src={editingDestination.image} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-sm flex items-center justify-center">
+                          <Loader2 className="text-white animate-spin" size={24} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-grow space-y-2 text-center sm:text-left">
+                      <p className="text-sm font-medium text-slate-900">Upload a breathtaking photo</p>
+                      <p className="text-xs text-slate-500 mb-4">Recommended size: 1920x1080px. JPG, PNG supported.</p>
+                      
+                      <IKContext publicKey={ikPublicKey} urlEndpoint={ikUrlEndpoint}>
+                        <div className="relative">
+                          <label 
+                            htmlFor="ik-dest-upload"
+                            className={cn(
+                              "inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold cursor-pointer transition-all",
+                              isUploading 
+                                ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                                : "bg-white text-brand-accent border border-brand-100 hover:border-brand-accent shadow-sm"
+                            )}
+                          >
+                            <ImageIcon size={18} />
+                            {isUploading ? "Uploading..." : "Select New Image"}
+                          </label>
+                          <IKUpload
+                            id="ik-dest-upload"
+                            className="hidden"
+                            fileName={`${editingDestination.slug}-cover.jpg`}
+                            tags={['destination', 'travel']}
+                            useUniqueFileName={true}
+                            folder="/destinations"
+                            onStartUpload={() => {
+                              setIsUploading(true);
+                              setUploadType('destination');
+                            }}
+                            onSuccess={onUploadSuccess}
+                            onError={onUploadError}
+                          />
+                        </div>
+                      </IKContext>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Destination Name</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20"
+                      value={editingDestination.name}
+                      onChange={(e) => setEditingDestination({ ...editingDestination, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Country</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20"
+                      value={editingDestination.country}
+                      onChange={(e) => setEditingDestination({ ...editingDestination, country: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Continent</label>
+                    <select
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20"
+                      value={editingDestination.continent}
+                      onChange={(e) => setEditingDestination({ ...editingDestination, continent: e.target.value as any })}
+                    >
+                      <option value="Africa">Africa</option>
+                      <option value="Europe">Europe</option>
+                      <option value="Asia">Asia</option>
+                      <option value="Caribbean">Caribbean</option>
+                      <option value="Americas">Americas</option>
+                      <option value="Oceania">Oceania</option>
+                      <option value="Middle East">Middle East</option>
+                    </select>
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">URL Slug</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20 font-mono text-sm"
+                      value={editingDestination.slug}
+                      onChange={(e) => setEditingDestination({ ...editingDestination, slug: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Description</label>
+                  <textarea
+                    rows={4}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20 leading-relaxed"
+                    value={editingDestination.description}
+                    onChange={(e) => setEditingDestination({ ...editingDestination, description: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="p-8 border-t border-slate-100 flex justify-end gap-4 bg-white sticky bottom-0">
+                <button 
+                  type="button" 
+                  onClick={() => setEditingDestination(null)}
+                  className="px-8 py-3 text-slate-500 font-medium hover:text-slate-900"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="bg-brand-accent text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors shadow-lg shadow-brand-accent/20"
+                >
+                  <Save size={18} />
+                  Save Destination
                 </button>
               </div>
             </form>

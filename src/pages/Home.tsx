@@ -7,7 +7,7 @@ import { Heart, MapPin, Calendar, Star, ArrowRight, Sun, Anchor, Mountain, Coffe
 import { Link } from 'react-router-dom';
 
 const Home = () => {
-  const { packages, destinations, testimonials } = useData();
+  const { packages, destinations, testimonials, homeContent } = useData();
   const { formatPrice } = useCurrency();
   
   // Featured packages for the home page (first 2 honeymoons)
@@ -24,19 +24,19 @@ const Home = () => {
     >
       <SEO 
         title="Home" 
-        description="Discover the world's most romantic honeymoon destinations and luxury packages. Your journey to forever starts here."
+        description={homeContent.hero.subtitle}
       />
       <Hero />
 
       {/* Featured Destinations */}
       <section className="section-container">
         <div className="text-center mb-16 max-w-2xl mx-auto">
-          <p className="script-font mb-4 text-brand-accent italic">Explore the World</p>
+          <p className="script-font mb-4 text-brand-accent italic">{homeContent.destinations.subtitle}</p>
           <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">
-            Iconic Honeymoon Destinations
+            {homeContent.destinations.title}
           </h2>
           <p className="text-brand-600 leading-relaxed text-lg">
-            From the overwater bungalows of the Maldives to the sunset terraces of Santorini, find your perfect backdrop for romance.
+            {homeContent.destinations.description}
           </p>
         </div>
 
@@ -75,12 +75,12 @@ const Home = () => {
         <div className="section-container">
           <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-8">
             <div className="max-w-2xl">
-              <p className="script-font mb-4 text-brand-accent italic">Curated Collections</p>
+              <p className="script-font mb-4 text-brand-accent italic">{homeContent.packages.subtitle}</p>
               <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">
-                Signature Packages
+                {homeContent.packages.title}
               </h2>
               <p className="text-brand-600 leading-relaxed text-lg">
-                Handpicked experiences designed for effortless romance and luxury.
+                {homeContent.packages.description}
               </p>
             </div>
             <Link to="/packages" className="btn-outline">
@@ -228,7 +228,7 @@ const Home = () => {
       </section>
 
       {/* Why Choose Us / Reassurance */}
-      <section className="py-24 bg-brand-50/50">
+      <section className="py-24 bg-brand-50/50 overflow-hidden">
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="relative order-2 lg:order-1">
@@ -246,7 +246,7 @@ const Home = () => {
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                className="absolute top-1/2 -left-12 -translate-y-1/2 p-10 bg-white/90 backdrop-blur-xl shadow-2xl rounded-[40px] hidden lg:block border border-brand-100 max-w-sm z-20"
+                className="absolute top-1/2 -left-6 lg:-left-12 -translate-y-1/2 p-6 lg:p-10 bg-white/90 backdrop-blur-xl shadow-2xl rounded-[30px] lg:rounded-[40px] hidden sm:block border border-brand-100 max-w-[280px] lg:max-w-sm z-20"
               >
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
@@ -357,8 +357,8 @@ const Home = () => {
                   <span className="text-[10px] text-brand-300 font-bold uppercase tracking-widest">{testimonial.date}</span>
                 </div>
 
-                <div className="absolute -top-4 -right-4 w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-xl shadow-brand-accent/20">
-                  <Heart size={20} fill="currentColor" />
+                <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-10 h-10 sm:w-12 sm:h-12 bg-brand-accent rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-xl shadow-brand-accent/20">
+                  <Heart size={18} className="sm:w-5 sm:h-5" fill="currentColor" />
                 </div>
               </motion.div>
             ))}

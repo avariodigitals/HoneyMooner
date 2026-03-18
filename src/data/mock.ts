@@ -1,6 +1,6 @@
 import type { Destination, TravelPackage, PricingTier, Lead, PricingBasis, PackageInclusion, PackageCategory, Testimonial } from '../types';
 
-export const DATA_VERSION = '1.0.1';
+export const DATA_VERSION = '1.0.2';
 
 export const initialDestinations: Destination[] = [
   // Indian Ocean

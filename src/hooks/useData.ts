@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { initialDestinations, initialPackages, initialTestimonials, DATA_VERSION } from '../data/mock';
-import type { Destination, TravelPackage, Lead, Testimonial } from '../types';
+import type { Destination, TravelPackage, Lead, Testimonial, BlogPost } from '../types';
 
 export interface HomeContent {
   hero: {
@@ -40,6 +40,31 @@ const defaultHomeContent: HomeContent = {
   }
 };
 
+const initialPosts: BlogPost[] = [
+  {
+    id: '1',
+    title: 'Top 5 Romantic Resorts in the Maldives for 2024',
+    excerpt: 'Discover the most exclusive overwater villas and private island experiences that define luxury romance in the Indian Ocean.',
+    category: 'Destinations',
+    author: 'Aisha Bello',
+    date: 'Mar 15, 2024',
+    image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80&w=2070',
+    readTime: '8 min read',
+    slug: 'maldives-resorts-2024'
+  },
+  {
+    id: '2',
+    title: 'Planning Your Honeymoon: A Step-by-Step Guide',
+    excerpt: 'From setting a budget to choosing the perfect season, our comprehensive guide takes the stress out of planning your first trip as a married couple.',
+    category: 'Tips & Advice',
+    author: 'Daniel Chen',
+    date: 'Mar 10, 2024',
+    image: 'https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&q=80&w=1974',
+    readTime: '12 min read',
+    slug: 'honeymoon-planning-guide'
+  }
+];
+
 export const useData = () => {
   // Check for data version and clear stale storage if needed
   useEffect(() => {
@@ -50,6 +75,7 @@ export const useData = () => {
       localStorage.removeItem('honeymooner_packages');
       localStorage.removeItem('honeymooner_testimonials');
       localStorage.removeItem('honeymooner_home_content');
+      localStorage.removeItem('honeymooner_posts');
       localStorage.setItem('honeymooner_data_version', DATA_VERSION);
       
       // Reload the page to ensure state is fresh
@@ -90,6 +116,13 @@ export const useData = () => {
     return defaultHomeContent;
   });
 
+  const [posts, setPosts] = useState<BlogPost[]>(() => {
+    const stored = localStorage.getItem('honeymooner_posts');
+    if (stored) return JSON.parse(stored);
+    localStorage.setItem('honeymooner_posts', JSON.stringify(initialPosts));
+    return initialPosts;
+  });
+
   const [loading] = useState(false);
 
   const updateDestinations = (newDestinations: Destination[]) => {
@@ -112,6 +145,11 @@ export const useData = () => {
     localStorage.setItem('honeymooner_home_content', JSON.stringify(newContent));
   };
 
+  const updatePosts = (newPosts: BlogPost[]) => {
+    setPosts(newPosts);
+    localStorage.setItem('honeymooner_posts', JSON.stringify(newPosts));
+  };
+
   const addLead = (lead: Lead) => {
     const newLeads = [lead, ...leads];
     setLeads(newLeads);
@@ -130,11 +168,13 @@ export const useData = () => {
     leads,
     testimonials,
     homeContent,
+    posts,
     loading,
     updateDestinations,
     updatePackages,
     updateTestimonials,
     updateHomeContent,
+    updatePosts,
     addLead,
     updateLeadStatus
   };

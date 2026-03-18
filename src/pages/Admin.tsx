@@ -3,7 +3,7 @@ import { useData, type HomeContent } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUser } from '../hooks/useUser';
 import { authService } from '../services/authService';
-import type { TravelPackage, PricingTier, Lead, PricingBasis, Destination } from '../types';
+import type { TravelPackage, PricingTier, Lead, PricingBasis, Destination, BlogPost, Continent } from '../types';
 import { motion } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -25,7 +25,10 @@ import {
   User as UserIcon,
   Globe,
   Trash2,
-  Sparkles
+  Sparkles,
+  BookOpen,
+  TrendingUp,
+  ArrowUpRight
 } from 'lucide-react';
 import { 
   IKContext, 
@@ -46,17 +49,20 @@ const Admin = () => {
     updateLeadStatus, 
     updateDestinations,
     homeContent,
-    updateHomeContent
+    updateHomeContent,
+    posts,
+    updatePosts
   } = useData();
   const { formatPrice } = useCurrency();
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState('packages');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPackage, setEditingPackage] = useState<TravelPackage | null>(null);
   const [editingDestination, setEditingDestination] = useState<Destination | null>(null);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [localHomeContent, setLocalHomeContent] = useState<HomeContent>(homeContent);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadType, setUploadType] = useState<'package' | 'destination' | 'hero' | null>(null);
+  const [uploadType, setUploadType] = useState<'package' | 'destination' | 'hero' | 'post' | null>(null);
 
   useEffect(() => {
     setLocalHomeContent(homeContent);
@@ -66,6 +72,27 @@ const Admin = () => {
     e.preventDefault();
     updateHomeContent(localHomeContent);
     alert('Homepage content updated successfully!');
+  };
+
+  const handleSavePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPost) return;
+    
+    const exists = posts.find(p => p.id === editingPost.id);
+    let newPosts;
+    if (exists) {
+      newPosts = posts.map(p => p.id === editingPost.id ? editingPost : p);
+    } else {
+      newPosts = [editingPost, ...posts];
+    }
+    updatePosts(newPosts);
+    setEditingPost(null);
+  };
+
+  const handleDeletePost = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this blog post?')) {
+      updatePosts(posts.filter(p => p.id !== id));
+    }
   };
 
   const handleDeletePackage = (id: string) => {
@@ -248,6 +275,19 @@ const Admin = () => {
         slug: 'new-destination'
       };
       setEditingDestination(newDest);
+    } else if (activeTab === 'journal') {
+      const newPost: BlogPost = {
+        id: `post-${Date.now()}`,
+        title: 'New Journal Entry',
+        excerpt: '',
+        category: 'Destinations',
+        author: user?.name || 'Administrator',
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57',
+        readTime: '5 min read',
+        slug: 'new-journal-entry'
+      };
+      setEditingPost(newPost);
     }
   };
 
@@ -266,6 +306,11 @@ const Admin = () => {
     } else if (uploadType === 'destination' && editingDestination) {
       setEditingDestination({
         ...editingDestination,
+        image: res.url
+      });
+    } else if (uploadType === 'post' && editingPost) {
+      setEditingPost({
+        ...editingPost,
         image: res.url
       });
     } else if (uploadType === 'hero') {
@@ -304,6 +349,7 @@ const Admin = () => {
               { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
               { id: 'packages', label: 'Packages', icon: Package },
               { id: 'destinations', label: 'Destinations', icon: MapPin },
+              { id: 'journal', label: 'Journal', icon: BookOpen },
               { id: 'leads', label: 'Enquiries', icon: Users },
               { id: 'settings', label: 'Site Content', icon: Globe },
             ].map((tab) => (
@@ -382,7 +428,125 @@ const Admin = () => {
         </div>
 
         {/* Content Area */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className={cn(
+          "bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden",
+          activeTab === 'dashboard' && "bg-transparent border-none shadow-none"
+        )}>
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { label: 'Total Packages', value: packages.length, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
+                  { label: 'Destinations', value: destinations.length, icon: MapPin, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                  { label: 'Total Enquiries', value: leads.length, icon: Users, color: 'text-brand-accent', bg: 'bg-brand-50' },
+                  { label: 'Active Articles', value: posts.length, icon: BookOpen, color: 'text-purple-600', bg: 'bg-purple-50' },
+                ].map((stat, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", stat.bg, stat.color)}>
+                        <stat.icon size={24} />
+                      </div>
+                      <span className="flex items-center gap-1 text-emerald-600 text-xs font-bold bg-emerald-50 px-2 py-1 rounded-full">
+                        <TrendingUp size={12} />
+                        +12%
+                      </span>
+                    </div>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">{stat.label}</p>
+                    <h3 className="text-3xl font-serif text-slate-900">{stat.value}</h3>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Recent Leads */}
+                <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h3 className="text-xl font-serif text-slate-900">Recent Enquiries</h3>
+                    <button 
+                      onClick={() => setActiveTab('leads')}
+                      className="text-brand-accent text-xs font-bold uppercase tracking-widest hover:text-brand-700 transition-colors"
+                    >
+                      View All
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-50">
+                    {leads.slice(0, 5).map((lead) => (
+                      <div key={lead.id} className="p-6 hover:bg-slate-50 transition-colors flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-accent text-xs font-bold">
+                            {lead.travelerName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-slate-900">{lead.travelerName}</p>
+                            <p className="text-xs text-slate-500">{lead.packageName}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={cn(
+                            "px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
+                            lead.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+                          )}>
+                            {lead.status}
+                          </span>
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {new Date(lead.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Actions / Recent Activity */}
+                <div className="space-y-8">
+                  <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <h3 className="text-xl font-serif text-slate-900 mb-6">Quick Actions</h3>
+                    <div className="space-y-4">
+                      <button 
+                        onClick={handleAddNew}
+                        className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-brand-accent hover:bg-white transition-all group"
+                      >
+                        <div className="flex items-center gap-3 text-slate-700 font-medium text-sm">
+                          <Plus size={18} className="text-brand-accent" />
+                          Create Package
+                        </div>
+                        <ArrowUpRight size={16} className="text-slate-300 group-hover:text-brand-accent transition-colors" />
+                      </button>
+                      <button 
+                        onClick={() => { setActiveTab('journal'); handleAddNew(); }}
+                        className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-brand-accent hover:bg-white transition-all group"
+                      >
+                        <div className="flex items-center gap-3 text-slate-700 font-medium text-sm">
+                          <BookOpen size={18} className="text-brand-accent" />
+                          Write Article
+                        </div>
+                        <ArrowUpRight size={16} className="text-slate-300 group-hover:text-brand-accent transition-colors" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-brand-900 p-8 rounded-3xl text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/20 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-1000" />
+                    <h3 className="text-xl font-serif mb-4 relative z-10">Premium Support</h3>
+                    <p className="text-brand-100/70 text-sm font-light leading-relaxed mb-6 relative z-10">
+                      Need help managing your luxury travel catalog or connecting with clients?
+                    </p>
+                    <button className="w-full py-3 bg-brand-accent text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-brand-700 transition-all relative z-10">
+                      Contact Concierge
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'packages' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -635,6 +799,54 @@ const Admin = () => {
             </div>
           )}
 
+          {activeTab === 'journal' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Article</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Category</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {posts.map(post => (
+                    <tr key={post.id} className="hover:bg-slate-50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <img src={post.image} className="w-12 h-12 rounded-lg object-cover" />
+                          <div>
+                            <p className="font-medium text-slate-900">{post.title}</p>
+                            <p className="text-xs text-slate-500">By {post.author}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{post.category}</td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{post.date}</td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => setEditingPost(post)}
+                            className="p-2 text-slate-400 hover:text-brand-accent hover:bg-brand-50 rounded-lg"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeletePost(post.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {activeTab === 'leads' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -715,6 +927,10 @@ const Admin = () => {
                       <img 
                         src={editingPackage.featuredImage} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
+                        }}
                       />
                       {isUploading && (
                         <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-sm flex items-center justify-center">
@@ -807,6 +1023,56 @@ const Admin = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* SEO Section */}
+                <div className="pt-8 border-t border-slate-100 space-y-8">
+                  <div className="flex items-center gap-3">
+                    <Globe size={20} className="text-brand-accent" />
+                    <h3 className="text-xl font-serif text-slate-900">SEO Settings</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">SEO Title</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20"
+                        value={editingPackage.seo.title}
+                        onChange={(e) => setEditingPackage({
+                          ...editingPackage,
+                          seo: { ...editingPackage.seo, title: e.target.value }
+                        })}
+                        placeholder="Luxury Honeymoon in Bali | The Honeymooner"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">SEO Keywords</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20"
+                        value={editingPackage.seo.keywords.join(', ')}
+                        onChange={(e) => setEditingPackage({
+                          ...editingPackage,
+                          seo: { ...editingPackage.seo, keywords: e.target.value.split(',').map(k => k.trim()) }
+                        })}
+                        placeholder="honeymoon, bali, luxury travel"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Meta Description</label>
+                    <textarea
+                      rows={3}
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20"
+                      value={editingPackage.seo.description}
+                      onChange={(e) => setEditingPackage({
+                        ...editingPackage,
+                        seo: { ...editingPackage.seo, description: e.target.value }
+                      })}
+                      placeholder="Discover our curated luxury honeymoon package in Bali..."
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="p-8 border-t border-slate-100 flex justify-end gap-4 bg-white sticky bottom-0">
@@ -861,6 +1127,10 @@ const Admin = () => {
                       <img 
                         src={editingDestination.image} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
+                        }}
                       />
                       {isUploading && (
                         <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-sm flex items-center justify-center">
@@ -934,7 +1204,7 @@ const Admin = () => {
                     <select
                       className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand-accent/20"
                       value={editingDestination.continent}
-                      onChange={(e) => setEditingDestination({ ...editingDestination, continent: e.target.value as any })}
+                      onChange={(e) => setEditingDestination({ ...editingDestination, continent: e.target.value as Continent })}
                     >
                       <option value="Africa">Africa</option>
                       <option value="Europe">Europe</option>
@@ -965,6 +1235,37 @@ const Admin = () => {
                     onChange={(e) => setEditingDestination({ ...editingDestination, description: e.target.value })}
                   />
                 </div>
+
+                {/* SEO Section */}
+                <div className="pt-8 border-t border-slate-100 space-y-8">
+                  <div className="flex items-center gap-3">
+                    <Globe size={20} className="text-brand-accent" />
+                    <h3 className="text-xl font-serif text-slate-900">SEO Settings</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">SEO Title</label>
+                      <input
+                        type="text"
+                        placeholder="Romantic Honeymoon in..."
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                        value={editingDestination.name} // Simple mapping for now or add to type
+                        disabled
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Meta Description</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Discover the world's most romantic..."
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                        value={editingDestination.description.substring(0, 160)}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="p-8 border-t border-slate-100 flex justify-end gap-4 bg-white sticky bottom-0">
@@ -981,6 +1282,168 @@ const Admin = () => {
                 >
                   <Save size={18} />
                   Save Destination
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Edit Journal Post Modal */}
+      {editingPost && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-brand-900/60 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl"
+          >
+            <form onSubmit={handleSavePost}>
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h2 className="text-2xl font-serif text-slate-900">
+                  {posts.find(p => p.id === editingPost.id) ? 'Edit Journal Entry' : 'Add New Entry'}
+                </h2>
+                <button 
+                  type="button" 
+                  onClick={() => setEditingPost(null)}
+                  className="p-2 hover:bg-slate-100 rounded-full"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-12">
+                {/* Image Upload Section */}
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cover Image</label>
+                  <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                    <div className="relative group w-full sm:w-48 h-32 rounded-2xl overflow-hidden shadow-sm bg-slate-200">
+                      <img 
+                        src={editingPost.image} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-sm flex items-center justify-center">
+                          <Loader2 className="text-white animate-spin" size={24} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-grow space-y-2 text-center sm:text-left">
+                      <p className="text-sm font-medium text-slate-900">Upload a featured image</p>
+                      <p className="text-xs text-slate-500 mb-4">Recommended size: 1200x800px.</p>
+                      
+                      <IKContext publicKey={ikPublicKey} urlEndpoint={ikUrlEndpoint}>
+                        <div className="relative">
+                          <label 
+                            htmlFor="ik-post-upload"
+                            className={cn(
+                              "inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold cursor-pointer transition-all",
+                              isUploading 
+                                ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                                : "bg-white text-brand-accent border border-brand-100 hover:border-brand-accent shadow-sm"
+                            )}
+                          >
+                            <ImageIcon size={18} />
+                            {isUploading ? "Uploading..." : "Select New Image"}
+                          </label>
+                          <IKUpload
+                            id="ik-post-upload"
+                            className="hidden"
+                            fileName={`${editingPost.slug}-cover.jpg`}
+                            folder="/journal"
+                            onStartUpload={() => {
+                              setIsUploading(true);
+                              setUploadType('post');
+                            }}
+                            onSuccess={onUploadSuccess}
+                            onError={onUploadError}
+                          />
+                        </div>
+                      </IKContext>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Title</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                      value={editingPost.title}
+                      onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Category</label>
+                    <select
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                      value={editingPost.category}
+                      onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
+                    >
+                      <option value="Destinations">Destinations</option>
+                      <option value="Tips & Advice">Tips & Advice</option>
+                      <option value="Inspiration">Inspiration</option>
+                      <option value="Couples Stories">Couples Stories</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Author</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                      value={editingPost.author}
+                      onChange={(e) => setEditingPost({ ...editingPost, author: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Read Time</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                      value={editingPost.readTime}
+                      onChange={(e) => setEditingPost({ ...editingPost, readTime: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Slug</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono text-sm"
+                      value={editingPost.slug}
+                      onChange={(e) => setEditingPost({ ...editingPost, slug: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Excerpt</label>
+                  <textarea
+                    rows={3}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 leading-relaxed"
+                    value={editingPost.excerpt}
+                    onChange={(e) => setEditingPost({ ...editingPost, excerpt: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="p-8 border-t border-slate-100 flex justify-end gap-4 bg-white sticky bottom-0">
+                <button 
+                  type="button" 
+                  onClick={() => setEditingPost(null)}
+                  className="px-8 py-3 text-slate-500 font-medium hover:text-slate-900"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="bg-brand-accent text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors shadow-lg shadow-brand-accent/20"
+                >
+                  <Save size={18} />
+                  Save Article
                 </button>
               </div>
             </form>

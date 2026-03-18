@@ -19,7 +19,9 @@ import {
   ChevronDown,
   ChevronUp,
   Package as PackageIcon,
-  Crown
+  Crown,
+  Globe,
+  Users as UsersIcon
 } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 
@@ -135,12 +137,13 @@ const Booking = () => {
     return {
       packageId: pkgId,
       tierId: location.state?.tierId || pkg?.tiers[0]?.id || '',
-      departureDate: '',
+      departureDate: location.state?.departureDate || '',
       adults: 2,
       children: 0,
       travelerName: '',
       email: '',
       phone: '',
+      countryOfResidence: '',
       occasion: 'honeymoon' as Lead['occasion'],
       message: ''
     };
@@ -163,6 +166,7 @@ const Booking = () => {
       travelerName: formData.travelerName,
       email: formData.email,
       phone: formData.phone,
+      countryOfResidence: formData.countryOfResidence,
       occasion: formData.occasion,
       message: formData.message,
       status: 'pending',
@@ -332,13 +336,74 @@ const Booking = () => {
                   <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Departure Date</label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
+                    {selectedPkg?.departures && selectedPkg.departures.length > 0 ? (
+                      <select
+                        required
+                        className="w-full pl-12 pr-4 sm:pr-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base bg-white appearance-none"
+                        value={formData.departureDate}
+                        onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
+                      >
+                        <option value="">Select a departure date</option>
+                        {selectedPkg.departures.map(d => (
+                          <option key={d.id} value={d.date} disabled={d.availability === 'sold-out'}>
+                            {new Date(d.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} 
+                            {d.availability !== 'available' ? ` (${d.availability})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        required
+                        type="date"
+                        className="w-full pl-12 pr-4 sm:pr-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base"
+                        value={formData.departureDate}
+                        onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                <div className="space-y-3 sm:space-y-4">
+                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Country of Residence</label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
                     <input
                       required
-                      type="date"
+                      type="text"
+                      placeholder="e.g. Nigeria"
                       className="w-full pl-12 pr-4 sm:pr-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base"
-                      value={formData.departureDate}
-                      onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
+                      value={formData.countryOfResidence}
+                      onChange={(e) => setFormData({ ...formData, countryOfResidence: e.target.value })}
                     />
+                  </div>
+                </div>
+                <div className="space-y-3 sm:space-y-4">
+                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Travellers</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="relative">
+                      <UsersIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={16} />
+                      <input
+                        type="number"
+                        min="1"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-brand-100 text-sm"
+                        value={formData.adults}
+                        onChange={(e) => setFormData({ ...formData, adults: parseInt(e.target.value) })}
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-bold">Adults</span>
+                    </div>
+                    <div className="relative">
+                      <UsersIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={16} />
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-brand-100 text-sm"
+                        value={formData.children}
+                        onChange={(e) => setFormData({ ...formData, children: parseInt(e.target.value) })}
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-bold">Kids</span>
+                    </div>
                   </div>
                 </div>
               </div>

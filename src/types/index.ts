@@ -78,6 +78,7 @@ export interface Lead {
   travelerName: string;
   email: string;
   phone: string;
+  countryOfResidence: string;
   occasion: 'honeymoon' | 'anniversary' | 'proposal' | 'other';
   message?: string;
   status: 'pending' | 'contacted' | 'booked' | 'cancelled';
@@ -89,6 +90,19 @@ export type Currency = {
   symbol: string;
   rate: number;
 };
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  author: string;
+  date: string;
+  image: string;
+  readTime: string;
+  slug: string;
+  content?: string;
+}
 
 export interface Testimonial {
   id: string;

@@ -50,7 +50,11 @@ const Home = () => {
               <img
                 src={destination.image}
                 alt={destination.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/80 via-brand-900/20 to-transparent" />
               <div className="absolute bottom-0 left-0 p-10 w-full text-white">
@@ -97,10 +101,14 @@ const Home = () => {
               >
                 <div className="relative h-80 overflow-hidden">
                   <img
-                    src={pkg.featuredImage}
-                    alt={pkg.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
+                  src={pkg.featuredImage}
+                  alt={pkg.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
+                  }}
+                />
                   <div className="absolute top-6 right-6 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent">
                     <Heart size={20} fill="currentColor" />
                   </div>

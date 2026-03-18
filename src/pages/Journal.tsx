@@ -2,52 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight, Bookmark, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useData } from '../hooks/useData';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 
 const Journal = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const posts = [
-    {
-      id: '1',
-      title: 'Top 5 Romantic Resorts in the Maldives for 2024',
-      excerpt: 'Discover the most exclusive overwater villas and private island experiences that define luxury romance in the Indian Ocean.',
-      category: 'Destinations',
-      author: 'Aisha Bello',
-      date: 'Mar 15, 2024',
-      image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80&w=2070',
-      readTime: '8 min read'
-    },
-    {
-      id: '2',
-      title: 'Planning Your Honeymoon: A Step-by-Step Guide',
-      excerpt: 'From setting a budget to choosing the perfect season, our comprehensive guide takes the stress out of planning your first trip as a married couple.',
-      category: 'Tips & Advice',
-      author: 'Daniel Chen',
-      date: 'Mar 10, 2024',
-      image: 'https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&q=80&w=1974',
-      readTime: '12 min read'
-    },
-    {
-      id: '3',
-      title: 'Why Santorini is Still the Ultimate Proposal Destination',
-      excerpt: 'The sunsets, the white-washed buildings, and the azure sea—Santorini remains the world\'s most iconic backdrop for saying "Yes".',
-      category: 'Inspiration',
-      author: 'Elena Rossi',
-      date: 'Mar 05, 2024',
-      image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&q=80&w=1946',
-      readTime: '6 min read'
-    },
-    {
-      id: '4',
-      title: 'Hidden Gems of the Amalfi Coast: Beyond Positano',
-      excerpt: 'Escape the crowds and discover the intimate villages and secret beaches that make the Amalfi Coast a romantic haven.',
-      category: 'Destinations',
-      author: 'Marco Polo',
-      date: 'Feb 28, 2024',
-      image: 'https://images.unsplash.com/photo-1612730871336-3984639f0464?auto=format&fit=crop&q=80&w=1974',
-      readTime: '10 min read'
-    }
-  ];
+  const { posts } = useData();
 
   const filteredPosts = posts.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 

@@ -1,11 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { motion } from 'framer-motion';
 import PayPalButton from '../components/ui/PayPalButton';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
-import { Calendar, MapPin, Users, Check, X, ArrowRight, Heart, Share2, Star, ChevronRight, ChevronLeft } from 'lucide-react';
+import { 
+  Calendar, 
+  MapPin, 
+  Users, 
+  Check, 
+  X, 
+  ArrowRight, 
+  Heart, 
+  Share2, 
+  Star, 
+  ChevronRight, 
+  ChevronLeft,
+  Home,
+  Plane,
+  Coffee,
+  Camera,
+  ShieldCheck,
+  CreditCard,
+  Briefcase,
+  type LucideIcon
+} from 'lucide-react';
+
+const categoryIcons: { [key: string]: LucideIcon } = {
+  accommodation: Home,
+  transport: Plane,
+  meals: Coffee,
+  activities: Camera,
+  extras: Star,
+  visa: ShieldCheck,
+  concierge: Briefcase,
+  payment: CreditCard
+};
 
 const PackageDetail = () => {
   const { slug } = useParams();
@@ -15,17 +46,15 @@ const PackageDetail = () => {
   const destination = destinations.find(d => d.id === pkg?.destinationId);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
-  const [isInWishlist, setIsInWishlist] = useState(false);
-
-  useEffect(() => {
-    if (pkg) {
-      const savedWishlist = localStorage.getItem('hm_wishlist');
-      if (savedWishlist) {
-        const items = JSON.parse(savedWishlist);
-        setIsInWishlist(items.includes(pkg.id));
-      }
+  const [isInWishlist, setIsInWishlist] = useState(() => {
+    if (!pkg) return false;
+    const savedWishlist = localStorage.getItem('hm_wishlist');
+    if (savedWishlist) {
+      const items = JSON.parse(savedWishlist);
+      return items.includes(pkg.id);
     }
-  }, [pkg]);
+    return false;
+  });
 
   if (!pkg) return <div className="pt-32 min-h-screen section-container">Package not found</div>;
 
@@ -63,6 +92,10 @@ const PackageDetail = () => {
             src={pkg.gallery[currentImgIndex]}
             alt={pkg.title}
             className="w-full h-full object-cover brightness-[0.8]"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-brand-900/30" />
           
@@ -71,7 +104,11 @@ const PackageDetail = () => {
             <img 
               src="https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015" 
               alt=""
-              className="w-full max-w-4xl h-auto object-contain"
+              className="w-[150%] max-w-none rotate-[-15deg] scale-150"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
             />
           </div>
         </div>
@@ -210,41 +247,54 @@ const PackageDetail = () => {
           </div>
 
           {/* Inclusions / Exclusions - Structured Content Block */}
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-brand-100 shadow-sm">
-            <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-8 sm:mb-10 flex items-center gap-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-brand-100 shadow-sm overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+            <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-8 sm:mb-10 flex items-center gap-4 relative z-10">
               <span className="w-10 h-10 shrink-0 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent">
-                <Check size={20} />
+                <ShieldCheck size={20} />
               </span>
               What This Fee Covers
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
-              <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12">
-                {pkg.inclusions.map((inc, idx) => (
-                  <div key={idx}>
-                    <h4 className="text-[10px] sm:text-xs uppercase tracking-widest font-bold text-brand-400 mb-3 sm:mb-4">{inc.category}</h4>
-                    <ul className="space-y-2 sm:space-y-3">
-                      {inc.items.map((item, i) => (
-                        <li key={i} className="flex items-start gap-3 text-brand-700">
-                          <Check size={14} className="text-brand-accent mt-1 shrink-0" />
-                          <span className="text-sm">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12 relative z-10">
+              <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
+                {pkg.inclusions.map((inc, idx) => {
+                  const Icon = categoryIcons[inc.category] || Star;
+                  return (
+                    <div key={idx} className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-accent">
+                          <Icon size={16} />
+                        </div>
+                        <h4 className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-brand-400">{inc.category}</h4>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {inc.items.map((item, i) => (
+                          <li key={i} className="flex items-start gap-3 text-brand-700">
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-accent/30 mt-1.5 shrink-0" />
+                            <span className="text-sm leading-relaxed">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="pt-8 md:pt-0 md:pl-12 border-t md:border-t-0 md:border-l border-brand-100">
-                <h4 className="text-[10px] sm:text-xs uppercase tracking-widest font-bold text-red-400 mb-6 sm:mb-8 flex items-center gap-2">
-                  <X size={14} />
-                  Not Included
-                </h4>
-                <ul className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-3 mb-6 sm:mb-8">
+                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400">
+                    <X size={16} />
+                  </div>
+                  <h4 className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-red-400">
+                    Not Included
+                  </h4>
+                </div>
+                <ul className="space-y-4">
                   {pkg.exclusions.map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-3 text-brand-500">
-                      <div className="w-1.5 h-1.5 rounded-full bg-brand-200" />
-                      <span className="text-sm">{item}</span>
+                    <li key={idx} className="flex items-start gap-3 text-brand-500/70">
+                      <div className="w-1 h-1 rounded-full bg-brand-200 mt-2 shrink-0" />
+                      <span className="text-sm leading-relaxed">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -298,30 +348,31 @@ const PackageDetail = () => {
             </div>
 
             <div className="space-y-4 pt-4 border-t border-brand-50">
-              <Link
-                to={`/booking?package=${pkg.slug}&tier=${selectedTierId}`}
-                className="btn-primary w-full py-5 flex items-center justify-center gap-3 text-lg"
+              <Link 
+                to="/booking" 
+                state={{ packageId: pkg.id, tierId: selectedTier.id }}
+                className="btn-primary w-full py-4 flex items-center justify-center gap-3 shadow-xl shadow-brand-accent/20"
               >
-                Inquire Now
+                Book Now
                 <ArrowRight size={20} />
               </Link>
-
+              
               <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-brand-100"></span></div>
-                <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold"><span className="bg-white px-4 text-brand-300">Or Pay Deposit</span></div>
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-brand-100"></span>
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
+                  <span className="bg-white px-4 text-brand-300">or secure your date</span>
+                </div>
               </div>
 
               <PayPalButton 
-                amount={selectedTier.price * 0.1} // 10% deposit
-                onSuccess={(details) => {
-                  console.log('Payment Success:', details);
-                }}
+                amount={500} 
+                onSuccess={(details) => console.log('Deposit paid', details)} 
               />
-              <p className="text-[10px] text-center text-brand-400 italic">Secure 10% deposit via PayPal to lock in dates</p>
-
-              <button className="w-full py-4 text-brand-accent font-medium hover:bg-brand-50 rounded-full transition-colors">
-                Download Brochure (PDF)
-              </button>
+              <p className="text-[10px] text-center text-brand-400 italic">
+                Secure your romantic escape with a $500 non-refundable deposit.
+              </p>
             </div>
 
             <div className="pt-6 border-t border-brand-50 space-y-6">

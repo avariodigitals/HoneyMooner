@@ -90,7 +90,7 @@ const exclusions = ['International Flights (unless requested)', 'Visa Fees', 'Pe
 const sampleItinerary = [
   { day: 1, title: 'Arrival & Romantic Welcome', description: 'Arrive at your destination and enjoy a private transfer to your luxury resort. Settle into your room with a romantic welcome setup and a sunset cocktail.', activity: 'Sunset Cocktails' },
   { day: 2, title: 'Private Island Escape', description: 'Spend a full day on a secluded private island with a gourmet picnic lunch and snorkeling in crystal-clear waters.', activity: 'Island Picnic' },
-  { day: 3, title: 'Spa & Wellness Sanctuary', description: 'Indulge in a couple\'s signature spa treatment followed by a relaxing afternoon by the infinity pool.', activity: 'Signature Spa' },
+  { day: 3, title: 'Spa & Wellness Escape', description: 'Indulge in a couple\'s signature spa treatment followed by a relaxing afternoon by the infinity pool.', activity: 'Signature Spa' },
   { day: 4, title: 'Cultural Exploration', description: 'Take a private guided tour of local landmarks and hidden gems, ending with a traditional cooking class.', activity: 'Private Tour' },
   { day: 5, title: 'Sunset Sailing', description: 'Embark on a private luxury yacht for a sunset cruise with champagne and canapés.', activity: 'Luxury Yacht' },
 ];

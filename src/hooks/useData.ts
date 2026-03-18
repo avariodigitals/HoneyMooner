@@ -8,7 +8,7 @@ const defaultHomeContent: HomeContent = {
     title: "Luxury Honeymoons & Romantic Escapes",
     subtitle: "Your journey to forever starts here.",
     image: "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070",
-    cta: "Explore Our Sanctuary"
+    cta: "Explore Our Account"
   },
   destinations: {
     title: "Iconic Honeymoon Destinations",

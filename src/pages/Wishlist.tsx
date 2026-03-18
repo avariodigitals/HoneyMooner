@@ -73,7 +73,7 @@ const Wishlist = () => {
             className="inline-flex items-center gap-2 px-4 lg:px-6 py-1.5 lg:py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] lg:text-sm font-bold uppercase tracking-[0.2em] lg:tracking-[0.3em]"
           >
             <Heart size={14} className="lg:w-4 lg:h-4" fill="currentColor" />
-            My Sanctuary
+            My Account
           </motion.div>
           
           <motion.h1 
@@ -199,7 +199,7 @@ const Wishlist = () => {
                   </div>
                 </div>
                 <div className="space-y-6">
-                  <h2 className="text-4xl font-serif text-brand-900 italic">Your Sanctuary is Silent.</h2>
+                  <h2 className="text-4xl font-serif text-brand-900 italic">Your Account is Silent.</h2>
                   <p className="text-brand-500 max-w-lg mx-auto text-lg font-light leading-relaxed">
                     A thousand romantic escapes are waiting to be part of your story. Explore our curated collections and let your heart decide.
                   </p>

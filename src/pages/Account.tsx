@@ -14,7 +14,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const Sanctuary = () => {
+const Account = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
@@ -82,7 +82,7 @@ const Sanctuary = () => {
             className="hidden lg:block space-y-8"
           >
             <div className="space-y-4">
-              <p className="script-font text-brand-accent text-3xl xl:text-4xl">Enter Your Sanctuary</p>
+              <p className="script-font text-brand-accent text-3xl xl:text-4xl">Enter Your Account</p>
               <h1 className="text-5xl xl:text-7xl font-serif text-white leading-[1.15]">
                 Where Your Love <br />
                 <span className="italic text-brand-accent/90">Finds its Home.</span>
@@ -136,7 +136,7 @@ const Sanctuary = () => {
                     {isLogin ? "Welcome Back" : "Start Your Journey"}
                   </h2>
                   <p className="text-brand-50 text-xs italic opacity-80">
-                    {isLogin ? "Your sanctuary awaits..." : "Begin the opening chapter of your forever."}
+                    {isLogin ? "Your personal sanctuary awaits..." : "Begin the opening chapter of your forever."}
                   </p>
                 </div>
 
@@ -245,7 +245,7 @@ const Sanctuary = () => {
                       </>
                     ) : (
                       <>
-                        {isLogin ? "Enter Sanctuary" : "Start Your Journey"}
+                        {isLogin ? "Sign In" : "Register"}
                         <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
                       </>
                     )}
@@ -262,7 +262,7 @@ const Sanctuary = () => {
                   onClick={() => setIsLogin(!isLogin)}
                   className="w-full py-3.5 px-6 bg-white hover:bg-brand-50 text-brand-900 font-bold text-xs uppercase tracking-widest transition-all rounded-xl inline-flex items-center justify-center gap-3 group border border-brand-100/50 shadow-sm"
                 >
-                  {isLogin ? "Create Your Love Story" : "Login to Your Account"}
+                  {isLogin ? "Create Your Account" : "Login to Your Account"}
                   <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform opacity-60" />
                 </button>
               </div>
@@ -274,4 +274,4 @@ const Sanctuary = () => {
 );
 };
 
-export default Sanctuary;
+export default Account;

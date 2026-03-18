@@ -182,7 +182,7 @@ const Home = () => {
                 count: 12
               },
               { 
-                label: 'Island Sanctuary', 
+                label: 'Island Escape', 
                 icon: <Anchor size={32} />, 
                 color: 'from-blue-500/20 to-cyan-500/20',
                 image: ASSETS.HOME_EXPERIENCES.ISLAND,

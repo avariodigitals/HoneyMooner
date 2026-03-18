@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
-import type { Lead } from '../types';
+import type { Lead, TravelPackage } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
@@ -21,7 +21,8 @@ import {
   Package as PackageIcon,
   Crown,
   Globe,
-  Users as UsersIcon
+  Users as UsersIcon,
+  Loader2
 } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 
@@ -69,8 +70,9 @@ const CustomDropdown = ({
       <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{label}</label>
       <button
         type="button"
+        disabled={options.length === 0}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-white border border-brand-100 rounded-xl sm:rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex items-center justify-between transition-all hover:border-brand-accent/50 group ${isOpen ? 'ring-2 ring-brand-accent/20 border-brand-accent' : ''}`}
+        className={`w-full bg-white border border-brand-100 rounded-xl sm:rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex items-center justify-between transition-all hover:border-brand-accent/50 group ${isOpen ? 'ring-2 ring-brand-accent/20 border-brand-accent' : ''} ${options.length === 0 ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}`}
       >
         <div className="flex items-center gap-3">
           <Icon className={`transition-colors ${selectedOption ? 'text-brand-accent' : 'text-brand-200 group-hover:text-brand-accent/50'}`} size={18} />
@@ -78,7 +80,9 @@ const CustomDropdown = ({
             {selectedOption ? (selectedOption.title || selectedOption.name) : placeholder}
           </span>
         </div>
-        {isOpen ? <ChevronUp size={18} className="text-brand-400" /> : <ChevronDown size={18} className="text-brand-400" />}
+        {options.length > 0 && (
+          isOpen ? <ChevronUp size={18} className="text-brand-400" /> : <ChevronDown size={18} className="text-brand-400" />
+        )}
       </button>
 
       <AnimatePresence>
@@ -125,36 +129,45 @@ const CustomDropdown = ({
   );
 };
 
-const Booking = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { packages, addLead } = useData();
-  const { formatPrice } = useCurrency();
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formData, setFormData] = useState(() => {
-    const pkgId = location.state?.packageId || '';
-    const pkg = packages.find(p => p.id === pkgId);
-    return {
-      packageId: pkgId,
-      tierId: location.state?.tierId || pkg?.tiers[0]?.id || '',
-      departureDate: location.state?.departureDate || '',
-      adults: 2,
-      children: 0,
-      travelerName: '',
-      email: '',
-      phone: '',
-      countryOfResidence: '',
-      occasion: 'honeymoon' as Lead['occasion'],
-      message: ''
-    };
-  });
+interface BookingFormProps {
+  initialData: {
+    packageId: string;
+    tierId: string;
+    departureDate: string;
+    adults: number;
+    children: number;
+    travelerName: string;
+    email: string;
+    phone: string;
+    countryOfResidence: string;
+    occasion: Lead['occasion'];
+    message: string;
+  };
+  packages: TravelPackage[];
+  addLead: (lead: Lead) => Promise<boolean>;
+  formatPrice: (price: number) => string;
+}
 
-  const selectedPkg = packages.find(p => p.id === formData.packageId);
-  const selectedTier = selectedPkg?.tiers.find(t => t.id === formData.tierId) || selectedPkg?.tiers[0];
+const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFormProps) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(initialData);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const selectedPkg = useMemo(() => 
+    packages.find(p => p.id === formData.packageId),
+    [packages, formData.packageId]
+  );
+
+  const selectedTier = useMemo(() => 
+    selectedPkg?.tiers.find(t => t.id === formData.tierId) || selectedPkg?.tiers[0],
+    [selectedPkg, formData.tierId]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPkg) return;
+    setIsSubmitting(true);
 
     const newLead: Lead = {
       id: generateId(),
@@ -173,9 +186,16 @@ const Booking = () => {
       createdAt: new Date().toISOString()
     };
 
-    await addLead(newLead);
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      await addLead(newLead);
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error('Error submitting enquiry:', error);
+      alert('There was an error submitting your enquiry. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -253,7 +273,7 @@ const Booking = () => {
                 />
                 <CustomDropdown
                   label="Experience Level"
-                  placeholder="Choose experience..."
+                  placeholder={formData.packageId ? "Choose experience..." : "Select a package first"}
                   icon={Crown}
                   value={formData.tierId}
                   options={selectedPkg?.tiers.map(t => ({
@@ -422,9 +442,22 @@ const Booking = () => {
                 </div>
               </div>
 
-              <button type="submit" className="btn-primary w-full py-4 sm:py-5 flex items-center justify-center gap-3 text-base sm:text-lg shadow-xl shadow-brand-accent/20">
-                Submit Enquiry
-                <Send size={20} />
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="btn-primary w-full py-4 sm:py-5 flex items-center justify-center gap-3 text-base sm:text-lg shadow-xl shadow-brand-accent/20 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Submit Enquiry
+                    <Send size={20} />
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -508,6 +541,53 @@ const Booking = () => {
         </div>
       </section>
     </div>
+  );
+};
+
+const Booking = () => {
+  const location = useLocation();
+  const { packages, addLead, isLoading } = useData();
+  const { formatPrice } = useCurrency();
+
+  const initialData = useMemo(() => {
+    const pkgId = location.state?.packageId || '';
+    const pkg = packages.find(p => p.id === pkgId);
+    
+    return {
+      packageId: pkgId,
+      tierId: location.state?.tierId || pkg?.tiers[0]?.id || '',
+      departureDate: location.state?.departureDate || '',
+      adults: 2,
+      children: 0,
+      travelerName: '',
+      email: '',
+      phone: '',
+      countryOfResidence: '',
+      occasion: 'honeymoon' as Lead['occasion'],
+      message: ''
+    };
+  }, [packages, location.state]);
+
+  if (isLoading || packages.length === 0) {
+    return (
+      <div className="min-h-screen bg-brand-50/50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="animate-spin text-brand-accent mx-auto" size={48} />
+          <p className="text-brand-500 font-medium italic">Preparing your romantic journey...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Use a key to reset the form when initial data changes significantly (like a new package selected from another page)
+  return (
+    <BookingForm 
+      key={initialData.packageId}
+      initialData={initialData} 
+      packages={packages} 
+      addLead={addLead} 
+      formatPrice={formatPrice} 
+    />
   );
 };
 

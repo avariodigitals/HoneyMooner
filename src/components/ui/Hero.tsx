@@ -33,7 +33,7 @@ const Hero = () => {
         >
           <div className="inline-flex items-center gap-2 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-brand-accent text-sm font-bold uppercase tracking-[0.3em] shadow-2xl">
             <Sparkles size={16} fill="currentColor" />
-            The Sanctuary
+            The Account
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif leading-[1.1] tracking-tight drop-shadow-2xl">
@@ -79,7 +79,7 @@ const Hero = () => {
               transition={{ delay: 1.2, duration: 0.8 }}
             >
               <Link 
-                to="/sanctuary" 
+                to="/account" 
                 className="relative px-8 py-4 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full text-white font-bold text-xs uppercase tracking-[0.3em] hover:bg-white/10 hover:border-brand-accent/50 transition-all duration-500 flex items-center gap-2 group"
               >
                 <div className="absolute inset-0 rounded-full border border-white/0 group-hover:border-brand-accent/30 transition-all duration-700 scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100" />

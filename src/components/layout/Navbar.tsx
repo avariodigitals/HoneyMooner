@@ -48,7 +48,7 @@ const Navbar = () => {
     { name: 'Contact', path: '/contact' },
   ];
 
-  const isTransparent = !isScrolled && (location.pathname === '/' || location.pathname === '/sanctuary') && !isOpen;
+  const isTransparent = !isScrolled && (location.pathname === '/' || location.pathname === '/account') && !isOpen;
 
   const logoUrl = isTransparent 
     ? "https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20White%20only.png" 
@@ -128,7 +128,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* User Account / Sanctuary */}
+          {/* User Account */}
           <div className="relative">
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
@@ -168,7 +168,7 @@ const Navbar = () => {
                         </p>
                       </div>
                       <Link 
-                        to="/sanctuary/wishlist" 
+                        to="/account/wishlist" 
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50 hover:text-brand-accent transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
@@ -201,14 +201,14 @@ const Navbar = () => {
               </div>
             ) : (
               <Link 
-                to="/sanctuary"
+                to="/account"
                 className={cn(
                   'flex items-center gap-2 text-sm font-medium transition-all duration-300 uppercase tracking-widest',
                   isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent'
                 )}
               >
                 <UserIcon size={16} />
-                Sanctuary
+                Account
               </Link>
             )}
           </div>
@@ -297,26 +297,26 @@ const Navbar = () => {
                       </motion.div>
                     ))}
                     
-                    {/* Sanctuary Link in Mobile Menu */}
+                    {/* Account Link in Mobile Menu */}
                     <motion.div
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 + navLinks.length * 0.05, ease: "easeOut" }}
                     >
                       <Link
-                        to={isAuthenticated ? "/sanctuary/wishlist" : "/sanctuary"}
+                        to={isAuthenticated ? "/account/wishlist" : "/account"}
                         onClick={() => setIsOpen(false)}
                         className={cn(
                           "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-500",
-                          location.pathname.startsWith('/sanctuary') ? "text-brand-accent" : "text-white/60 hover:text-brand-accent"
+                          location.pathname.startsWith('/account') ? "text-brand-accent" : "text-white/60 hover:text-brand-accent"
                         )}
                       >
                         <span className="relative">
-                          {isAuthenticated ? "My Sanctuary" : "The Sanctuary"}
+                          {isAuthenticated ? "My Account" : "Account"}
                         </span>
                         <UserIcon className={cn(
                           "transition-all duration-500",
-                          location.pathname.startsWith('/sanctuary') ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+                          location.pathname.startsWith('/account') ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
                         )} size={28} />
                       </Link>
                     </motion.div>

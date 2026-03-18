@@ -17,7 +17,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import FAQs from './pages/FAQs';
 import Journal from './pages/Journal';
-import Sanctuary from './pages/Sanctuary';
+import Account from './pages/Account';
 import Wishlist from './pages/Wishlist';
 
 const AnimatedRoutes = () => {
@@ -37,8 +37,8 @@ const AnimatedRoutes = () => {
         <Route path="/booking" element={<Booking />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/sanctuary" element={<Sanctuary />} />
-        <Route path="/sanctuary/wishlist" element={<Wishlist />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/account/wishlist" element={<Wishlist />} />
       </Routes>
     </AnimatePresence>
   );

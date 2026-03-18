@@ -104,6 +104,25 @@ export interface BlogPost {
   content?: string;
 }
 
+export interface HomeContent {
+  hero: {
+    title: string;
+    subtitle: string;
+    image: string;
+    cta: string;
+  };
+  destinations: {
+    title: string;
+    subtitle: string;
+    description: string;
+  };
+  packages: {
+    title: string;
+    subtitle: string;
+    description: string;
+  };
+}
+
 export interface Testimonial {
   id: string;
   coupleName: string;

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useData, type HomeContent } from '../hooks/useData';
+import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUser } from '../hooks/useUser';
 import { authService } from '../services/authService';
-import type { TravelPackage, PricingTier, Lead, PricingBasis, Destination, BlogPost, Continent } from '../types';
+import { dataService } from '../services/dataService';
+import type { TravelPackage, PricingTier, Lead, PricingBasis, Destination, BlogPost, Continent, HomeContent } from '../types';
 import { motion } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -51,7 +52,8 @@ const Admin = () => {
     homeContent,
     updateHomeContent,
     posts,
-    updatePosts
+    updatePosts,
+    isLoading
   } = useData();
   const { formatPrice } = useCurrency();
   const { user } = useUser();
@@ -62,6 +64,7 @@ const Admin = () => {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [localHomeContent, setLocalHomeContent] = useState<HomeContent>(homeContent);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [uploadType, setUploadType] = useState<'package' | 'destination' | 'hero' | 'post' | null>(null);
 
   useEffect(() => {
@@ -209,34 +212,58 @@ const Admin = () => {
     );
   }
 
-  const handleSavePackage = (e: React.FormEvent) => {
+  const handleSavePackage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPackage) return;
     
-    const exists = packages.find(p => p.id === editingPackage.id);
-    let newPackages;
-    if (exists) {
-      newPackages = packages.map(p => p.id === editingPackage.id ? editingPackage : p);
-    } else {
-      newPackages = [editingPackage, ...packages];
+    setIsSaving(true);
+    try {
+      const success = await dataService.updatePackage(editingPackage);
+      if (success) {
+        const exists = packages.find(p => p.id === editingPackage.id);
+        let newPackages;
+        if (exists) {
+          newPackages = packages.map(p => p.id === editingPackage.id ? editingPackage : p);
+        } else {
+          newPackages = [editingPackage, ...packages];
+        }
+        updatePackages(newPackages);
+        setEditingPackage(null);
+      } else {
+        alert('Failed to save to WordPress. Please check your connection.');
+      }
+    } catch (error) {
+      console.error('Error saving package:', error);
+    } finally {
+      setIsSaving(false);
     }
-    updatePackages(newPackages);
-    setEditingPackage(null);
   };
 
-  const handleSaveDestination = (e: React.FormEvent) => {
+  const handleSaveDestination = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingDestination) return;
     
-    const exists = destinations.find(d => d.id === editingDestination.id);
-    let newDestinations;
-    if (exists) {
-      newDestinations = destinations.map(d => d.id === editingDestination.id ? editingDestination : d);
-    } else {
-      newDestinations = [editingDestination, ...destinations];
+    setIsSaving(true);
+    try {
+      const success = await dataService.updateDestination(editingDestination);
+      if (success) {
+        const exists = destinations.find(d => d.id === editingDestination.id);
+        let newDestinations;
+        if (exists) {
+          newDestinations = destinations.map(d => d.id === editingDestination.id ? editingDestination : d);
+        } else {
+          newDestinations = [editingDestination, ...destinations];
+        }
+        updateDestinations(newDestinations);
+        setEditingDestination(null);
+      } else {
+        alert('Failed to save to WordPress. Please check your connection.');
+      }
+    } catch (error) {
+      console.error('Error saving destination:', error);
+    } finally {
+      setIsSaving(false);
     }
-    updateDestinations(newDestinations);
-    setEditingDestination(null);
   };
 
   const handleAddNew = () => {
@@ -331,6 +358,17 @@ const Admin = () => {
     );
     setEditingPackage({ ...editingPackage, tiers: newTiers });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="animate-spin text-brand-accent mx-auto" size={48} />
+          <p className="text-slate-500 font-medium italic">Synchronizing with Sanctuary...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
@@ -1085,10 +1123,11 @@ const Admin = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="bg-brand-accent text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors shadow-lg shadow-brand-accent/20"
+                  disabled={isSaving}
+                  className="bg-brand-accent text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors shadow-lg shadow-brand-accent/20 disabled:opacity-50"
                 >
-                  <Save size={18} />
-                  Save Changes
+                  {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                  {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -1278,10 +1317,11 @@ const Admin = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="bg-brand-accent text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors shadow-lg shadow-brand-accent/20"
+                  disabled={isSaving}
+                  className="bg-brand-accent text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 hover:bg-brand-700 transition-colors shadow-lg shadow-brand-accent/20 disabled:opacity-50"
                 >
-                  <Save size={18} />
-                  Save Destination
+                  {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                  {isSaving ? 'Saving...' : 'Save Destination'}
                 </button>
               </div>
             </form>

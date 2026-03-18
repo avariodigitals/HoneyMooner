@@ -152,7 +152,7 @@ const Booking = () => {
   const selectedPkg = packages.find(p => p.id === formData.packageId);
   const selectedTier = selectedPkg?.tiers.find(t => t.id === formData.tierId) || selectedPkg?.tiers[0];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPkg) return;
 
@@ -173,7 +173,7 @@ const Booking = () => {
       createdAt: new Date().toISOString()
     };
 
-    addLead(newLead);
+    await addLead(newLead);
     setIsSubmitted(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

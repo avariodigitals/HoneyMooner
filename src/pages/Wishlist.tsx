@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useUser } from '../hooks/useUser';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
+import { dataService } from '../services/dataService';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { 
   Heart, 
@@ -18,18 +19,33 @@ const Wishlist = () => {
   const { user } = useUser();
   const { packages, destinations } = useData();
   const { formatPrice } = useCurrency();
-  const [wishlistItems, setWishlistItems] = useState<string[]>(() => {
-    const savedWishlist = localStorage.getItem('hm_wishlist');
-    return savedWishlist ? JSON.parse(savedWishlist) : [];
-  });
+  const [wishlistItems, setWishlistItems] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const removeFromWishlist = (id: string) => {
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const items = await dataService.getWishlist();
+      setWishlistItems(items);
+      setIsLoading(false);
+    };
+    fetchWishlist();
+  }, []);
+
+  const removeFromWishlist = async (id: string) => {
     const newWishlist = wishlistItems.filter(item => item !== id);
     setWishlistItems(newWishlist);
-    localStorage.setItem('hm_wishlist', JSON.stringify(newWishlist));
+    await dataService.updateWishlist(newWishlist);
   };
 
   const wishlistedPackages = packages.filter(pkg => wishlistItems.includes(pkg.id));
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">

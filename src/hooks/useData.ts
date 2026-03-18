@@ -1,25 +1,7 @@
 import { useState, useEffect } from 'react';
-import { initialDestinations, initialPackages, initialTestimonials, DATA_VERSION } from '../data/mock';
-import type { Destination, TravelPackage, Lead, Testimonial, BlogPost } from '../types';
-
-export interface HomeContent {
-  hero: {
-    title: string;
-    subtitle: string;
-    image: string;
-    cta: string;
-  };
-  destinations: {
-    title: string;
-    subtitle: string;
-    description: string;
-  };
-  packages: {
-    title: string;
-    subtitle: string;
-    description: string;
-  };
-}
+import { initialDestinations, initialPackages, initialTestimonials } from '../data/mock';
+import type { Destination, TravelPackage, Lead, Testimonial, BlogPost, HomeContent } from '../types';
+import { dataService } from '../services/dataService';
 
 const defaultHomeContent: HomeContent = {
   hero: {
@@ -40,142 +22,104 @@ const defaultHomeContent: HomeContent = {
   }
 };
 
-const initialPosts: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Top 5 Romantic Resorts in the Maldives for 2024',
-    excerpt: 'Discover the most exclusive overwater villas and private island experiences that define luxury romance in the Indian Ocean.',
-    category: 'Destinations',
-    author: 'Aisha Bello',
-    date: 'Mar 15, 2024',
-    image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80&w=2070',
-    readTime: '8 min read',
-    slug: 'maldives-resorts-2024'
-  },
-  {
-    id: '2',
-    title: 'Planning Your Honeymoon: A Step-by-Step Guide',
-    excerpt: 'From setting a budget to choosing the perfect season, our comprehensive guide takes the stress out of planning your first trip as a married couple.',
-    category: 'Tips & Advice',
-    author: 'Daniel Chen',
-    date: 'Mar 10, 2024',
-    image: 'https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&q=80&w=1974',
-    readTime: '12 min read',
-    slug: 'honeymoon-planning-guide'
-  }
-];
-
 export const useData = () => {
-  // Check for data version and clear stale storage if needed
+  const [packages, setPackages] = useState<TravelPackage[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [homeContent, setHomeContent] = useState<HomeContent>(defaultHomeContent);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const storedVersion = localStorage.getItem('honeymooner_data_version');
-    if (storedVersion !== DATA_VERSION) {
-      // Version mismatch - clear specific items to force reload from mock
-      localStorage.removeItem('honeymooner_destinations');
-      localStorage.removeItem('honeymooner_packages');
-      localStorage.removeItem('honeymooner_testimonials');
-      localStorage.removeItem('honeymooner_home_content');
-      localStorage.removeItem('honeymooner_posts');
-      localStorage.setItem('honeymooner_data_version', DATA_VERSION);
-      
-      // Reload the page to ensure state is fresh
-      window.location.reload();
-    }
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch everything from WordPress
+        const [wpDestinations, wpPackages, wpPosts, wpLeads] = await Promise.all([
+          dataService.getDestinations(),
+          dataService.getPackages(),
+          dataService.getPosts(),
+          dataService.getLeads()
+        ]);
+
+        if (wpDestinations.length > 0) setDestinations(wpDestinations);
+        else setDestinations(initialDestinations);
+
+        if (wpPackages.length > 0) setPackages(wpPackages);
+        else setPackages(initialPackages);
+
+        if (wpPosts.length > 0) setPosts(wpPosts);
+        if (wpLeads.length > 0) setLeads(wpLeads);
+
+        // Home content and testimonials still from local for now or initial
+        const savedHomeContent = localStorage.getItem('hm_home_content');
+        if (savedHomeContent) setHomeContent(JSON.parse(savedHomeContent));
+
+        setTestimonials(initialTestimonials);
+      } catch (error) {
+        console.error('Failed to sync with WordPress:', error);
+        // Fallback to local storage if API fails
+        const storedDest = localStorage.getItem('hm_destinations');
+        const storedPkg = localStorage.getItem('hm_packages');
+        const storedLeads = localStorage.getItem('hm_leads');
+        if (storedDest) setDestinations(JSON.parse(storedDest));
+        if (storedPkg) setPackages(JSON.parse(storedPkg));
+        if (storedLeads) setLeads(JSON.parse(storedLeads));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const [destinations, setDestinations] = useState<Destination[]>(() => {
-    const stored = localStorage.getItem('honeymooner_destinations');
-    if (stored) return JSON.parse(stored);
-    localStorage.setItem('honeymooner_destinations', JSON.stringify(initialDestinations));
-    return initialDestinations;
-  });
-
-  const [packages, setPackages] = useState<TravelPackage[]>(() => {
-    const stored = localStorage.getItem('honeymooner_packages');
-    if (stored) return JSON.parse(stored);
-    localStorage.setItem('honeymooner_packages', JSON.stringify(initialPackages));
-    return initialPackages;
-  });
-
-  const [leads, setLeads] = useState<Lead[]>(() => {
-    const stored = localStorage.getItem('honeymooner_leads');
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
-    const stored = localStorage.getItem('honeymooner_testimonials');
-    if (stored) return JSON.parse(stored);
-    localStorage.setItem('honeymooner_testimonials', JSON.stringify(initialTestimonials));
-    return initialTestimonials;
-  });
-
-  const [homeContent, setHomeContent] = useState<HomeContent>(() => {
-    const stored = localStorage.getItem('honeymooner_home_content');
-    if (stored) return JSON.parse(stored);
-    localStorage.setItem('honeymooner_home_content', JSON.stringify(defaultHomeContent));
-    return defaultHomeContent;
-  });
-
-  const [posts, setPosts] = useState<BlogPost[]>(() => {
-    const stored = localStorage.getItem('honeymooner_posts');
-    if (stored) return JSON.parse(stored);
-    localStorage.setItem('honeymooner_posts', JSON.stringify(initialPosts));
-    return initialPosts;
-  });
-
-  const [loading] = useState(false);
-
-  const updateDestinations = (newDestinations: Destination[]) => {
-    setDestinations(newDestinations);
-    localStorage.setItem('honeymooner_destinations', JSON.stringify(newDestinations));
-  };
-
-  const updatePackages = (newPackages: TravelPackage[]) => {
+  const updatePackages = async (newPackages: TravelPackage[]) => {
     setPackages(newPackages);
-    localStorage.setItem('honeymooner_packages', JSON.stringify(newPackages));
+    // Cache locally
+    localStorage.setItem('hm_packages', JSON.stringify(newPackages));
+    
+    // Attempt to update the specific package on WordPress if it was an edit
+    // Note: In a full implementation, we'd handle individual CRUD operations
   };
 
-  const updateTestimonials = (newTestimonials: Testimonial[]) => {
-    setTestimonials(newTestimonials);
-    localStorage.setItem('honeymooner_testimonials', JSON.stringify(newTestimonials));
+  const updateDestinations = async (newDestinations: Destination[]) => {
+    setDestinations(newDestinations);
+    localStorage.setItem('hm_destinations', JSON.stringify(newDestinations));
+  };
+
+  const updatePosts = async (newPosts: BlogPost[]) => {
+    setPosts(newPosts);
+    localStorage.setItem('hm_posts', JSON.stringify(newPosts));
   };
 
   const updateHomeContent = (newContent: HomeContent) => {
     setHomeContent(newContent);
-    localStorage.setItem('honeymooner_home_content', JSON.stringify(newContent));
-  };
-
-  const updatePosts = (newPosts: BlogPost[]) => {
-    setPosts(newPosts);
-    localStorage.setItem('honeymooner_posts', JSON.stringify(newPosts));
-  };
-
-  const addLead = (lead: Lead) => {
-    const newLeads = [lead, ...leads];
-    setLeads(newLeads);
-    localStorage.setItem('honeymooner_leads', JSON.stringify(newLeads));
+    localStorage.setItem('hm_home_content', JSON.stringify(newContent));
   };
 
   const updateLeadStatus = (leadId: string, status: Lead['status']) => {
-    const newLeads = leads.map(l => l.id === leadId ? { ...l, status } : l);
-    setLeads(newLeads);
-    localStorage.setItem('honeymooner_leads', JSON.stringify(newLeads));
+    setLeads(leads.map(lead => lead.id === leadId ? { ...lead, status } : lead));
+  };
+
+  const addLead = async (lead: Lead) => {
+    setLeads(prev => [lead, ...prev]);
+    return await dataService.createLead(lead);
   };
 
   return {
-    destinations,
     packages,
+    destinations,
     leads,
     testimonials,
     homeContent,
     posts,
-    loading,
-    updateDestinations,
+    isLoading,
     updatePackages,
-    updateTestimonials,
+    updateDestinations,
+    updateLeadStatus,
     updateHomeContent,
     updatePosts,
-    addLead,
-    updateLeadStatus
+    addLead
   };
 };

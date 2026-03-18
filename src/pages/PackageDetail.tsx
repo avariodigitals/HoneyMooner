@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
+import { dataService } from '../services/dataService';
 import { motion } from 'framer-motion';
 import PayPalButton from '../components/ui/PayPalButton';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import SEO from '../components/layout/SEO';
 import { 
   Calendar, 
   MapPin, 
@@ -60,7 +62,7 @@ const PackageDetail = () => {
 
   const selectedTier = pkg.tiers.find(t => t.id === selectedTierId) || pkg.tiers[0];
 
-  const toggleWishlist = () => {
+  const toggleWishlist = async () => {
     const savedWishlist = localStorage.getItem('hm_wishlist');
     let items = savedWishlist ? JSON.parse(savedWishlist) : [];
     
@@ -70,8 +72,31 @@ const PackageDetail = () => {
       items.push(pkg.id);
     }
     
-    localStorage.setItem('hm_wishlist', JSON.stringify(items));
     setIsInWishlist(!isInWishlist);
+    await dataService.updateWishlist(items);
+  };
+
+  // Find related articles (same category or general)
+  const relatedPosts = useData().posts
+    .filter(post => post.category === pkg.category || post.category === 'Destinations')
+    .slice(0, 3);
+
+  const packageSchema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": pkg.title,
+    "image": pkg.featuredImage,
+    "description": pkg.summary,
+    "brand": {
+      "@type": "Brand",
+      "name": "The Honeymooner"
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "lowPrice": Math.min(...pkg.tiers.map(t => t.price)),
+      "highPrice": Math.max(...pkg.tiers.map(t => t.price)),
+      "priceCurrency": "USD"
+    }
   };
 
   return (
@@ -82,6 +107,14 @@ const PackageDetail = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen"
     >
+      <SEO 
+        title={pkg.seo?.title || pkg.title}
+        description={pkg.seo?.description || pkg.summary}
+        keywords={pkg.seo?.keywords?.join(', ')}
+        image={pkg.featuredImage}
+        type="product"
+        schema={packageSchema}
+      />
       <div className="absolute top-24 left-0 right-0 z-20">
         <Breadcrumbs />
       </div>
@@ -407,6 +440,71 @@ const PackageDetail = () => {
           </div>
         </div>
       </section>
+
+      {/* Related Inspiration Section */}
+      {relatedPosts.length > 0 && (
+        <section className="bg-brand-50/50 py-24 border-t border-brand-100">
+          <div className="section-container">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-8">
+              <div className="max-w-2xl">
+                <p className="script-font mb-4 text-brand-accent italic text-3xl">Expand Your Journey</p>
+                <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">
+                  Related Inspiration
+                </h2>
+                <p className="text-brand-600 leading-relaxed text-lg">
+                  Discover curated guides and expert advice to complement your romantic escape.
+                </p>
+              </div>
+              <Link 
+                to="/journal" 
+                className="btn-outline flex items-center gap-3 group"
+              >
+                Explore The Journal
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {relatedPosts.map((post, idx) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-white rounded-[30px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-brand-100 group"
+                >
+                  <Link to={`/journal/${post.slug}`} className="block relative h-64 overflow-hidden">
+                    <img 
+                      src={post.image} 
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute top-6 left-6">
+                      <span className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest text-brand-accent shadow-lg">
+                        {post.category}
+                      </span>
+                    </div>
+                  </Link>
+                  <div className="p-8">
+                    <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors line-clamp-2">
+                      <Link to={`/journal/${post.slug}`}>{post.title}</Link>
+                    </h3>
+                    <p className="text-brand-500 text-sm leading-relaxed mb-6 line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                    <Link 
+                      to={`/journal/${post.slug}`} 
+                      className="text-brand-accent text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all"
+                    >
+                      Read Guide <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </motion.div>
   );
 };

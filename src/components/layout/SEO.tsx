@@ -8,15 +8,17 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: string;
+  schema?: Record<string, unknown>;
 }
 
 const SEO: React.FC<SEOProps> = ({
   title = 'The Honeymooner | Luxury Romantic Travel & Honeymoon Packages',
   description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymooner.',
   keywords = 'honeymoon, romantic travel, luxury travel, honeymoon packages, romantic getaways, destination wedding',
-  image = '/og-image.jpg', // Replace with actual OG image path
+  image = '/og-image.jpg',
   url = 'https://thehoneymooner.com',
-  type = 'website'
+  type = 'website',
+  schema
 }) => {
   const siteTitle = title.includes('The Honeymooner') ? title : `${title} | The Honeymooner`;
 
@@ -43,6 +45,13 @@ const SEO: React.FC<SEOProps> = ({
 
       {/* Canonical Link */}
       <link rel="canonical" href={url} />
+
+      {/* JSON-LD Schema.org Markup */}
+      {schema && (
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      )}
     </Helmet>
   );
 };

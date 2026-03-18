@@ -154,6 +154,8 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isBespoke = formData.packageId === 'bespoke';
+
   const selectedPkg = useMemo(() => 
     packages.find(p => p.id === formData.packageId),
     [packages, formData.packageId]
@@ -166,13 +168,13 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPkg) return;
+    if (!formData.packageId) return;
     setIsSubmitting(true);
 
     const newLead: Lead = {
       id: generateId(),
-      packageId: selectedPkg.id,
-      packageName: selectedPkg.title,
+      packageId: formData.packageId,
+      packageName: isBespoke ? 'Bespoke Custom Journey' : (selectedPkg?.title || ''),
       departureDate: formData.departureDate,
       adults: formData.adults,
       children: formData.children,
@@ -258,30 +260,53 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                   placeholder="Choose a package..."
                   icon={PackageIcon}
                   value={formData.packageId}
-                  options={packages.map(p => ({
-                    ...p,
-                    price: Math.min(...p.tiers.map(t => t.price))
-                  }))}
+                  options={[
+                    { id: 'bespoke', title: '✨ Tailor-Made Bespoke Journey', summary: 'Let us craft a completely unique experience for you.' },
+                    ...packages.map(p => ({
+                      ...p,
+                      price: Math.min(...p.tiers.map(t => t.price))
+                    }))
+                  ]}
                   onChange={(pkgId) => {
                     const pkg = packages.find(p => p.id === pkgId);
                     setFormData({
                       ...formData,
                       packageId: pkgId,
-                      tierId: pkg?.tiers[0]?.id || ''
+                      tierId: pkgId === 'bespoke' ? 'bespoke' : (pkg?.tiers[0]?.id || '')
                     });
                   }}
                 />
-                <CustomDropdown
-                  label="Experience Level"
-                  placeholder={formData.packageId ? "Choose experience..." : "Select a package first"}
-                  icon={Crown}
-                  value={formData.tierId}
-                  options={selectedPkg?.tiers.map(t => ({
-                    ...t,
-                    title: `${t.name} - ${formatPrice(t.price)}`
-                  })) || []}
-                  onChange={(tierId) => setFormData({ ...formData, tierId })}
-                />
+                {!isBespoke ? (
+                  <CustomDropdown
+                    label="Experience Level"
+                    placeholder={formData.packageId ? "Choose experience..." : "Select a package first"}
+                    icon={Crown}
+                    value={formData.tierId}
+                    options={selectedPkg?.tiers.map(t => ({
+                      ...t,
+                      title: `${t.name} - ${formatPrice(t.price)}`
+                    })) || []}
+                    onChange={(tierId) => setFormData({ ...formData, tierId })}
+                  />
+                ) : (
+                  <div className="space-y-3 sm:space-y-4">
+                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Estimated Budget (USD)</label>
+                    <div className="relative">
+                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
+                      <select
+                        className="w-full pl-12 pr-4 sm:pr-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base bg-white appearance-none"
+                        value={formData.message.includes('Budget:') ? formData.message.split('Budget: ')[1].split('\n')[0] : ''}
+                        onChange={(e) => setFormData({ ...formData, message: `Budget: ${e.target.value}\n${formData.message}` })}
+                      >
+                        <option value="">Select budget range</option>
+                        <option value="$5,000 - $10,000">$5,000 - $10,000</option>
+                        <option value="$10,000 - $25,000">$10,000 - $25,000</option>
+                        <option value="$25,000 - $50,000">$25,000 - $50,000</option>
+                        <option value="$50,000+">$50,000+</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Occasion Selection */}
@@ -464,7 +489,37 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
 
           {/* Info Side */}
           <div className="space-y-8 lg:space-y-10 xl:sticky xl:top-32 h-fit">
-            {selectedPkg && selectedTier ? (
+            {isBespoke ? (
+              <div className="bg-brand-900 text-white rounded-[40px] p-8 sm:p-12 space-y-10 relative overflow-hidden shadow-2xl border border-white/10">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/10 rounded-full -mr-32 -mt-32 blur-[80px]" />
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-brand-accent/20 rounded-2xl flex items-center justify-center text-brand-accent mb-8">
+                    <Star size={32} fill="currentColor" />
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-serif leading-tight mb-8 italic">
+                    Your Vision, <br /> Our Craftsmanship.
+                  </h3>
+                  <div className="space-y-6">
+                    <p className="text-brand-100 text-lg leading-relaxed opacity-80 font-light">
+                      A bespoke journey is more than a trip—it's a masterpiece tailored to your specific romantic narrative. 
+                    </p>
+                    <ul className="space-y-4 pt-6 border-t border-white/10">
+                      {[
+                        'Fully customizable itinerary',
+                        'Private, hand-picked locations',
+                        'Dedicated travel designer',
+                        'Ultra-exclusive experiences'
+                      ].map((feature, i) => (
+                        <li key={i} className="flex items-center gap-4 text-brand-50/90 font-medium">
+                          <CheckCircle2 size={18} className="text-brand-accent" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ) : (selectedPkg && selectedTier) ? (
               <div className="bg-white rounded-[32px] overflow-hidden border border-brand-100 shadow-xl">
                 <div className="h-48 sm:h-64 relative">
                   <img
@@ -509,7 +564,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
               </div>
             ) : (
               <div className="bg-brand-900 text-white rounded-[32px] p-8 sm:p-12 space-y-8 sm:space-y-10">
-                <Heart className="text-brand-accent fill-brand-accent sm:w-12 sm:h-12" size={40} />
+                <Heart className="text-brand-accent fill-brand-accent sm:w-12 sm:h-12" size="40" />
                 <h3 className="text-2xl sm:text-3xl font-serif leading-tight">Expertly Crafted <br /> Romantic Journeys</h3>
                 <p className="text-brand-300 leading-relaxed text-sm sm:text-base">
                   Our specialists have traveled to every destination we recommend. We know the best suites, the most private beaches, and the hidden spots that make a trip truly romantic.
@@ -521,7 +576,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                     </div>
                     <div>
                       <p className="font-serif text-base sm:text-lg">98% Satisfaction</p>
-                      <p className="text-[10px] text-brand-400 uppercase tracking-widest">Couples rated 5-stars</p>
+                      <p className="text-[10px] text-brand-400 uppercase tracking-widest font-bold">Couples rated 5-stars</p>
                     </div>
                   </div>
                 </div>

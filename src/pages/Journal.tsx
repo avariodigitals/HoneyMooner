@@ -4,6 +4,7 @@ import { Calendar, User, ArrowRight, Bookmark, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import SEO from '../components/layout/SEO';
 
 const Journal = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,8 +16,35 @@ const Journal = () => {
     post.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const journalSchema = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "The Honeymooner Journal",
+    "description": "Curated guides, personal stories, and expert advice for romantic travel.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "The Honeymooner"
+    },
+    "blogPost": posts.map(post => ({
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "description": post.excerpt,
+      "image": post.image,
+      "author": {
+        "@type": "Person",
+        "name": post.author
+      },
+      "datePublished": post.date
+    }))
+  };
+
   return (
     <div className="pt-24 min-h-screen bg-brand-50">
+      <SEO 
+        title="Journal | Romantic Inspiration"
+        description="Curated guides, personal stories, and expert advice to help you plan the most important journey of your life."
+        schema={journalSchema}
+      />
       <Breadcrumbs />
 
       {/* Hero Section */}

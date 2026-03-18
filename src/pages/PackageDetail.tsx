@@ -208,6 +208,81 @@ const PackageDetail = () => {
             </p>
           </div>
 
+          {/* Interactive Journey Map (Stylized) */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-brand-accent/5 rounded-[48px] -rotate-1 scale-105 transition-transform group-hover:rotate-0 group-hover:scale-100 duration-700" />
+            <div className="relative bg-white rounded-[40px] overflow-hidden border border-brand-100 shadow-xl aspect-[16/9] sm:aspect-[21/9]">
+              <img 
+                src={pkg.featuredImage} 
+                className="w-full h-full object-cover opacity-40 grayscale-[0.5] contrast-[1.1]" 
+                alt="Journey Map"
+              />
+              <div className="absolute inset-0 bg-brand-900/10" />
+              
+              {/* Animated Path & Markers */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 400">
+                <motion.path
+                  d="M 150 200 Q 300 100 500 250 T 850 150"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeDasharray="10 10"
+                  className="text-brand-accent opacity-60"
+                  initial={{ pathLength: 0 }}
+                  whileInView={{ pathLength: 1 }}
+                  transition={{ duration: 2.5, ease: "easeInOut" }}
+                />
+                
+                {/* Marker 1 */}
+                <motion.g 
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-brand-accent"
+                >
+                  <circle cx="150" cy="200" r="8" fill="currentColor" />
+                  <circle cx="150" cy="200" r="16" stroke="currentColor" fill="none" className="animate-ping opacity-40" />
+                  <foreignObject x="170" y="185" width="150" height="50">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-brand-100">Arrival</div>
+                  </foreignObject>
+                </motion.g>
+
+                {/* Marker 2 */}
+                <motion.g 
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.5 }}
+                  className="text-brand-accent"
+                >
+                  <circle cx="500" cy="250" r="8" fill="currentColor" />
+                  <foreignObject x="520" y="235" width="150" height="50">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-brand-100">The Heart</div>
+                  </foreignObject>
+                </motion.g>
+
+                {/* Marker 3 */}
+                <motion.g 
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 2.5 }}
+                  className="text-brand-accent"
+                >
+                  <circle cx="850" cy="150" r="8" fill="currentColor" />
+                  <foreignObject x="870" y="135" width="150" height="50">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-brand-100">Sunset Departure</div>
+                  </foreignObject>
+                </motion.g>
+              </svg>
+
+              <div className="absolute top-6 left-6 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand-accent/20 backdrop-blur-md flex items-center justify-center text-brand-accent border border-brand-accent/20">
+                  <MapPin size={18} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest text-brand-900">Journey Visualization</p>
+              </div>
+            </div>
+          </div>
+
           {/* Day-by-Day Itinerary */}
           {pkg.itinerary && (
             <div className="space-y-10">

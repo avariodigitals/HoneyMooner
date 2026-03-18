@@ -27,16 +27,21 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.body.style.overflow = 'unset';
     };
   }, []);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = 'var(--removed-body-scroll-bar-size)';
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.paddingRight = '0px';
     }
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.body.style.paddingRight = '0px';
+    };
   }, [isOpen]);
 
   const navLinks = [
@@ -221,24 +226,26 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Mobile Toggle */}
-        <button
-          className={cn(
-            'md:hidden relative z-[110] p-2 transition-all duration-300 rounded-full',
-            isOpen 
-              ? 'text-white bg-white/10' 
-              : (isTransparent ? 'text-white bg-black/10' : 'text-brand-900 bg-brand-50')
-          )}
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile Toggle Area */}
+        <div className="flex md:hidden items-center gap-2">
+          <button
+            className={cn(
+              'relative z-[110] p-2 transition-all duration-300 rounded-full',
+              isOpen 
+                ? 'text-white bg-white/10' 
+                : (isTransparent ? 'text-white bg-black/10' : 'text-brand-900 bg-brand-50')
+            )}
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Full Screen Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
-          <>
+          <div key="mobile-menu">
             {/* Backdrop for smooth exit/entry */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -253,7 +260,7 @@ const Navbar = () => {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 200, mass: 0.5 }}
+              transition={{ duration: 0.25, ease: "circOut" }}
               className="fixed inset-y-0 right-0 z-[105] bg-brand-900 flex flex-col overflow-hidden w-full h-[100dvh] shadow-2xl will-change-transform"
             >
               {/* Content wrapper with internal scroll */}
@@ -402,7 +409,7 @@ const Navbar = () => {
                 </div>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </nav>

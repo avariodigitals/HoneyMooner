@@ -33,7 +33,7 @@ const Hero = () => {
         >
           <div className="inline-flex items-center gap-2 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-brand-accent text-sm font-bold uppercase tracking-[0.3em] shadow-2xl">
             <Sparkles size={16} fill="currentColor" />
-            The Account
+            Romantic Collections
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif leading-[1.1] tracking-tight drop-shadow-2xl">

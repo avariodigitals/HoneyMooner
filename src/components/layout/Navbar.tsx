@@ -244,6 +244,7 @@ const Navbar = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
               className="fixed inset-0 z-[104] bg-brand-900/40 backdrop-blur-sm"
               onClick={() => setIsOpen(false)}
             />
@@ -252,8 +253,8 @@ const Navbar = () => {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
-              className="fixed inset-y-0 right-0 z-[105] bg-brand-900 flex flex-col overflow-hidden w-full h-[100dvh] shadow-2xl"
+              transition={{ type: "spring", damping: 25, stiffness: 200, mass: 0.5 }}
+              className="fixed inset-y-0 right-0 z-[105] bg-brand-900 flex flex-col overflow-hidden w-full h-[100dvh] shadow-2xl will-change-transform"
             >
               {/* Content wrapper with internal scroll */}
               <div className="flex flex-col h-full overflow-y-auto custom-scrollbar relative">
@@ -268,15 +269,15 @@ const Navbar = () => {
                     {navLinks.map((link, idx) => (
                       <motion.div
                         key={link.path}
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 + idx * 0.05, ease: "easeOut" }}
+                        transition={{ delay: 0.05 + idx * 0.03, ease: "easeOut" }}
                       >
                         <Link
                           to={link.path}
                           onClick={() => setIsOpen(false)}
                           className={cn(
-                            "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-500",
+                            "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-300",
                             location.pathname === link.path ? "text-brand-accent" : "text-white hover:text-brand-accent"
                           )}
                         >
@@ -290,7 +291,7 @@ const Navbar = () => {
                             )}
                           </span>
                           <ArrowRight className={cn(
-                            "transition-all duration-500",
+                            "transition-all duration-300",
                             location.pathname === link.path ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
                           )} size={28} />
                         </Link>
@@ -299,15 +300,15 @@ const Navbar = () => {
                     
                     {/* Account Link in Mobile Menu */}
                     <motion.div
-                      initial={{ opacity: 0, x: 20 }}
+                      initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + navLinks.length * 0.05, ease: "easeOut" }}
+                      transition={{ delay: 0.05 + navLinks.length * 0.03, ease: "easeOut" }}
                     >
                       <Link
                         to={isAuthenticated ? "/account/wishlist" : "/account"}
                         onClick={() => setIsOpen(false)}
                         className={cn(
-                          "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-500",
+                          "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-300",
                           location.pathname.startsWith('/account') ? "text-brand-accent" : "text-white/60 hover:text-brand-accent"
                         )}
                       >
@@ -315,7 +316,7 @@ const Navbar = () => {
                           {isAuthenticated ? "My Account" : "Account"}
                         </span>
                         <UserIcon className={cn(
-                          "transition-all duration-500",
+                          "transition-all duration-300",
                           location.pathname.startsWith('/account') ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
                         )} size={28} />
                       </Link>
@@ -325,9 +326,9 @@ const Navbar = () => {
                   <div className="mt-auto pt-12 space-y-12">
                     {/* Concierge Section */}
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
+                      transition={{ delay: 0.3 }}
                       className="grid grid-cols-2 gap-4"
                     >
                       <a 
@@ -363,7 +364,7 @@ const Navbar = () => {
                     <motion.div 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
+                      transition={{ delay: 0.4 }}
                       className="flex flex-col gap-8 border-t border-white/10 pt-12"
                     >
                       <div className="flex items-center justify-between">

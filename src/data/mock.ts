@@ -1,14 +1,14 @@
-import type { Destination, TravelPackage, PricingTier, Lead, PricingBasis, PackageInclusion, PackageCategory, Testimonial } from '../types';
+import type { Destination, TravelPackage, PricingTier, Lead, PricingBasis, PackageInclusion, PackageCategory, Testimonial, BlogPost } from '../types';
 
 export const DATA_VERSION = '1.0.2';
 
 export const initialDestinations: Destination[] = [
   // Indian Ocean
-  { id: 'd1', name: 'Maldives', country: 'Maldives', continent: 'Asia', description: 'Pristine beaches and overwater villas.', image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80', slug: 'maldives' },
-  { id: 'd2', name: 'Mauritius', country: 'Mauritius', continent: 'Africa', description: 'Tropical paradise in the Indian Ocean.', image: 'https://images.unsplash.com/photo-1513415277900-a62401e19be4?auto=format&fit=crop&q=80', slug: 'mauritius' },
-  { id: 'd3', name: 'Seychelles', country: 'Seychelles', continent: 'Africa', description: 'Stunning islands and unique wildlife.', image: 'https://images.unsplash.com/photo-1506405211174-1c41d7bc9ed6?auto=format&fit=crop&q=80', slug: 'seychelles' },
-  { id: 'd4', name: 'Zanzibar', country: 'Tanzania', continent: 'Africa', description: 'Exotic spice island with white sand beaches.', image: 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&q=80', slug: 'zanzibar' },
-  { id: 'd5', name: 'Sri Lanka', country: 'Sri Lanka', continent: 'Asia', description: 'Lush jungles and ancient temples.', image: 'https://images.unsplash.com/photo-1524230507669-e29a75c60243?auto=format&fit=crop&q=80', slug: 'sri-lanka' },
+  { id: 'd1', name: 'Maldives', country: 'Maldives', continent: 'Asia', description: 'Pristine beaches and overwater villas.', image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80', slug: 'maldives', startingPrice: 10500, bestTimeToVisit: 'November to April', popularFor: ['Luxury', 'Private Villas'] },
+  { id: 'd2', name: 'Mauritius', country: 'Mauritius', continent: 'Africa', description: 'Tropical paradise in the Indian Ocean.', image: 'https://images.unsplash.com/photo-1513415277900-a62401e19be4?auto=format&fit=crop&q=80', slug: 'mauritius', startingPrice: 8500, bestTimeToVisit: 'May to December', popularFor: ['Beach', 'Nature'] },
+  { id: 'd3', name: 'Seychelles', country: 'Seychelles', continent: 'Africa', description: 'Stunning islands and unique wildlife.', image: 'https://images.unsplash.com/photo-1506405211174-1c41d7bc9ed6?auto=format&fit=crop&q=80', slug: 'seychelles', startingPrice: 9200, bestTimeToVisit: 'April to May', popularFor: ['Adventure', 'Beaches'] },
+  { id: 'd4', name: 'Zanzibar', country: 'Tanzania', continent: 'Africa', description: 'Exotic spice island with white sand beaches.', image: 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&q=80', slug: 'zanzibar', startingPrice: 7500, bestTimeToVisit: 'June to October', popularFor: ['Culture', 'Beaches'] },
+  { id: 'd5', name: 'Sri Lanka', country: 'Sri Lanka', continent: 'Asia', description: 'Lush jungles and ancient temples.', image: 'https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&q=80', slug: 'sri-lanka', startingPrice: 8500, bestTimeToVisit: 'December to March', popularFor: ['Adventure', 'Culture'] },
 
   // Europe
   { id: 'd6', name: 'Santorini', country: 'Greece', continent: 'Europe', description: 'Iconic white-washed buildings and sunsets.', image: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&q=80', slug: 'santorini' },
@@ -72,9 +72,9 @@ export const initialPackages: TravelPackage[] = [];
 
 // Helper to create tiers
 const createTiers = (p: number, l: number, u: number, basis: PricingBasis): PricingTier[] => [
-  { id: Math.random().toString(36).substr(2, 9), name: 'Premium', price: p, currency: 'USD', basis },
-  { id: Math.random().toString(36).substr(2, 9), name: 'Luxuria', price: l, currency: 'USD', basis },
-  { id: Math.random().toString(36).substr(2, 9), name: 'Ultra Luxuria', price: u, currency: 'USD', basis },
+  { id: Math.random().toString(36).substr(2, 9), name: 'Premium', price: p, basis },
+  { id: Math.random().toString(36).substr(2, 9), name: 'Luxuria', price: l, basis },
+  { id: Math.random().toString(36).substr(2, 9), name: 'Ultra Luxuria', price: u, basis },
 ];
 
 const inclusions: PackageInclusion[] = [
@@ -148,13 +148,32 @@ Object.keys(packageData).forEach(category => {
       if (['Paris', 'Venice', 'Rome', 'London', 'Dubai', 'Doha'].includes(dest.name)) styleTags.push('City Intimacy');
       if (styleTags.length === 0) styleTags.push('Bespoke Luxury');
 
+      const getEmotionalSummary = (cat: string, name: string) => {
+        if (cat === 'honeymoon') {
+          if (name === 'Maldives') return '7 Days of private overwater luxury, sunset dinners, and curated romantic moments.';
+          if (name === 'Santorini') return 'Breathtaking caldera views, private infinity pools, and candlelit dinners under the stars.';
+          if (name === 'Paris') return 'The ultimate city of love with private river cruises and hidden rooftop experiences.';
+          return `A deeply personal ${name} honeymoon experience designed to reflect your unique love story.`;
+        }
+        return `Luxury ${cat} trip to ${name}.`;
+      };
+
+      const getEmotionalDescription = (cat: string, name: string) => {
+        if (cat === 'honeymoon') {
+          if (name === 'Maldives') return 'Enjoy a world-class honeymoon experience in Maldives. Our tiered packages offer flexibility and unmatched luxury. From private overwater villas to candlelit dinners on the beach, every detail is designed for romance.';
+          if (name === 'Santorini') return 'Experience the ultimate romantic escape in Santorini. Stay in luxury boutique hotels with caldera views, enjoy private wine tastings, and watch the legendary sunset from your own infinity pool.';
+          return `Enjoy a world-class ${cat} experience in ${name}. Our tiered packages offer flexibility and unmatched luxury.`;
+        }
+        return `Enjoy a world-class ${cat} experience in ${name}. Our tiered packages offer flexibility and unmatched luxury.`;
+      };
+
       initialPackages.push({
         id: `${category}-${item.destId}`,
         category: category as PackageCategory,
         title: `${dest.name} ${category.charAt(0).toUpperCase() + category.slice(1)} Experience`,
         slug: `${dest.slug}-${category}`,
-        summary: `Luxury ${category} trip to ${dest.name}.`,
-        description: `Enjoy a world-class ${category} experience in ${dest.name}. Our tiered packages offer flexibility and unmatched luxury.`,
+        summary: getEmotionalSummary(category, dest.name),
+        description: getEmotionalDescription(category, dest.name),
         featuredImage: dest.image,
         gallery: [dest.image],
         destinationId: dest.id,
@@ -209,5 +228,74 @@ export const initialTestimonials: Testimonial[] = [
     image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&q=80&w=800',
     rating: 5,
     date: 'June 2023'
+  }
+];
+
+export const initialPosts: BlogPost[] = [
+  {
+    id: 'p1',
+    title: 'Top 10 Romantic Things to Do in Maldives',
+    excerpt: 'From private sandbank dinners to swimming with manta rays, discover the most romantic experiences in the Maldives.',
+    category: 'Honeymoon',
+    author: 'Sarah Jenkins',
+    date: '2026-03-15',
+    image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80',
+    slug: 'romantic-things-to-do-maldives',
+    content: `
+      <p>The journey of a lifetime begins with a single step, and for many couples, that step leads to the breathtaking landscapes of the Maldives. Whether you're seeking the quiet intimacy of a private island or the vibrant energy of a luxury resort, our latest guide explores the nuances of romantic travel that often go unnoticed.</p>
+      
+      <h3>1. Private Sandbank Dining</h3>
+      <p>Imagine being the only two people on a tiny island of white sand, surrounded by nothing but the turquoise waters of the Indian Ocean. A private chef prepares a gourmet meal as the sun dips below the horizon.</p>
+      
+      <h3>2. Underwater Romance</h3>
+      <p>Dine five meters below the surface at Ithaa, the world's first all-glass undersea restaurant, or simply snorkel together through vibrant coral gardens.</p>
+      
+      <p>The secret to a stress-free escape lies in the preparation. Our team of specialists spends hundreds of hours each year vetting every location, ensuring that when you arrive, the only thing you have to focus on is each other.</p>
+    `,
+    readTime: '5 min read'
+  },
+  {
+    id: 'p2',
+    title: 'The Ultimate Guide to Santorini Sunsets',
+    excerpt: 'Find the best hidden spots in Oia and Fira to watch the legendary Santorini sunset without the crowds.',
+    category: 'Destinations',
+    author: 'James Wilson',
+    date: '2026-02-28',
+    image: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&q=80',
+    slug: 'santorini-sunset-guide',
+    content: `
+      <p>Santorini is world-famous for its sunsets, but the crowds in Oia can sometimes dampen the romantic mood. Here's how to experience the magic in peace.</p>
+      
+      <h3>The Hidden Path to Imerovigli</h3>
+      <p>While Oia gets all the attention, Imerovigli offers equally stunning views with a fraction of the tourists. The "balcony to the Aegean" provides a more intimate setting for that perfect sunset photo.</p>
+      
+      <h3>Private Yacht Cruises</h3>
+      <p>For the ultimate experience, charter a private catamaran. Sail past the Red Beach and White Beach, enjoy a swim in the hot springs, and watch the sunset from the middle of the caldera with a glass of local Assyrtiko wine.</p>
+    `,
+    readTime: '4 min read'
+  },
+  {
+    id: 'p3',
+    title: 'What to Pack for Your Tropical Honeymoon',
+    excerpt: 'Our comprehensive packing list ensures you have everything you need for a stress-free romantic escape.',
+    category: 'Travel Tips',
+    author: 'Elena Rodriguez',
+    date: '2026-01-10',
+    image: 'https://images.unsplash.com/photo-1523544545175-92e04b96d26b?auto=format&fit=crop&q=80',
+    slug: 'tropical-honeymoon-packing-list',
+    content: `
+      <p>Packing for a honeymoon is different from any other trip. You want to look your best, be prepared for adventure, and keep things light enough for those island-hopping transfers.</p>
+      
+      <h3>The Essentials</h3>
+      <ul>
+        <li>Versatile linen wear for beach-to-dinner transitions.</li>
+        <li>High-quality sunscreen that won't harm coral reefs.</li>
+        <li>A portable waterproof speaker for your private villa pool sessions.</li>
+        <li>At least two sets of swimwear (one to wear, one to dry).</li>
+      </ul>
+      
+      <p>Don't forget to leave room for souvenirs! The memories you bring back are precious, but a handcrafted local artifact is a beautiful physical reminder of your first journey as a married couple.</p>
+    `,
+    readTime: '6 min read'
   }
 ];

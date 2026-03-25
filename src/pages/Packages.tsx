@@ -59,15 +59,6 @@ const Packages = () => {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-[1px]" />
-          
-          {/* Subtle Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-            <img 
-              src="https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015" 
-              alt=""
-              className="w-full max-w-[140rem] h-auto object-contain"
-            />
-          </div>
         </div>
         
         <div className="relative z-10 text-center text-white px-4">

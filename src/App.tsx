@@ -17,6 +17,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import FAQs from './pages/FAQs';
 import Journal from './pages/Journal';
+import JournalDetail from './pages/JournalDetail';
 import Account from './pages/Account';
 import Wishlist from './pages/Wishlist';
 
@@ -32,6 +33,7 @@ const AnimatedRoutes = () => {
         <Route path="/packages" element={<Packages />} />
         <Route path="/packages/:slug" element={<PackageDetail />} />
         <Route path="/journal" element={<Journal />} />
+        <Route path="/journal/:slug" element={<JournalDetail />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking" element={<Booking />} />

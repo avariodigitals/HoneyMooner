@@ -104,14 +104,16 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('honeymooner_currency_manual', code);
   };
 
-  const formatPrice = (priceInUSD: number) => {
-    const converted = priceInUSD * currentRate;
+  const formatPrice = (priceInUSD: number, fromCurrency?: string) => {
+    const rate = fromCurrency ? (rates[fromCurrency] || 1) : 1;
+    const priceInSelectedCurrency = (priceInUSD / rate) * currentRate;
+
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currentCode,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(converted);
+    }).format(priceInSelectedCurrency);
   };
 
   return (

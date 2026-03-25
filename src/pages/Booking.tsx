@@ -42,14 +42,16 @@ const CustomDropdown = ({
   onChange, 
   placeholder, 
   label,
-  icon: Icon
+  icon: Icon,
+  formatPrice
 }: { 
   options: DropdownOption[], 
   value: string, 
   onChange: (val: string) => void, 
   placeholder: string,
   label: string,
-  icon: React.ElementType
+  icon: React.ElementType,
+  formatPrice?: (price: number) => string
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -113,9 +115,9 @@ const CustomDropdown = ({
                       {opt.summary}
                     </span>
                   )}
-                  {opt.price && (
+                  {opt.price && formatPrice && (
                     <span className="text-xs text-brand-500 mt-1 font-serif">
-                      Starting from ${opt.price.toLocaleString()}
+                      Starting from {formatPrice(opt.price)}
                     </span>
                   )}
                 </div>
@@ -275,6 +277,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                       tierId: pkgId === 'bespoke' ? 'bespoke' : (pkg?.tiers[0]?.id || '')
                     });
                   }}
+                  formatPrice={formatPrice}
                 />
                 {!isBespoke ? (
                   <CustomDropdown
@@ -287,6 +290,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                       title: `${t.name} - ${formatPrice(t.price)}`
                     })) || []}
                     onChange={(tierId) => setFormData({ ...formData, tierId })}
+                    formatPrice={formatPrice}
                   />
                 ) : (
                   <div className="space-y-3 sm:space-y-4">

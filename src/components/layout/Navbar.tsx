@@ -62,7 +62,7 @@ const Navbar = () => {
   return (
     <nav
       className={cn(
-        'fixed w-full z-[100] transition-all duration-500 px-4 py-4',
+        'fixed w-full z-[100] transition-all duration-500 px-2 sm:px-4 py-2 sm:py-4',
         isTransparent ? 'bg-transparent' : 'bg-white/90 backdrop-blur-md shadow-sm'
       )}
     >
@@ -73,9 +73,9 @@ const Navbar = () => {
             alt="The Honeymooner" 
             className={cn(
               "w-auto transition-all duration-500 block",
-              isTransparent ? "h-16 sm:h-20" : "h-12 sm:h-16"
+              isTransparent ? "h-12 sm:h-20" : "h-10 sm:h-16"
             )}
-            style={{ minHeight: isTransparent ? '64px' : '48px' }}
+            style={{ minHeight: isTransparent ? '48px' : '40px' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "https://placehold.co/400x120/4a352f/c18a7b?text=THE+HONEYMOONER&font=playfair-display";
@@ -83,14 +83,14 @@ const Navbar = () => {
           />
         </Link>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop Links - Show on Large Screens */}
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
               className={cn(
-                'text-sm font-medium transition-all duration-300 uppercase tracking-widest',
+                'text-[10px] xl:text-xs font-bold transition-all duration-300 uppercase tracking-[0.2em]',
                 location.pathname === link.path 
                   ? 'text-brand-accent' 
                   : (isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent')
@@ -105,11 +105,11 @@ const Navbar = () => {
             <button 
               onClick={() => setShowCurrencyMenu(!showCurrencyMenu)}
               className={cn(
-                'flex items-center gap-1 text-sm font-medium transition-all duration-300 uppercase tracking-widest',
+                'flex items-center gap-1 text-[10px] xl:text-xs font-bold transition-all duration-300 uppercase tracking-[0.2em]',
                 isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent'
               )}
             >
-              <Globe size={16} />
+              <Globe size={14} />
               {currency.code}
             </button>
             {showCurrencyMenu && (
@@ -122,7 +122,7 @@ const Navbar = () => {
                       setShowCurrencyMenu(false);
                     }}
                     className={cn(
-                      "w-full text-left px-4 py-2 text-sm transition-colors hover:bg-brand-50",
+                      "w-full text-left px-4 py-2 text-xs transition-colors hover:bg-brand-50",
                       currency.code === curr.code ? "text-brand-accent font-semibold" : "text-brand-700"
                     )}
                   >
@@ -140,20 +140,20 @@ const Navbar = () => {
                 <button 
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full transition-all border",
+                    "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all border",
                     isTransparent 
                       ? "bg-white/10 border-white/20 text-white hover:bg-white/20" 
                       : "bg-brand-50 border-brand-100 text-brand-900 hover:border-brand-accent/30"
                   )}
                 >
-                  <div className="w-6 h-6 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent overflow-hidden">
+                  <div className="w-5 h-5 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent overflow-hidden">
                     {user?.avatar_urls ? (
                       <img src={user.avatar_urls['96']} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <UserIcon size={14} />
+                      <UserIcon size={12} />
                     )}
                   </div>
-                  <span className="text-xs font-bold uppercase tracking-wider">
+                  <span className="text-[10px] font-bold uppercase tracking-wider">
                     {user?.first_name}
                   </span>
                 </button>
@@ -208,29 +208,40 @@ const Navbar = () => {
               <Link 
                 to="/account"
                 className={cn(
-                  'flex items-center gap-2 text-sm font-medium transition-all duration-300 uppercase tracking-widest',
+                  'flex items-center gap-2 text-[10px] xl:text-xs font-bold transition-all duration-300 uppercase tracking-[0.2em]',
                   isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent'
                 )}
               >
-                <UserIcon size={16} />
+                <UserIcon size={14} />
                 Account
               </Link>
             )}
           </div>
 
           <Link to="/booking" className={cn(
-            "btn-primary py-2 px-6 text-sm transition-all duration-300",
+            "btn-primary py-2.5 px-6 text-[10px] font-bold tracking-[0.2em] transition-all duration-300",
             isTransparent && "bg-white text-brand-900 hover:bg-brand-50 border-white"
           )}>
-            Book Now
+            Start Planning
           </Link>
         </div>
 
-        {/* Mobile Toggle Area */}
-        <div className="flex md:hidden items-center gap-2">
+        {/* Mobile/Tablet Toggle Area */}
+        <div className="flex lg:hidden items-center gap-3">
+          {!isAuthenticated && (
+            <Link 
+              to="/account"
+              className={cn(
+                'p-2 rounded-full transition-all',
+                isTransparent ? 'text-white bg-white/10' : 'text-brand-900 bg-brand-50'
+              )}
+            >
+              <UserIcon size={20} />
+            </Link>
+          )}
           <button
             className={cn(
-              'relative z-[110] p-2 transition-all duration-300 rounded-full',
+              'relative z-[110] p-2.5 transition-all duration-300 rounded-full',
               isOpen 
                 ? 'text-white bg-white/10' 
                 : (isTransparent ? 'text-white bg-black/10' : 'text-brand-900 bg-brand-50')

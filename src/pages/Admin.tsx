@@ -290,9 +290,9 @@ const Admin = () => {
         destinationId: destinations[0]?.id || '',
         duration: { days: 7, nights: 6 },
         tiers: [
-          { id: 'tier-1', name: 'Premium', price: 2500, currency: 'USD', basis: 'per couple' },
-          { id: 'tier-2', name: 'Luxuria', price: 4500, currency: 'USD', basis: 'per couple' },
-          { id: 'tier-3', name: 'Ultra Luxuria', price: 7500, currency: 'USD', basis: 'per couple' }
+          { id: 'tier-1', name: 'Premium', price: 2500, basis: 'per couple' },
+          { id: 'tier-2', name: 'Luxuria', price: 4500, basis: 'per couple' },
+          { id: 'tier-3', name: 'Ultra Luxuria', price: 7500, basis: 'per couple' }
         ],
         inclusions: [],
         exclusions: [],

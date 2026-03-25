@@ -1,24 +1,24 @@
 import { useState, useEffect } from 'react';
-import { initialDestinations, initialPackages, initialTestimonials } from '../data/mock';
+import { initialDestinations, initialPackages, initialTestimonials, initialPosts } from '../data/mock';
 import type { Destination, TravelPackage, Lead, Testimonial, BlogPost, HomeContent } from '../types';
 import { dataService } from '../services/dataService';
 
 const defaultHomeContent: HomeContent = {
   hero: {
-    title: "Luxury Honeymoons & Romantic Escapes",
-    subtitle: "Your journey to forever starts here.",
+    title: "Plan a Once-in-a-Lifetime Honeymoon — Without the Stress",
+    subtitle: "We design fully personalized luxury honeymoon experiences — from destination selection to every intimate detail.",
     image: "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070",
-    cta: "Explore Our Account"
+    cta: "Start Planning Your Honeymoon"
   },
   destinations: {
-    title: "Iconic Honeymoon Destinations",
-    subtitle: "Explore the World",
-    description: "From the overwater bungalows of the Maldives to the sunset terraces of Santorini, find your perfect backdrop for romance."
+    title: "Where Do You Want Your Love Story to Begin?",
+    subtitle: "Choose from the world’s most romantic destinations — curated for unforgettable experiences.",
+    description: "Our handpicked collection of the world's most romantic escapes, designed for couples who seek more than just a trip."
   },
   packages: {
-    title: "Signature Packages",
-    subtitle: "Curated Collections",
-    description: "Handpicked experiences designed for effortless romance and luxury."
+    title: "Leave Where Your New Life Begins",
+    subtitle: "Signature Packages",
+    description: "We don’t just plan trips — we design deeply personal honeymoon experiences that reflect your story, your pace, and your idea of romance."
   }
 };
 
@@ -50,6 +50,8 @@ export const useData = () => {
         else setPackages(initialPackages);
 
         if (wpPosts.length > 0) setPosts(wpPosts);
+        else setPosts(initialPosts);
+
         if (wpLeads.length > 0) setLeads(wpLeads);
 
         // Home content and testimonials still from local for now or initial

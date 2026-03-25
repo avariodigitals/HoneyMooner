@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
+import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
 import { motion } from 'framer-motion';
 import PayPalButton from '../components/ui/PayPalButton';
@@ -44,11 +45,16 @@ const PackageDetail = () => {
   const { slug } = useParams();
   const { packages, destinations, posts } = useData();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useUser();
+  const navigate = useNavigate();
   const pkg = packages.find(p => p.slug === slug);
   const destination = destinations.find(d => d.id === pkg?.destinationId);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
-  const [isInWishlist, setIsInWishlist] = useState(() => {
+  const [selectedDate, setSelectedDate] = useState('');
+  const { isLoading } = useData();
+  
+  const initialWishlistState = useMemo(() => {
     if (!pkg) return false;
     const savedWishlist = localStorage.getItem('hm_wishlist');
     if (savedWishlist) {
@@ -56,13 +62,40 @@ const PackageDetail = () => {
       return items.includes(pkg.id);
     }
     return false;
-  });
+  }, [pkg]);
+
+  const [isInWishlist, setIsInWishlist] = useState(initialWishlistState);
+
+  useEffect(() => {
+    setIsInWishlist(initialWishlistState);
+  }, [initialWishlistState]);
+
+  const reviewsCount = useMemo(() => {
+    if (!pkg) return 0;
+    // Generate a consistent pseudo-random number based on the package ID
+    const hash = pkg.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return 15 + (hash % 40); // Between 15 and 55 reviews
+  }, [pkg]);
+
+  if (isLoading) {
+    return (
+      <div className="pt-32 min-h-screen section-container flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-brand-600 font-serif text-xl italic">Preparing your romantic escape...</p>
+      </div>
+    );
+  }
 
   if (!pkg) return <div className="pt-32 min-h-screen section-container">Package not found</div>;
 
   const selectedTier = pkg.tiers.find(t => t.id === selectedTierId) || pkg.tiers[0];
 
   const toggleWishlist = async () => {
+    if (!isAuthenticated) {
+      navigate('/account', { state: { from: `/packages/${slug}` } });
+      return;
+    }
+
     const savedWishlist = localStorage.getItem('hm_wishlist');
     let items = savedWishlist ? JSON.parse(savedWishlist) : [];
     
@@ -73,6 +106,7 @@ const PackageDetail = () => {
     }
     
     setIsInWishlist(!isInWishlist);
+    localStorage.setItem('hm_wishlist', JSON.stringify(items));
     await dataService.updateWishlist(items);
   };
 
@@ -119,7 +153,7 @@ const PackageDetail = () => {
         <Breadcrumbs />
       </div>
       {/* Hero Section */}
-      <section className="relative h-[70vh] min-h-[500px] overflow-hidden">
+      <section className="relative h-[60vh] sm:h-[70vh] min-h-[450px] sm:min-h-[500px] overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={pkg.gallery[currentImgIndex]}
@@ -130,49 +164,32 @@ const PackageDetail = () => {
               target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070";
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-brand-900/30" />
-          
-          {/* Subtle Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-            <img 
-              src="https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015" 
-              alt=""
-              className="w-[150%] max-w-none rotate-[-15deg] scale-150"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-900/80 via-brand-900/20 to-transparent" />
         </div>
 
-        <div className="absolute bottom-16 left-0 w-full z-10">
-          <div className="section-container">
+        <div className="absolute bottom-8 sm:bottom-16 left-0 w-full z-10">
+          <div className="section-container px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl text-white">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="px-4 py-1.5 bg-brand-accent/90 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-widest">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <span className="px-3 sm:px-4 py-1 sm:py-1.5 bg-brand-accent/90 backdrop-blur-md rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest">
                   {pkg.category}
                 </span>
-                <div className="flex items-center gap-2 text-sm text-brand-50/80">
-                  <MapPin size={16} />
+                <div className="flex items-center gap-2 text-[10px] sm:text-sm text-brand-50/80 font-medium">
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>{destination?.name}, {destination?.country}</span>
                 </div>
               </div>
-              <h1 className="text-4xl md:text-7xl font-serif mb-8 leading-tight drop-shadow-2xl">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-serif mb-6 sm:mb-8 leading-tight drop-shadow-2xl">
                 {pkg.title}
               </h1>
-              <div className="flex flex-wrap items-center gap-10 text-brand-50/90 font-medium">
-                <div className="flex items-center gap-3">
-                  <Calendar size={20} className="text-brand-accent" />
-                  <span>{pkg.duration.days} Days / {pkg.duration.nights} Nights</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Users size={20} className="text-brand-accent" />
-                  <span className="capitalize">{selectedTier.basis}</span>
+              <div className="flex flex-wrap items-center gap-6 sm:gap-10 text-brand-50/90 font-medium">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-brand-accent" />
+                  <span className="capitalize text-xs sm:text-base">{selectedTier.basis}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} className="fill-brand-accent text-brand-accent" />)}
-                  <span className="ml-2 text-sm">(24 Reviews)</span>
+                  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-brand-accent text-brand-accent" />)}
+                  <span className="ml-2 text-xs sm:text-sm">({reviewsCount} Reviews)</span>
                 </div>
               </div>
             </div>
@@ -180,38 +197,38 @@ const PackageDetail = () => {
         </div>
 
         {/* Gallery Navigation */}
-        <div className="absolute bottom-16 right-16 hidden lg:flex gap-4 z-20">
+        <div className="absolute bottom-8 sm:bottom-16 right-4 sm:right-8 lg:right-16 flex gap-2 sm:gap-4 z-20">
           <button
             onClick={() => setCurrentImgIndex((prev) => (prev === 0 ? pkg.gallery.length - 1 : prev - 1))}
-            className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
+            className="p-2 sm:p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <button
             onClick={() => setCurrentImgIndex((prev) => (prev === pkg.gallery.length - 1 ? 0 : prev + 1))}
-            className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
+            className="p-2 sm:p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
           >
-            <ChevronRight size={24} />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
       </section>
 
       {/* Main Content Grid */}
-      <section className="section-container grid grid-cols-1 lg:grid-cols-3 gap-16">
-        <div className="lg:col-span-2 space-y-16">
+      <section className="section-container px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 sm:gap-16 py-12 sm:py-20">
+        <div className="lg:col-span-2 space-y-12 sm:space-y-16">
           {/* Summary & Description */}
-          <div className="space-y-8">
-            <p className="script-font text-brand-accent italic">The Experience</p>
-            <h2 className="text-3xl md:text-4xl font-serif text-brand-900">Experience the magic of {destination?.name}</h2>
-            <p className="text-brand-700 text-lg leading-relaxed first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-3 first-letter:text-brand-accent">
+          <div className="space-y-6 sm:space-y-8">
+            <p className="script-font text-brand-accent italic text-xl sm:text-2xl">The Experience</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-brand-900 leading-tight">Experience the magic of {destination?.name}</h2>
+            <p className="text-brand-700 text-base sm:text-lg leading-relaxed first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-3 first-letter:text-brand-accent">
               {pkg.description}
             </p>
           </div>
 
           {/* Interactive Journey Map (Stylized) */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-brand-accent/5 rounded-[48px] -rotate-1 scale-105 transition-transform group-hover:rotate-0 group-hover:scale-100 duration-700" />
-            <div className="relative bg-white rounded-[40px] overflow-hidden border border-brand-100 shadow-xl aspect-[16/9] sm:aspect-[21/9]">
+            <div className="absolute inset-0 bg-brand-accent/5 rounded-[32px] sm:rounded-[48px] -rotate-1 scale-105 transition-transform group-hover:rotate-0 group-hover:scale-100 duration-700" />
+            <div className="relative bg-white rounded-[24px] sm:rounded-[40px] overflow-hidden border border-brand-100 shadow-xl aspect-[4/3] xs:aspect-[16/9] sm:aspect-[21/9]">
               <img 
                 src={pkg.featuredImage} 
                 className="w-full h-full object-cover opacity-40 grayscale-[0.5] contrast-[1.1]" 
@@ -243,7 +260,7 @@ const PackageDetail = () => {
                   <circle cx="150" cy="200" r="8" fill="currentColor" />
                   <circle cx="150" cy="200" r="16" stroke="currentColor" fill="none" className="animate-ping opacity-40" />
                   <foreignObject x="170" y="185" width="150" height="50">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-brand-100">Arrival</div>
+                    <div className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full shadow-sm border border-brand-100">Arrival</div>
                   </foreignObject>
                 </motion.g>
 
@@ -256,7 +273,7 @@ const PackageDetail = () => {
                 >
                   <circle cx="500" cy="250" r="8" fill="currentColor" />
                   <foreignObject x="520" y="235" width="150" height="50">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-brand-100">The Heart</div>
+                    <div className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full shadow-sm border border-brand-100">The Heart</div>
                   </foreignObject>
                 </motion.g>
 
@@ -269,54 +286,49 @@ const PackageDetail = () => {
                 >
                   <circle cx="850" cy="150" r="8" fill="currentColor" />
                   <foreignObject x="870" y="135" width="150" height="50">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-brand-100">Sunset Departure</div>
+                    <div className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full shadow-sm border border-brand-100">Sunset Departure</div>
                   </foreignObject>
                 </motion.g>
               </svg>
 
-              <div className="absolute top-6 left-6 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-brand-accent/20 backdrop-blur-md flex items-center justify-center text-brand-accent border border-brand-accent/20">
-                  <MapPin size={18} />
+              <div className="absolute top-4 sm:top-6 left-4 sm:left-6 flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-accent/20 backdrop-blur-md flex items-center justify-center text-brand-accent border border-brand-accent/20">
+                  <MapPin className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                 </div>
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-900">Journey Visualization</p>
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-brand-900">Journey Visualization</p>
               </div>
             </div>
           </div>
 
           {/* Day-by-Day Itinerary */}
           {pkg.itinerary && (
-            <div className="space-y-10">
-              <div className="flex items-end justify-between">
+            <div className="space-y-8 sm:space-y-10">
+              <div className="flex items-end justify-between px-2">
                 <div>
-                  <p className="script-font text-brand-accent italic mb-2">The Journey</p>
-                  <h3 className="text-3xl font-serif text-brand-900">Your Day-by-Day Story</h3>
-                </div>
-                <div className="hidden md:flex items-center gap-2 text-brand-400 text-sm font-medium">
-                  <Calendar size={18} />
-                  <span>{pkg.duration.days} Days of Magic</span>
+                  <p className="script-font text-brand-accent italic mb-2 text-xl sm:text-2xl">The Journey</p>
+                  <h3 className="text-2xl sm:text-3xl font-serif text-brand-900">Your Day-by-Day Story</h3>
                 </div>
               </div>
 
-              <div className="space-y-12 relative before:absolute before:left-8 before:top-4 before:bottom-4 before:w-0.5 before:bg-brand-100">
+              <div className="space-y-8 sm:space-y-12 relative before:absolute before:left-6 sm:before:left-8 before:top-4 before:bottom-4 before:w-0.5 before:bg-brand-100">
                 {pkg.itinerary.map((day, idx) => (
                   <motion.div 
                     key={idx}
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    className="relative pl-20"
+                    className="relative pl-14 sm:pl-20"
                   >
-                    <div className="absolute left-0 top-0 w-16 h-16 rounded-2xl bg-white border-2 border-brand-accent flex flex-col items-center justify-center shadow-lg z-10">
-                      <span className="text-[10px] uppercase tracking-widest font-bold text-brand-400">Day</span>
-                      <span className="text-2xl font-serif text-brand-accent leading-none">{day.day}</span>
+                    <div className="absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white border-2 border-brand-accent flex flex-col items-center justify-center shadow-lg z-10">
+                      <span className="text-xl sm:text-2xl font-serif text-brand-accent leading-none">{day.day}</span>
                     </div>
                     
-                    <div className="bg-white p-8 rounded-3xl border border-brand-100 shadow-sm hover:shadow-md transition-shadow">
-                      <h4 className="text-xl font-serif text-brand-900 mb-4">{day.title}</h4>
-                      <p className="text-brand-700 leading-relaxed mb-6">{day.description}</p>
+                    <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-brand-100 shadow-sm hover:shadow-md transition-shadow">
+                      <h4 className="text-lg sm:text-xl font-serif text-brand-900 mb-3 sm:mb-4">{day.title}</h4>
+                      <p className="text-brand-700 text-sm sm:text-base leading-relaxed mb-4 sm:mb-6">{day.description}</p>
                       {day.activity && (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-50 rounded-full text-brand-accent text-sm font-medium">
-                          <Star size={14} fill="currentColor" />
+                        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-brand-50 rounded-full text-brand-accent text-xs sm:text-sm font-medium">
+                          <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" />
                           {day.activity}
                         </div>
                       )}
@@ -328,36 +340,36 @@ const PackageDetail = () => {
           )}
 
           {/* Tier Selection */}
-          <div className="space-y-8">
-            <h3 className="text-2xl font-serif text-brand-900">Select Your Experience Level</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-6 sm:space-y-8">
+            <h3 className="text-xl sm:text-2xl font-serif text-brand-900">Select Your Experience Level</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {pkg.tiers.map((tier) => (
                 <div
                   key={tier.id}
                   onClick={() => setSelectedTierId(tier.id)}
-                  className={`p-6 sm:p-8 rounded-[24px] sm:rounded-[32px] border-2 transition-all cursor-pointer relative overflow-hidden group ${
+                  className={`p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border-2 transition-all cursor-pointer relative overflow-hidden group ${
                     selectedTierId === tier.id
                       ? 'border-brand-accent bg-brand-accent/5 shadow-xl shadow-brand-accent/10'
                       : 'border-brand-100 bg-white hover:border-brand-200'
                   }`}
                 >
                   {selectedTierId === tier.id && (
-                    <div className="absolute top-4 right-4 text-brand-accent">
-                      <Check size={20} className="sm:w-6 sm:h-6" />
+                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 text-brand-accent">
+                      <Check className="w-[18px] h-[18px] sm:w-6 sm:h-6" />
                     </div>
                   )}
-                  <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">{tier.name}</p>
-                  <p className="text-2xl sm:text-3xl font-serif text-brand-900 mb-3 sm:mb-4">{formatPrice(tier.price)}</p>
-                  <p className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold text-brand-400 italic">{tier.basis}</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-400 mb-1 sm:mb-2">{tier.name}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-serif text-brand-900 mb-2 sm:mb-4">{formatPrice(tier.price)}</p>
+                  <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-brand-400 italic leading-tight">{tier.basis}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Inclusions / Exclusions - Structured Content Block */}
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-brand-100 shadow-sm overflow-hidden relative">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-brand-100 shadow-sm overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full -mr-16 -mt-16 blur-2xl" />
-            <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-8 sm:mb-10 flex items-center gap-4 relative z-10">
+            <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-8 sm:mb-10 flex items-center gap-3 sm:gap-4 relative z-10">
               <span className="w-10 h-10 shrink-0 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent">
                 <ShieldCheck size={20} />
               </span>
@@ -365,22 +377,22 @@ const PackageDetail = () => {
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12 relative z-10">
-              <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
+              <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-8 sm:gap-y-10">
                 {pkg.inclusions.map((inc, idx) => {
                   const Icon = categoryIcons[inc.category] || Star;
                   return (
-                    <div key={idx} className="space-y-4">
+                    <div key={idx} className="space-y-3 sm:space-y-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-accent">
                           <Icon size={16} />
                         </div>
-                        <h4 className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-brand-400">{inc.category}</h4>
+                        <h4 className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400">{inc.category}</h4>
                       </div>
-                      <ul className="space-y-2.5">
+                      <ul className="space-y-2 sm:space-y-2.5">
                         {inc.items.map((item, i) => (
-                          <li key={i} className="flex items-start gap-3 text-brand-700">
+                          <li key={i} className="flex items-start gap-2.5 sm:gap-3 text-brand-700">
                             <div className="w-1.5 h-1.5 rounded-full bg-brand-accent/30 mt-1.5 shrink-0" />
-                            <span className="text-sm leading-relaxed">{item}</span>
+                            <span className="text-xs sm:text-sm leading-relaxed">{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -389,20 +401,20 @@ const PackageDetail = () => {
                 })}
               </div>
 
-              <div className="pt-8 md:pt-0 md:pl-12 border-t md:border-t-0 md:border-l border-brand-100">
+              <div className="pt-8 md:pt-0 md:pl-10 lg:pl-12 border-t md:border-t-0 md:border-l border-brand-100">
                 <div className="flex items-center gap-3 mb-6 sm:mb-8">
                   <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400">
                     <X size={16} />
                   </div>
-                  <h4 className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-red-400">
+                  <h4 className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-red-400">
                     Not Included
                   </h4>
                 </div>
-                <ul className="space-y-4">
+                <ul className="space-y-3 sm:space-y-4">
                   {pkg.exclusions.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-brand-500/70">
+                    <li key={idx} className="flex items-start gap-2.5 sm:gap-3 text-brand-500/70">
                       <div className="w-1 h-1 rounded-full bg-brand-200 mt-2 shrink-0" />
-                      <span className="text-sm leading-relaxed">{item}</span>
+                      <span className="text-xs sm:text-sm leading-relaxed">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -411,65 +423,55 @@ const PackageDetail = () => {
           </div>
 
           {/* Departure Selection */}
-          <div className="space-y-8">
-            <h3 className="text-2xl font-serif text-brand-900">Select Departure Date</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {pkg.departures.map((departure) => (
-                <div
-                  key={departure.id}
-                  className={`p-6 rounded-2xl border transition-all cursor-pointer flex justify-between items-center ${
-                    departure.availability === 'sold-out'
-                      ? 'bg-brand-50/50 border-brand-100 opacity-50 cursor-not-allowed'
-                      : 'bg-white border-brand-100 hover:border-brand-accent hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-brand-accent/10 rounded-xl text-brand-accent">
-                      <Calendar size={24} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-brand-900">{new Date(departure.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                      <p className={`text-xs uppercase tracking-widest font-bold mt-1 ${
-                        departure.availability === 'available' ? 'text-green-600' : 'text-orange-500'
-                      }`}>
-                        {departure.availability}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight size={20} className="text-brand-200" />
+          <div className="space-y-6 sm:space-y-8 pb-12">
+            <h3 className="text-xl sm:text-2xl font-serif text-brand-900 px-2">Select Your Intended Travel Date</h3>
+            <div className="max-w-md mx-auto sm:mx-0 px-2">
+              <div className="relative">
+                <div className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 text-brand-accent pointer-events-none">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-              ))}
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full pl-14 sm:pl-16 pr-6 sm:pr-8 py-4 sm:py-5 bg-white border border-brand-100 rounded-xl sm:rounded-2xl text-sm sm:text-base text-brand-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all shadow-sm"
+                />
+              </div>
+              <p className="mt-4 text-[10px] sm:text-sm text-brand-500 italic leading-relaxed">
+                Choose any date that works for you. Our experts will verify availability and tailor the itinerary to your timeline.
+              </p>
             </div>
           </div>
         </div>
 
         {/* Sticky Booking Sidebar */}
         <div className="lg:col-span-1">
-          <div className="sticky top-32 bg-white rounded-3xl p-10 border border-brand-100 shadow-xl space-y-8">
+          <div className="lg:sticky lg:top-32 bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-brand-100 shadow-xl space-y-6 sm:space-y-8 mb-12 lg:mb-0">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest font-bold text-brand-400">Total Price from</p>
+              <p className="text-[10px] sm:text-xs uppercase tracking-widest font-bold text-brand-400">Total Price from</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-serif text-brand-900">${selectedTier.price.toLocaleString()}</span>
-                <span className="text-sm text-brand-500 italic">/{selectedTier.basis.split(' ')[1]}</span>
+                <span className="text-3xl sm:text-4xl font-serif text-brand-900">{formatPrice(selectedTier.price)}</span>
+                <span className="text-xs sm:text-sm text-brand-500 italic">/{selectedTier.basis.split(' ')[1]}</span>
               </div>
-              <p className="text-[10px] text-brand-400 font-bold uppercase tracking-widest">Experience: {selectedTier.name}</p>
+              <p className="text-[9px] sm:text-[10px] text-brand-400 font-bold uppercase tracking-widest">Experience: {selectedTier.name}</p>
             </div>
 
             <div className="space-y-4 pt-4 border-t border-brand-50">
               <Link 
                 to="/booking" 
                 state={{ packageId: pkg.id, tierId: selectedTier.id }}
-                className="btn-primary w-full py-4 flex items-center justify-center gap-3 shadow-xl shadow-brand-accent/20"
+                className="btn-primary w-full py-3 sm:py-4 flex items-center justify-center gap-3 shadow-xl shadow-brand-accent/20 text-sm sm:text-base"
               >
                 Book Now
-                <ArrowRight size={20} />
+                <ArrowRight className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
               </Link>
               
               <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-brand-100"></span>
                 </div>
-                <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
+                <div className="relative flex justify-center text-[9px] sm:text-[10px] uppercase tracking-widest font-bold">
                   <span className="bg-white px-4 text-brand-300">or secure your date</span>
                 </div>
               </div>
@@ -478,38 +480,38 @@ const PackageDetail = () => {
                 amount={500} 
                 onSuccess={(details) => console.log('Deposit paid', details)} 
               />
-              <p className="text-[10px] text-center text-brand-400 italic">
+              <p className="text-[9px] sm:text-[10px] text-center text-brand-400 italic">
                 Secure your romantic escape with a $500 non-refundable deposit.
               </p>
             </div>
 
-            <div className="pt-6 border-t border-brand-50 space-y-6">
-              <div className="flex items-center gap-4 text-sm text-brand-600">
-                <div className="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-accent">
-                  <Star size={14} fill="currentColor" />
+            <div className="pt-4 sm:pt-6 border-t border-brand-50 space-y-4 sm:space-y-6">
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-brand-600">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-accent">
+                  <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" />
                 </div>
                 <span>Curated Luxury Accommodation</span>
               </div>
-              <div className="flex items-center gap-4 text-sm text-brand-600">
-                <div className="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-accent">
-                  <Heart size={14} fill="currentColor" />
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-brand-600">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-accent">
+                  <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" />
                 </div>
                 <span>24/7 Concierge Support</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
               <button 
                 onClick={toggleWishlist}
-                className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-all duration-300 ${
+                className={`flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-300 ${
                   isInWishlist ? 'text-brand-accent scale-105' : 'text-brand-400 hover:text-brand-accent'
                 }`}
               >
-                <Heart size={16} fill={isInWishlist ? "currentColor" : "none"} /> 
+                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill={isInWishlist ? "currentColor" : "none"} /> 
                 {isInWishlist ? 'Saved to wishlist' : 'Save to wishlist'}
               </button>
-              <button className="flex items-center gap-2 text-xs font-bold text-brand-400 uppercase tracking-widest hover:text-brand-accent transition-colors">
-                <Share2 size={16} /> Share trip
+              <button className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest hover:text-brand-accent transition-colors">
+                <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Share trip
               </button>
             </div>
           </div>
@@ -518,60 +520,60 @@ const PackageDetail = () => {
 
       {/* Related Inspiration Section */}
       {relatedPosts.length > 0 && (
-        <section className="bg-brand-50/50 py-24 border-t border-brand-100">
-          <div className="section-container">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-8">
+        <section className="bg-brand-50/50 py-16 sm:py-24 border-t border-brand-100">
+          <div className="section-container px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-12 sm:mb-16 gap-8 text-center md:text-left">
               <div className="max-w-2xl">
-                <p className="script-font mb-4">Expand Your Journey</p>
-                <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">
+                <p className="script-font mb-4 text-xl sm:text-2xl">Expand Your Journey</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-6 leading-tight">
                   Related Inspiration
                 </h2>
-                <p className="text-brand-600 leading-relaxed text-lg">
+                <p className="text-brand-600/90 leading-relaxed text-base sm:text-lg">
                   Discover curated guides and expert advice to complement your romantic escape.
                 </p>
               </div>
               <Link 
                 to="/journal" 
-                className="btn-outline flex items-center gap-3 group"
+                className="btn-outline w-full sm:w-auto flex items-center justify-center gap-3 group px-8 py-4"
               >
                 Explore The Journal
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
               {relatedPosts.map((post, idx) => (
                 <motion.div
                   key={post.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="bg-white rounded-[30px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-brand-100 group"
+                  className="bg-white rounded-2xl sm:rounded-[30px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-brand-100 group flex flex-col"
                 >
-                  <Link to={`/journal/${post.slug}`} className="block relative h-64 overflow-hidden">
+                  <Link to={`/journal/${post.slug}`} className="block relative h-56 sm:h-64 overflow-hidden">
                     <img 
                       src={post.image} 
                       alt={post.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute top-6 left-6">
-                      <span className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest text-brand-accent shadow-lg">
+                    <div className="absolute top-4 sm:top-6 left-4 sm:left-6">
+                      <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/90 backdrop-blur-md rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-accent shadow-lg">
                         {post.category}
                       </span>
                     </div>
                   </Link>
-                  <div className="p-8">
-                    <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors line-clamp-2">
+                  <div className="p-6 sm:p-8 flex flex-col flex-grow">
+                    <h3 className="text-lg sm:text-xl font-serif text-brand-900 mb-3 sm:mb-4 group-hover:text-brand-accent transition-colors line-clamp-2 leading-tight">
                       <Link to={`/journal/${post.slug}`}>{post.title}</Link>
                     </h3>
-                    <p className="text-brand-500 text-sm leading-relaxed mb-6 line-clamp-3">
+                    <p className="text-brand-500 text-xs sm:text-sm leading-relaxed mb-6 line-clamp-3 flex-grow">
                       {post.excerpt}
                     </p>
                     <Link 
                       to={`/journal/${post.slug}`} 
-                      className="text-brand-accent text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all"
+                      className="text-brand-accent text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all mt-auto"
                     >
-                      Read Guide <ArrowRight size={14} />
+                      View Story <ArrowRight size={14} />
                     </Link>
                   </div>
                 </motion.div>

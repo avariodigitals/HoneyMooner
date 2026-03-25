@@ -60,9 +60,9 @@
   }
 
   .script-font {
-    @apply font-script text-4xl text-brand-accent-light drop-shadow-md;
-    filter: saturate(1.2);
-    letter-spacing: 0.05em;
+    @apply font-script text-4xl text-brand-accent-light drop-shadow-sm;
+    filter: saturate(1.1);
+    letter-spacing: 0.03em;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

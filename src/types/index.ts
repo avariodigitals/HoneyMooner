@@ -8,6 +8,9 @@ export interface Destination {
   description: string;
   image: string;
   slug: string;
+  startingPrice?: number;
+  bestTimeToVisit?: string;
+  popularFor?: string[];
 }
 
 export type PricingBasis = 'per couple' | 'per person' | 'per family of 4';
@@ -17,7 +20,6 @@ export interface PricingTier {
   id: string;
   name: 'Premium' | 'Luxuria' | 'Ultra Luxuria';
   price: number;
-  currency: string;
   basis: PricingBasis;
 }
 

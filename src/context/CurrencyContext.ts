@@ -11,7 +11,7 @@ export const currencies: Currency[] = [
 export interface CurrencyContextType {
   currency: Currency;
   setCurrency: (code: string) => void;
-  formatPrice: (priceInUSD: number) => string;
+  formatPrice: (priceInUSD: number, fromCurrency?: string) => string;
   availableCurrencies: Currency[];
 }
 

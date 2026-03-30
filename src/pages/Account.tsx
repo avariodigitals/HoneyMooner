@@ -46,9 +46,8 @@ const Account = () => {
           throw new Error("Passwords do not match");
         }
         await authService.register(formData.username, formData.email, formData.password);
-        // After registration, log them in automatically
-        await login(formData.username, formData.password);
-        navigate('/');
+        setIsLogin(true);
+        setError('Account created. Please login.');
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";

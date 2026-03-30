@@ -1,21 +1,26 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { motion } from 'framer-motion';
 import { Filter, Calendar, MapPin, Heart, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import { useUser } from '../hooks/useUser';
+import { dataService } from '../services/dataService';
 
 const Packages = () => {
   const location = useLocation();
   const { packages, destinations } = useData();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useUser();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDestination, setSelectedDestination] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStyle, setSelectedCategoryStyle] = useState(() => location.state?.style || 'all');
   const [prevStyle, setPrevStyle] = useState(location.state?.style);
+  const [wishlistItems, setWishlistItems] = useState<string[]>([]);
 
   // Adjust state when location state changes (e.g. user clicks a style on Home page)
   if (location.state?.style !== prevStyle) {
@@ -28,6 +33,27 @@ const Packages = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.state?.style]);
+
+  useEffect(() => {
+    let ignore = false;
+    dataService.getWishlist().then(items => {
+      if (!ignore) setWishlistItems(items);
+    }).catch(() => {
+      if (!ignore) setWishlistItems([]);
+    });
+    return () => { ignore = true; };
+  }, [isAuthenticated]);
+
+  const toggleWishlist = async (pkgId: string) => {
+    if (!isAuthenticated) {
+      navigate('/account', { state: { from: '/packages' } });
+      return;
+    }
+    const current = wishlistItems;
+    const next = current.includes(pkgId) ? current.filter(id => id !== pkgId) : [...current, pkgId];
+    const ok = await dataService.updateWishlist(next);
+    if (ok) setWishlistItems(next);
+  };
 
   const filteredPackages = packages.filter(pkg => {
     const matchesSearch = pkg.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -175,9 +201,17 @@ const Packages = () => {
                   alt={pkg.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent">
-                  <Heart size={18} fill="currentColor" />
-                </div>
+                <button
+                  aria-label={wishlistItems.includes(pkg.id) ? 'Saved to wishlist' : 'Save to wishlist'}
+                  onClick={() => toggleWishlist(pkg.id)}
+                  className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent hover:scale-105 transition"
+                >
+                  <Heart
+                    size={18}
+                    className={wishlistItems.includes(pkg.id) ? 'text-brand-accent' : 'text-brand-400'}
+                    fill={wishlistItems.includes(pkg.id) ? 'currentColor' : 'none'}
+                  />
+                </button>
                 <div className="absolute top-4 left-4">
                   <span className="px-3 py-1 bg-brand-900/60 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-bold rounded-full">
                     {pkg.category}

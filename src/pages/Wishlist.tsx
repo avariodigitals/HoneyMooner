@@ -169,7 +169,7 @@ const Wishlist = () => {
 
                       <div className="mt-auto grid grid-cols-2 gap-3 sm:gap-4">
                         <Link 
-                          to={`/package/${pkg.slug}`}
+                          to={`/packages/${pkg.slug}`}
                           className="flex items-center justify-center gap-1.5 sm:gap-2 py-3 sm:py-4 bg-brand-900 text-brand-accent rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-white transition-all duration-300 group/btn"
                         >
                           View Trip
@@ -256,4 +256,3 @@ const Wishlist = () => {
 };
 
 export default Wishlist;
-

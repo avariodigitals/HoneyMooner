@@ -35,7 +35,16 @@ export const useData = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch everything from WordPress
+        const canSync = await dataService.checkWP();
+        if (!canSync) {
+          setDestinations(initialDestinations);
+          setPackages(initialPackages);
+          setPosts(initialPosts);
+          const savedHomeContent = localStorage.getItem('hm_home_content');
+          if (savedHomeContent) setHomeContent(JSON.parse(savedHomeContent));
+          setTestimonials(initialTestimonials);
+          return;
+        }
         const [wpDestinations, wpPackages, wpPosts, wpLeads] = await Promise.all([
           dataService.getDestinations(),
           dataService.getPackages(),

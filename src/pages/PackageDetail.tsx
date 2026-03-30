@@ -53,22 +53,29 @@ const PackageDetail = () => {
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
   const [selectedDate, setSelectedDate] = useState('');
   const { isLoading } = useData();
-  
-  const initialWishlistState = useMemo(() => {
-    if (!pkg) return false;
-    const savedWishlist = localStorage.getItem('hm_wishlist');
-    if (savedWishlist) {
-      const items = JSON.parse(savedWishlist);
-      return items.includes(pkg.id);
-    }
-    return false;
-  }, [pkg]);
+  const [wishlistItems, setWishlistItems] = useState<string[] | null>(null);
 
-  const [isInWishlist, setIsInWishlist] = useState(initialWishlistState);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [wishlistError, setWishlistError] = useState('');
 
   useEffect(() => {
-    setIsInWishlist(initialWishlistState);
-  }, [initialWishlistState]);
+    let cancelled = false;
+    if (pkg) {
+      dataService.getWishlist()
+        .then(items => {
+          if (cancelled) return;
+          setWishlistItems(items);
+          setIsInWishlist(items.includes(pkg.id));
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setWishlistItems([]);
+          setIsInWishlist(false);
+        });
+    }
+    return () => { cancelled = true; };
+  }, [isAuthenticated, pkg]);
 
   const reviewsCount = useMemo(() => {
     if (!pkg) return 0;
@@ -95,19 +102,19 @@ const PackageDetail = () => {
       navigate('/account', { state: { from: `/packages/${slug}` } });
       return;
     }
-
-    const savedWishlist = localStorage.getItem('hm_wishlist');
-    let items = savedWishlist ? JSON.parse(savedWishlist) : [];
-    
-    if (isInWishlist) {
-      items = items.filter((id: string) => id !== pkg.id);
+    if (!pkg) return;
+    setWishlistError('');
+    setIsSaving(true);
+    const current = wishlistItems ?? [];
+    const next = isInWishlist ? current.filter(id => id !== pkg.id) : [...current, pkg.id];
+    const ok = await dataService.updateWishlist(next);
+    if (ok) {
+      setWishlistItems(next);
+      setIsInWishlist(!isInWishlist);
     } else {
-      items.push(pkg.id);
+      setWishlistError('Unable to save wishlist. Please try again later.');
     }
-    
-    setIsInWishlist(!isInWishlist);
-    localStorage.setItem('hm_wishlist', JSON.stringify(items));
-    await dataService.updateWishlist(items);
+    setIsSaving(false);
   };
 
   // Find related articles (same category or general)
@@ -508,8 +515,11 @@ const PackageDetail = () => {
                 }`}
               >
                 <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill={isInWishlist ? "currentColor" : "none"} /> 
-                {isInWishlist ? 'Saved to wishlist' : 'Save to wishlist'}
+                {isSaving ? 'Saving...' : isInWishlist ? 'Saved to wishlist' : 'Save to wishlist'}
               </button>
+              {wishlistError && (
+                <p className="text-[10px] sm:text-xs text-red-500 italic">{wishlistError}</p>
+              )}
               <button className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest hover:text-brand-accent transition-colors">
                 <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Share trip
               </button>

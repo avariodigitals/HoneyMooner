@@ -11,7 +11,35 @@ import type {
   Departure
 } from '../types';
 
-const WP_BASE_URL = 'https://concise.ng/honeymooner/wp-json';
+const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://concise.ng/honeymooner/wp-json';
+const WP_SYNC_ENABLED = (import.meta.env.VITE_WP_SYNC_ENABLED ?? 'false') === 'true';
+
+let wpReachable: boolean | null = null;
+
+function bearerHeaders(token: string) {
+  return {
+    'Authorization': `Bearer ${token}`
+  };
+}
+
+async function checkWP(): Promise<boolean> {
+  if (!WP_SYNC_ENABLED) {
+    wpReachable = false;
+    return false;
+  }
+  if (wpReachable !== null) return wpReachable;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${WP_BASE_URL}`, { signal: controller.signal });
+    clearTimeout(timeout);
+    wpReachable = res.ok;
+    return wpReachable;
+  } catch {
+    wpReachable = false;
+    return false;
+  }
+}
 
 interface WPResponseItem {
   id: number;
@@ -45,9 +73,12 @@ interface WPResponseItem {
 }
 
 export const dataService = {
+  checkWP,
   // --- Destinations ---
   async getDestinations(): Promise<Destination[]> {
     try {
+      const ok = await checkWP();
+      if (!ok) return [];
       const response = await fetch(`${WP_BASE_URL}/wp/v2/destinations?_embed&per_page=100`);
       if (!response.ok) return [];
       const data = await response.json();
@@ -71,11 +102,13 @@ export const dataService = {
     if (!token) return false;
 
     try {
+      const ok = await checkWP();
+      if (!ok) return false;
       const response = await fetch(`${WP_BASE_URL}/wp/v2/destinations/${dest.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...bearerHeaders(token)
         },
         body: JSON.stringify({
           title: dest.name,
@@ -96,6 +129,8 @@ export const dataService = {
   // --- Packages ---
   async getPackages(): Promise<TravelPackage[]> {
     try {
+      const ok = await checkWP();
+      if (!ok) return [];
       const response = await fetch(`${WP_BASE_URL}/wp/v2/packages?_embed&per_page=100`);
       if (!response.ok) return [];
       const data = await response.json();
@@ -128,11 +163,13 @@ export const dataService = {
     if (!token) return false;
 
     try {
+      const ok = await checkWP();
+      if (!ok) return false;
       const response = await fetch(`${WP_BASE_URL}/wp/v2/packages/${pkg.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...bearerHeaders(token)
         },
         body: JSON.stringify({
           title: pkg.title,
@@ -165,8 +202,10 @@ export const dataService = {
     if (!token) return [];
 
     try {
+      const ok = await checkWP();
+      if (!ok) return [];
       const response = await fetch(`${WP_BASE_URL}/wp/v2/leads?per_page=100`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: bearerHeaders(token)
       });
       if (!response.ok) return [];
       return await response.json();
@@ -178,6 +217,8 @@ export const dataService = {
 
   async createLead(lead: Lead): Promise<boolean> {
     try {
+      const ok = await checkWP();
+      if (!ok) return true;
       const response = await fetch(`${WP_BASE_URL}/wp/v2/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,6 +238,8 @@ export const dataService = {
   // --- Journal / Blog ---
   async getPosts(): Promise<BlogPost[]> {
     try {
+      const ok = await checkWP();
+      if (!ok) return [];
       const response = await fetch(`${WP_BASE_URL}/wp/v2/posts?_embed&per_page=20`);
       if (!response.ok) return [];
       const data = await response.json();
@@ -221,18 +264,16 @@ export const dataService = {
   // --- Wishlist Sync ---
   async getWishlist(): Promise<string[]> {
     const token = authService.getToken();
-    if (!token) {
-      const local = localStorage.getItem('hm_wishlist');
-      return local ? JSON.parse(local) : [];
-    }
+    if (!token) return [];
 
     try {
+      const ok = await checkWP();
+      if (!ok) return [];
       const response = await fetch(`${WP_BASE_URL}/wp/v2/users/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: bearerHeaders(token)
       });
       if (!response.ok) return [];
       const data = await response.json();
-      // Assume wishlist is stored in user meta 'hm_wishlist'
       return data.acf?.hm_wishlist || [];
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -241,17 +282,17 @@ export const dataService = {
   },
 
   async updateWishlist(items: string[]): Promise<boolean> {
-    localStorage.setItem('hm_wishlist', JSON.stringify(items));
-    
     const token = authService.getToken();
-    if (!token) return true; // Successfully saved locally
+    if (!token) return false;
 
     try {
+      const ok = await checkWP();
+      if (!ok) return false;
       const response = await fetch(`${WP_BASE_URL}/wp/v2/users/me`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...bearerHeaders(token)
         },
         body: JSON.stringify({
           acf: { hm_wishlist: items }
@@ -264,4 +305,3 @@ export const dataService = {
     }
   }
 };
-

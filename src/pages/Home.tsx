@@ -1,20 +1,47 @@
+import { useState, useEffect } from 'react';
 import Hero from '../components/ui/Hero';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import SEO from '../components/layout/SEO';
 import { motion } from 'framer-motion';
 import { Heart, MapPin, Calendar, Star, ArrowRight, Sun, Anchor, Mountain, Coffee } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { ASSETS } from '../config/images';
+import { useUser } from '../hooks/useUser';
+import { dataService } from '../services/dataService';
 
 const Home = () => {
   const { packages, destinations, testimonials, homeContent } = useData();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useUser();
+  const navigate = useNavigate();
+  const [wishlistItems, setWishlistItems] = useState<string[]>([]);
   
   // Featured packages for the home page (first 2 honeymoons)
   const featuredPackages = packages.filter(p => p.category === 'honeymoon').slice(0, 2);
   const featuredDestinations = destinations.slice(0, 3);
+
+  useEffect(() => {
+    let ignore = false;
+    dataService.getWishlist().then(items => {
+      if (!ignore) setWishlistItems(items);
+    }).catch(() => {
+      if (!ignore) setWishlistItems([]);
+    });
+    return () => { ignore = true; };
+  }, [isAuthenticated]);
+
+  const toggleWishlist = async (pkgId: string) => {
+    if (!isAuthenticated) {
+      navigate('/account', { state: { from: '/' } });
+      return;
+    }
+    const current = wishlistItems;
+    const next = current.includes(pkgId) ? current.filter((id: string) => id !== pkgId) : [...current, pkgId];
+    const ok = await dataService.updateWishlist(next);
+    if (ok) setWishlistItems(next);
+  };
 
   return (
     <motion.div 
@@ -130,9 +157,16 @@ const Home = () => {
                     target.src = ASSETS.FALLBACK_DESTINATION;
                   }}
                 />
-                  <div className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 sm:p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent">
-                    <Heart className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
-                  </div>
+                  <button
+                    aria-label={wishlistItems.includes(pkg.id) ? 'Saved to wishlist' : 'Save to wishlist'}
+                    onClick={() => toggleWishlist(pkg.id)}
+                    className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 sm:p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent hover:scale-105 transition"
+                  >
+                    <Heart
+                      className="w-4 h-4 sm:w-5 sm:h-5"
+                      fill={wishlistItems.includes(pkg.id) ? 'currentColor' : 'none'}
+                    />
+                  </button>
                   <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 flex flex-wrap gap-2 pr-4">
                     {pkg.tags.slice(0, 3).map(tag => (
                       <span key={tag} className="px-3 sm:px-4 py-1 sm:py-1.5 bg-brand-900/60 backdrop-blur-md text-white text-[9px] sm:text-[10px] uppercase tracking-widest font-bold rounded-full">

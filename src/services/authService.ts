@@ -1,9 +1,9 @@
-const WP_BASE_URL = 'https://concise.ng/honeymooner/wp-json';
+const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://concise.ng/honeymooner/wp-json';
 
 export interface AuthResponse {
-  token_type: string;
-  iat: number;
-  expires_in: number;
+  token_type?: string;
+  iat?: number;
+  expires_in?: number;
   jwt_token: string;
 }
 
@@ -18,24 +18,67 @@ export interface UserProfile {
   avatar_urls?: { [key: string]: string };
 }
 
+const AUTH_TOKEN_ENDPOINTS = (
+  import.meta.env.VITE_WP_AUTH_TOKEN_ENDPOINTS ??
+  '/jwt-auth/v1/token,/api/v1/token'
+).split(',').map((s: string) => s.trim()).filter(Boolean);
+
+const AUTH_VALIDATE_ENDPOINTS = (
+  import.meta.env.VITE_WP_AUTH_VALIDATE_ENDPOINTS ??
+  '/jwt-auth/v1/token/validate,/api/v1/token/validate'
+).split(',').map((s: string) => s.trim()).filter(Boolean);
+
+function resolveEndpoint(endpoint: string): string {
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
+  if (endpoint.startsWith('/')) return `${WP_BASE_URL}${endpoint}`;
+  return `${WP_BASE_URL}/${endpoint}`;
+}
+
+function bearerHeaders(token: string) {
+  return {
+    'Authorization': `Bearer ${token}`
+  };
+}
+
 export const authService = {
   async login(username: string, password: string): Promise<AuthResponse> {
-    const response = await fetch(`${WP_BASE_URL}/api/v1/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    let lastError: unknown;
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+    for (const endpoint of AUTH_TOKEN_ENDPOINTS) {
+      try {
+        const body = new URLSearchParams();
+        body.set('username', username);
+        body.set('password', password);
+        const response = await fetch(resolveEndpoint(endpoint), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ message: 'Login failed' }));
+          if (response.status === 404 || error?.code === 'rest_no_route') {
+            lastError = { message: 'Login endpoint not found on WordPress. Install/configure an auth plugin (e.g. JWT) or provide a custom token endpoint.' };
+          } else {
+            lastError = error;
+          }
+          continue;
+        }
+
+        const data = await response.json();
+        const token: string | undefined = data.jwt_token ?? data.token ?? data.jwt ?? data.data?.token;
+        if (!token) {
+          lastError = { message: 'Token not present in auth response' };
+          continue;
+        }
+        this.setToken(token);
+        return { jwt_token: token, token_type: data.token_type, iat: data.iat, expires_in: data.expires_in };
+      } catch (err) {
+        lastError = err;
+      }
     }
-
-    const data = await response.json();
-    this.setToken(data.jwt_token);
-    return data;
+    const message = (lastError as { message?: string } | undefined)?.message || 'Login failed';
+    throw new Error(message);
   },
 
   async register(username: string, email: string, password: string): Promise<UserProfile> {
@@ -65,9 +108,7 @@ export const authService = {
     if (!token) throw new Error('No token found');
 
     const response = await fetch(`${WP_BASE_URL}/wp/v2/users/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: bearerHeaders(token)
     });
 
     if (!response.ok) {
@@ -98,13 +139,14 @@ export const authService = {
     if (!token) return false;
 
     try {
-      const response = await fetch(`${WP_BASE_URL}/api/v1/token/validate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      return response.ok;
+      for (const endpoint of AUTH_VALIDATE_ENDPOINTS) {
+        const response = await fetch(resolveEndpoint(endpoint), {
+          method: 'POST',
+          headers: bearerHeaders(token)
+        });
+        if (response.ok) return true;
+      }
+      return false;
     } catch {
       return false;
     }

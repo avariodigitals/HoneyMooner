@@ -55,14 +55,63 @@
   }
 
   .romantic-card {
-    @apply bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl 
-           transition-shadow duration-500 border border-brand-100;
+    @apply bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl 
+           transition-all duration-500 border border-brand-100;
   }
 
   .script-font {
     @apply font-script text-4xl text-brand-accent-light drop-shadow-sm;
     filter: saturate(1.1);
     letter-spacing: 0.03em;
+  }
+
+  /* Enhanced romantic effects */
+  .romantic-card:hover {
+    @apply border-brand-accent;
+  }
+
+  .romantic-gradient {
+    background: linear-gradient(135deg, rgba(193, 138, 123, 0.1), rgba(226, 194, 185, 0.1));
+  }
+
+  /* Romantic animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes gentle-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .floating {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .gentle-pulse {
+    animation: gentle-pulse 3s ease-in-out infinite;
+  }
+
+  .romantic-border {
+    @apply border-2 border-brand-accent/30 hover:border-brand-accent transition-colors;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

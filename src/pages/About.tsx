@@ -17,7 +17,7 @@ const About = () => {
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/images/placeholder-travel.svg" 
+            src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/pablo-heimplatz-OSboZGvoEz4-unsplash.jpg" 
             alt="Romantic Sunset" 
             className="w-full h-full object-cover"
           />
@@ -81,7 +81,7 @@ const About = () => {
             className="relative"
           >
             <img 
-              src="/images/placeholder-travel.svg" 
+              src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/fernando-gago-MY7yQ1ISEIk-unsplash-scaled.jpg" 
               alt="Romantic Dinner" 
               className="rounded-2xl shadow-2xl"
             />

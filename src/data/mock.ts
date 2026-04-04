@@ -57,11 +57,11 @@ export const initialDestinations: Destination[] = [
   { id: 'd43', name: 'Aruba', country: 'Aruba', continent: 'Caribbean', description: 'Sunny island with white sand beaches.', image: '/images/placeholder-travel.svg', slug: 'aruba' },
 
   // Oceania
-  { id: 'd44', name: 'Bora Bora', country: 'French Polynesia', continent: 'Oceania', description: 'Iconic overwater bungalows and lagoons.', image: '/images/placeholder-travel.svg', slug: 'bora-bora' },
+  { id: 'd44', name: 'Bora Bora', country: 'French Polynesia', continent: 'Oceania', description: 'Iconic overwater bungalows and lagoons.', image: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/romeo-a-oSIoto5nhqU-unsplash-scaled.jpg', slug: 'bora-bora' },
   { id: 'd45', name: 'Fiji', country: 'Fiji', continent: 'Oceania', description: 'Tropical paradise with warm hospitality.', image: '/images/placeholder-travel.svg', slug: 'fiji' },
 
   // Middle East
-  { id: 'd46', name: 'Dubai', country: 'UAE', continent: 'Middle East', description: 'Modern luxury and architectural wonders.', image: '/images/placeholder-travel.svg', slug: 'dubai' },
+  { id: 'd46', name: 'Dubai', country: 'UAE', continent: 'Middle East', description: 'Modern luxury and architectural wonders.', image: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/cedric-dhaenens-69_7CRJUIOc-unsplash-scaled.jpg', slug: 'dubai' },
   { id: 'd47', name: 'Doha', country: 'Qatar', continent: 'Middle East', description: 'Futuristic city with traditional roots.', image: '/images/placeholder-travel.svg', slug: 'doha' },
   { id: 'd48', name: 'Jordan', country: 'Jordan', continent: 'Middle East', description: 'Ancient history and stunning desert landscapes.', image: '/images/placeholder-travel.svg', slug: 'jordan' },
   { id: 'd49', name: 'Bahrain', country: 'Bahrain', continent: 'Middle East', description: 'Island nation with a blend of tradition and modernity.', image: '/images/placeholder-travel.svg', slug: 'bahrain' },

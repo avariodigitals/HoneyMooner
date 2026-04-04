@@ -25,7 +25,7 @@ export interface PackageCollectionDefinition {
   match: PackageCollectionMatch;
 }
 
-const romanticHeroImage = '/images/placeholder-travel.svg';
+const romanticHeroImage = 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/yuriy-bogdanov-XuN44TajBGo-unsplash-scaled.jpg';
 
 export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
   {

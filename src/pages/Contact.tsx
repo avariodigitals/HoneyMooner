@@ -35,7 +35,7 @@ const Contact = () => {
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/images/placeholder-travel.svg" 
+            src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/natalya-zaritskaya-SIOdjcYotms-unsplash-scaled.jpg" 
             alt="Contact The Honeymoonner" 
             className="w-full h-full object-cover"
           />

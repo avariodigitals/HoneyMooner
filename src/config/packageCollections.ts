@@ -66,7 +66,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: [
       'Surprise itinerary elements',
       'Cinematic love story photoshoot',
-      'Personalized gifts and storytelling',
+      'Personalised gifts + storytelling',
       'Scripture-based blessings'
     ],
     destinations: ['Curated globally based on couple preferences'],
@@ -145,8 +145,8 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     tagline: 'Wild love meets ocean calm.',
     intro: 'The balance of wildlife, soft sand, and relaxed luxury creates a honeymoon with variety and emotion.',
     highlights: [
-      'Wildlife and beach in one trip',
-      'Very popular for Africans and internationals'
+      'Wildlife + beach in one trip',
+      'Very popular for Africans & internationals'
     ],
     destinations: ['Kenya + Zanzibar', 'South Africa + Mauritius'],
     heroImage: '/images/placeholder-travel.svg',
@@ -202,7 +202,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     title: 'Ultra Luxury',
     eyebrow: 'Top-Tier Travel',
     audience: 'High-net-worth couples and aspirational clients',
-    tagline: 'If money was not a problem... this is it.',
+    tagline: 'If money wasn\'t a problem... this is it.',
     intro: 'A high-touch honeymoon style with VIP transfers, premium stays, and elevated service throughout.',
     highlights: [
       'Overwater villas',

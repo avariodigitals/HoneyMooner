@@ -104,15 +104,26 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20 pt-8 sm:pt-10 border-t border-brand-800 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-brand-400">
-        <p>© 2026. All rights reserved.</p>
-        <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20 pt-8 sm:pt-10 border-t border-brand-800 text-sm text-brand-400">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <p>© 2026. All rights reserved.</p>
           <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8">
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
-          <p className="text-[9px] sm:text-[10px] text-brand-500 italic">Designed and developed by Avario Digitals</p>
         </div>
+        <p className="mt-6 text-center text-[9px] sm:text-[10px] text-brand-500 italic">
+          Designed and developed by{' '}
+          <a
+            href="https://avariodigitals.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors"
+          >
+            Avario Digitals
+          </a>
+          .
+        </p>
       </div>
     </footer>
   );

@@ -48,14 +48,14 @@ const MENU_THEMES = [
     highlights: [
       'Surprise itinerary elements',
       'Cinematic love story photoshoot',
-      'Personalized gifts and storytelling',
+      'Personalised gifts + storytelling',
       'Scripture-based blessings'
     ],
     destinations: ['Curated globally based on couple preferences'],
     tagline: 'Not just a honeymoon... a love story designed by The Honeymoonner.'
   },
   {
-    name: 'Cultural and Spiritual Romance',
+    name: 'Cultural & Spiritual Romance',
     image: WP_MEDIA.story,
     perfectFor: 'Deep, meaningful couples',
     highlights: ['History, culture, spiritual depth'],
@@ -79,10 +79,10 @@ const MENU_THEMES = [
     tagline: 'Love in the cold, hearts on fire.'
   },
   {
-    name: 'Safari and Beach Combo',
+    name: 'Safari & Beach Combo',
     image: WP_MEDIA.safari,
     perfectFor: 'Couples who want adventure and relaxation',
-    highlights: ['Wildlife and beach in one trip', 'Popular for Africans and internationals'],
+    highlights: ['Wildlife + beach in one trip', 'Very popular for Africans & internationals'],
     destinations: ['Kenya and Zanzibar', 'South Africa and Mauritius'],
     tagline: 'Wild love meets ocean calm.'
   },
@@ -108,7 +108,7 @@ const MENU_THEMES = [
     perfectFor: 'High-net-worth couples and aspirational clients',
     highlights: ['Overwater villas', 'Private jets', 'Yacht dinners', 'VIP experiences'],
     destinations: ['Maldives', 'Dubai', 'Santorini', 'Amalfi Coast'],
-    tagline: 'If money was not a problem... this is it.'
+    tagline: 'If money wasn\'t a problem... this is it.'
   },
   {
     name: 'Soft Luxury Escape (Starter Honeymoon)',

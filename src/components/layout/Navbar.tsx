@@ -78,7 +78,7 @@ const Navbar = () => {
             style={{ minHeight: isTransparent ? '48px' : '40px' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = "https://placehold.co/400x120/4a352f/c18a7b?text=THE+HONEYMOONER&font=playfair-display";
+              target.src = "https://placehold.co/400x120/4a352f/c18a7b?text=THE+HONEYMOONNER&font=playfair-display";
             }}
           />
         </Link>

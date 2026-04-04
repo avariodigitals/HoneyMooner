@@ -7,7 +7,7 @@
 
 export const ASSETS = {
   // Brand Assets
-  LOGO_PLACEHOLDER: "https://placehold.co/400x120/4a352f/c18a7b?text=THE+HONEYMOONER&font=playfair-display",
+  LOGO_PLACEHOLDER: "https://placehold.co/400x120/4a352f/c18a7b?text=THE+HONEYMOONNER&font=playfair-display",
   WORDMARK_WHITE: "https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015",
 
   // Global Fallbacks (Used if primary image fails)

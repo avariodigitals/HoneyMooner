@@ -8,7 +8,7 @@ import SEO from '../components/layout/SEO';
 
 const Journal = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { posts } = useData();
+  const { posts, isSecondaryLoading } = useData();
 
   const filteredPosts = posts.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -149,6 +149,12 @@ const Journal = () => {
                 </div>
               </motion.div>
             ))}
+          </div>
+        ) : isSecondaryLoading && searchTerm.trim() === '' ? (
+          <div className="text-center py-32 bg-white rounded-[40px] border border-brand-100 shadow-sm">
+            <div className="w-16 h-16 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+            <h3 className="text-2xl font-serif text-brand-900 mb-2">Loading stories...</h3>
+            <p className="text-brand-600 max-w-md mx-auto">Fetching the latest romantic inspiration for you.</p>
           </div>
         ) : (
           <div className="text-center py-32 bg-white rounded-[40px] border border-brand-100 shadow-sm">

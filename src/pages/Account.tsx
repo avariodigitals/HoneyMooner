@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../hooks/useUser';
@@ -24,6 +24,7 @@ const Account = () => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationAvailable, setRegistrationAvailable] = useState<boolean>(false);
   
   const { login } = useUser();
   const navigate = useNavigate();
@@ -31,6 +32,28 @@ const Account = () => {
   const from = typeof location.state?.from === 'string'
     ? location.state.from
     : location.state?.from?.pathname || "/";
+
+  useEffect(() => {
+    let cancelled = false;
+    authService.isRegistrationAvailable()
+      .then((available) => {
+        if (!cancelled) setRegistrationAvailable(available);
+      })
+      .catch(() => {
+        if (!cancelled) setRegistrationAvailable(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!registrationAvailable && !isLogin) {
+      setIsLogin(true);
+      setError('Account signup is currently disabled on this site. Please use Login.');
+    }
+  }, [registrationAvailable, isLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,16 +279,24 @@ const Account = () => {
 
               {/* Fixed Footer for a more professional feel */}
               <div className="p-6 bg-brand-50/30 border-t border-brand-50 text-center">
-                <p className="text-brand-400 text-xs mb-3">
-                  {isLogin ? "Don't have an account yet?" : "Already part of the community?"}
-                </p>
-                <button
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="w-full py-3.5 px-6 bg-white hover:bg-brand-50 text-brand-900 font-bold text-xs uppercase tracking-widest transition-all rounded-xl inline-flex items-center justify-center gap-3 group border border-brand-100/50 shadow-sm"
-                >
-                  {isLogin ? "Create Your Account" : "Login to Your Account"}
-                  <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform opacity-60" />
-                </button>
+                {registrationAvailable ? (
+                  <>
+                    <p className="text-brand-400 text-xs mb-3">
+                      {isLogin ? "Don't have an account yet?" : "Already part of the community?"}
+                    </p>
+                    <button
+                      onClick={() => setIsLogin(!isLogin)}
+                      className="w-full py-3.5 px-6 bg-white hover:bg-brand-50 text-brand-900 font-bold text-xs uppercase tracking-widest transition-all rounded-xl inline-flex items-center justify-center gap-3 group border border-brand-100/50 shadow-sm"
+                    >
+                      {isLogin ? "Create Your Account" : "Login to Your Account"}
+                      <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform opacity-60" />
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-brand-500 text-xs italic">
+                    Sign up is not enabled yet. Login is available for existing accounts.
+                  </p>
+                )}
               </div>
             </motion.div>
           </div>

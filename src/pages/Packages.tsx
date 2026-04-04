@@ -9,9 +9,23 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
 
+const STYLE_ALIASES: Record<string, string[]> = {
+  'beach bliss': ['Beach Bliss', 'Beach Romance'],
+  'island escape': ['Island Escape', 'Island Bliss'],
+  'romantic adventure': ['Romantic Adventure', 'Bespoke Luxury'],
+  'city romance': ['City Romance', 'City Intimacy']
+};
+
+function matchesStyleFilter(pkgTags: string[], selectedStyle: string): boolean {
+  if (selectedStyle === 'all') return true;
+  const normalized = selectedStyle.trim().toLowerCase();
+  const candidates = STYLE_ALIASES[normalized] || [selectedStyle];
+  return candidates.some((candidate) => pkgTags.includes(candidate));
+}
+
 const Packages = () => {
   const location = useLocation();
-  const { packages, destinations } = useData();
+  const { packages, destinations, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
   const navigate = useNavigate();
@@ -19,14 +33,12 @@ const Packages = () => {
   const [selectedDestination, setSelectedDestination] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStyle, setSelectedCategoryStyle] = useState(() => location.state?.style || 'all');
-  const [prevStyle, setPrevStyle] = useState(location.state?.style);
   const [wishlistItems, setWishlistItems] = useState<string[]>([]);
 
-  // Adjust state when location state changes (e.g. user clicks a style on Home page)
-  if (location.state?.style !== prevStyle) {
-    setPrevStyle(location.state?.style);
+  // Adjust style filter when navigation state changes (e.g. user clicks a style on Home page)
+  useEffect(() => {
     setSelectedCategoryStyle(location.state?.style || 'all');
-  }
+  }, [location.state?.style]);
 
   useEffect(() => {
     if (location.state?.style) {
@@ -61,10 +73,19 @@ const Packages = () => {
     const destination = destinations.find(d => d.id === pkg.destinationId);
     const matchesDestination = selectedDestination === 'all' || destination?.slug === selectedDestination;
     const matchesCategory = selectedCategory === 'all' || pkg.category === selectedCategory;
-    const matchesStyle = selectedStyle === 'all' || pkg.tags.includes(selectedStyle);
+    const matchesStyle = matchesStyleFilter(pkg.tags, selectedStyle);
     
     return matchesSearch && matchesDestination && matchesCategory && matchesStyle;
   });
+
+  if (isLoading) {
+    return (
+      <div className="pt-32 min-h-screen section-container flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-brand-600 font-serif text-xl italic">Loading travel packages...</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -260,7 +281,12 @@ const Packages = () => {
           <div className="text-center py-24">
             <p className="text-brand-400 text-lg">No packages found matching your criteria.</p>
             <button
-              onClick={() => { setSearchTerm(''); setSelectedDestination('all'); setSelectedCategory('all'); }}
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedDestination('all');
+                setSelectedCategory('all');
+                setSelectedCategoryStyle('all');
+              }}
               className="text-brand-accent font-medium mt-4 hover:underline"
             >
               Clear all filters

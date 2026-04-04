@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { CurrencyProvider } from './context/CurrencyProvider';
+import CurrencyProvider from './context/CurrencyProvider';
 import { UserProvider } from './context/UserProvider';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/layout/Navbar';
@@ -12,7 +12,6 @@ import Destinations from './pages/Destinations';
 import Packages from './pages/Packages';
 import PackageDetail from './pages/PackageDetail';
 import Booking from './pages/Booking';
-import Admin from './pages/Admin';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import FAQs from './pages/FAQs';
@@ -38,7 +37,6 @@ const AnimatedRoutes = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/faqs" element={<FAQs />} />
-        <Route path="/admin" element={<Admin />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/wishlist" element={<Wishlist />} />
       </Routes>
@@ -47,16 +45,13 @@ const AnimatedRoutes = () => {
 };
 
 const AppContent = () => {
-  const location = useLocation();
-  const hideHeaderFooter = location.pathname === '/admin';
-
   return (
     <div className="flex flex-col min-h-screen bg-brand-50 selection:bg-brand-accent selection:text-white overflow-x-hidden">
-      {!hideHeaderFooter && <Navbar />}
+      <Navbar />
       <main className="flex-grow">
         <AnimatedRoutes />
       </main>
-      {!hideHeaderFooter && <Footer />}
+      <Footer />
       <ScrollToTopButton />
     </div>
   );

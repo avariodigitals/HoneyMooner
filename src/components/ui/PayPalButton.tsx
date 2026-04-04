@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCurrency } from '../../hooks/useCurrency';
+import { paymentService } from '../../services/paymentService';
 import SuccessModal from './SuccessModal';
 
 interface PayPalPaymentDetails {
@@ -14,50 +15,155 @@ interface PayPalPaymentDetails {
 }
 
 interface PayPalButtonProps {
-  amount: number;
+  packageId: string;
+  tierId: string;
   onSuccess?: (details: PayPalPaymentDetails) => void;
   disabled?: boolean;
+  description?: string;
+  customId?: string;
 }
 
-const PayPalButton: React.FC<PayPalButtonProps> = ({ amount, onSuccess, disabled }) => {
+const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSuccess, disabled, description, customId }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [quoteAmount, setQuoteAmount] = useState<number | null>(null);
+  const [quoteCurrency, setQuoteCurrency] = useState<string>('USD');
+  const [isQuoteLoading, setIsQuoteLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PayPalPaymentDetails | null>(null);
-  const { currency, formatPrice } = useCurrency();
+  const { currency } = useCurrency();
 
-  const handlePayment = () => {
-    setIsProcessing(true);
-    
-    // Simulate PayPal Checkout process
-    setTimeout(() => {
-      const mockDetails: PayPalPaymentDetails = {
-        id: 'PAYID-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        status: 'COMPLETED',
-        amount: amount * currency.rate,
-        currency: currency.code,
-        payer: {
-          email: 'customer@example.com',
-          name: 'John Doe'
+  useEffect(() => {
+    let ignore = false;
+
+    const loadQuote = async () => {
+      if (!packageId || !tierId) {
+        if (!ignore) {
+          setQuoteAmount(null);
+          setIsQuoteLoading(false);
+          setErrorMessage('Select a package and tier to continue with PayPal.');
         }
-      };
-      
-      setIsProcessing(false);
-      setPaymentDetails(mockDetails);
-      setShowSuccess(true);
-      
-      if (onSuccess) {
-        onSuccess(mockDetails);
+        return;
       }
-    }, 2000);
+
+      setIsQuoteLoading(true);
+      setErrorMessage('');
+
+      try {
+        const quote = await paymentService.getPayPalQuote(packageId, tierId);
+        if (ignore) return;
+        setQuoteAmount(quote.amount);
+        setQuoteCurrency(quote.currency);
+      } catch (error) {
+        if (ignore) return;
+        const message = error instanceof Error ? error.message : 'Unable to load payment amount.';
+        setErrorMessage(message);
+        setQuoteAmount(null);
+      } finally {
+        if (!ignore) {
+          setIsQuoteLoading(false);
+        }
+      }
+    };
+
+    void loadQuote();
+
+    return () => {
+      ignore = true;
+    };
+  }, [packageId, tierId]);
+
+  useEffect(() => {
+    const handleReturnFromPayPal = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('hmPayPal');
+      const token = params.get('token');
+
+      if (status !== 'success' || !token) return;
+
+      setIsProcessing(true);
+      setErrorMessage('');
+
+      try {
+        const capture = await paymentService.capturePayPalOrder(token);
+        const details: PayPalPaymentDetails = {
+          id: capture.transaction_id || capture.order_id,
+          status: capture.status,
+          amount: capture.amount,
+          currency: capture.currency || currency.code,
+          payer: {
+            email: capture.payer_email || 'unknown@payer.com',
+            name: capture.payer_name || 'PayPal Customer'
+          }
+        };
+
+        setPaymentDetails(details);
+        setShowSuccess(true);
+        onSuccess?.(details);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unable to confirm your PayPal payment.';
+        setErrorMessage(message);
+      } finally {
+        setIsProcessing(false);
+        params.delete('hmPayPal');
+        params.delete('token');
+        params.delete('PayerID');
+        params.delete('ba_token');
+        const nextSearch = params.toString();
+        const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`;
+        window.history.replaceState({}, '', nextUrl);
+      }
+    };
+
+    void handleReturnFromPayPal();
+  }, [currency.code, onSuccess]);
+
+  const handlePayment = async () => {
+    if (!paymentService.isEnabled()) {
+      setErrorMessage('Payments are currently disabled by configuration.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setErrorMessage('');
+
+    try {
+      const currentUrl = new URL(window.location.href);
+      const returnUrl = new URL(currentUrl.toString());
+      returnUrl.searchParams.set('hmPayPal', 'success');
+      const cancelUrl = new URL(currentUrl.toString());
+      cancelUrl.searchParams.set('hmPayPal', 'cancelled');
+
+      const order = await paymentService.createPayPalOrder({
+        packageId,
+        tierId,
+        description: description || 'The Honeymooner Deposit',
+        customId: customId || `deposit-${Date.now()}`,
+        returnUrl: returnUrl.toString(),
+        cancelUrl: cancelUrl.toString()
+      });
+
+      if (!order.approve_url) {
+        throw new Error('Unable to start PayPal checkout right now.');
+      }
+
+      window.location.href = order.approve_url;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to initialize PayPal checkout.';
+      setErrorMessage(message);
+      setIsProcessing(false);
+    }
   };
+
+  const isUnavailable = disabled || isProcessing || isQuoteLoading || quoteAmount === null;
 
   return (
     <>
       <button
         onClick={handlePayment}
-        disabled={disabled || isProcessing}
+        disabled={isUnavailable}
         className={`w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98] ${
-          disabled || isProcessing
+          isUnavailable
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
             : 'bg-[#FFC439] hover:bg-[#F2BA36] text-[#2C2E2F]'
         }`}
@@ -73,9 +179,20 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ amount, onSuccess, disabled
             </svg>
             <span className="italic">Pay with</span>
             <span className="font-extrabold italic text-[#003087]">PayPal</span>
+            {quoteAmount !== null && (
+              <span className="text-xs font-semibold text-[#2C2E2F]">
+                {quoteCurrency} {quoteAmount.toFixed(2)}
+              </span>
+            )}
           </>
         )}
       </button>
+
+      {errorMessage && (
+        <p className="mt-3 text-center text-xs text-red-600">
+          {errorMessage}
+        </p>
+      )}
 
       <SuccessModal
         isOpen={showSuccess}
@@ -83,7 +200,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ amount, onSuccess, disabled
         title="Payment Successful!"
         message="Your deposit has been secured. Our team will contact you shortly to finalize your romantic escape."
         transactionId={paymentDetails?.id}
-        amount={formatPrice(amount)}
+        amount={paymentDetails ? `${paymentDetails.currency} ${paymentDetails.amount.toFixed(2)}` : undefined}
       />
     </>
   );

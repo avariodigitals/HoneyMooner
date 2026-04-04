@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, ArrowRight, Instagram, Facebook, Mail, MessageCircle, User as UserIcon, LogOut, Heart as HeartIcon, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Globe, ArrowRight, Instagram, Facebook, Mail, MessageCircle, User as UserIcon, LogOut, Heart as HeartIcon } from 'lucide-react';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useUser } from '../../hooks/useUser';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -180,16 +180,6 @@ const Navbar = () => {
                         <HeartIcon size={16} />
                         My Wish List
                       </Link>
-                      {user?.roles?.includes('administrator') && (
-                        <Link 
-                          to="/admin" 
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50 hover:text-brand-accent transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <LayoutDashboard size={16} />
-                          Admin Suite
-                        </Link>
-                      )}
                       <button 
                         onClick={() => {
                           logout();

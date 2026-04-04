@@ -43,7 +43,7 @@ const categoryIcons: { [key: string]: LucideIcon } = {
 
 const PackageDetail = () => {
   const { slug } = useParams();
-  const { packages, destinations, posts } = useData();
+  const { packages, destinations, posts, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
   const navigate = useNavigate();
@@ -52,7 +52,6 @@ const PackageDetail = () => {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
   const [selectedDate, setSelectedDate] = useState('');
-  const { isLoading } = useData();
   const [wishlistItems, setWishlistItems] = useState<string[] | null>(null);
 
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -484,11 +483,14 @@ const PackageDetail = () => {
               </div>
 
               <PayPalButton 
-                amount={500} 
+                packageId={pkg.id}
+                tierId={selectedTier.id}
+                description={`${pkg.title} deposit (${selectedTier.name})`}
+                customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}`}
                 onSuccess={(details) => console.log('Deposit paid', details)} 
               />
               <p className="text-[9px] sm:text-[10px] text-center text-brand-400 italic">
-                Secure your romantic escape with a $500 non-refundable deposit.
+                Secure your romantic escape with a non-refundable deposit.
               </p>
             </div>
 

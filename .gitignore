@@ -12,6 +12,37 @@ dist
 dist-ssr
 *.local
 
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env*.example
+*.env
+*.secret
+*.secrets
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+
+# OS and temp artifacts
+Thumbs.db
+Desktop.ini
+*.tmp
+*.temp
+
+# Test/coverage/cache artifacts
+coverage/
+.cache/
+.parcel-cache/
+
+# Optional packaged outputs
+*.zip
+
+# Keep local WP plugin code out of GitHub repo
+wordpress-plugin/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

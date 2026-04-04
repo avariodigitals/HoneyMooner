@@ -125,6 +125,53 @@ export interface HomeContent {
   };
 }
 
+export interface BookingContent {
+  hero: {
+    eyebrow: string;
+    title: string;
+    description: string;
+  };
+  success: {
+    title: string;
+    message: string;
+    cta: string;
+  };
+  bespoke: {
+    title: string;
+    description: string;
+    features: string[];
+    budgetOptions: string[];
+  };
+  packageBenefits: string[];
+  fallbackInfo: {
+    title: string;
+    description: string;
+    satisfactionTitle: string;
+    satisfactionSubtitle: string;
+  };
+  consultation: {
+    title: string;
+    description: string;
+    cta: string;
+  };
+  labels: {
+    package: string;
+    tier: string;
+    departureDate: string;
+    country: string;
+    travellers: string;
+    adults: string;
+    children: string;
+    specialRequests: string;
+    submit: string;
+    submitting: string;
+    loading: string;
+    occasion: string;
+    packagePlaceholder: string;
+    tierPlaceholder: string;
+  };
+}
+
 export interface Testimonial {
   id: string;
   coupleName: string;

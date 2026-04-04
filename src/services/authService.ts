@@ -1,4 +1,4 @@
-const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://concise.ng/honeymooner/wp-json';
+const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonner.com/wp-json';
 
 export interface AuthResponse {
   token_type?: string;
@@ -28,6 +28,13 @@ const AUTH_VALIDATE_ENDPOINTS = (
   '/jwt-auth/v1/token/validate,/api/v1/token/validate'
 ).split(',').map((s: string) => s.trim()).filter(Boolean);
 
+const AUTH_REGISTER_ENDPOINTS = (
+  import.meta.env.VITE_WP_AUTH_REGISTER_ENDPOINTS ??
+  '/custom/v1/signup,/wp/v2/users/register'
+).split(',').map((s: string) => s.trim()).filter(Boolean);
+
+let wpRoutes: Record<string, unknown> | null = null;
+
 function resolveEndpoint(endpoint: string): string {
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
   if (endpoint.startsWith('/')) return `${WP_BASE_URL}${endpoint}`;
@@ -40,7 +47,37 @@ function bearerHeaders(token: string) {
   };
 }
 
+async function getWPRoutes(): Promise<Record<string, unknown>> {
+  if (wpRoutes) return wpRoutes;
+  const response = await fetch(WP_BASE_URL);
+  if (!response.ok) return {};
+  const data = await response.json().catch(() => ({})) as { routes?: Record<string, unknown> };
+  wpRoutes = data.routes || {};
+  return wpRoutes;
+}
+
+function endpointPath(endpoint: string): string {
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    try {
+      const parsed = new URL(endpoint);
+      return parsed.pathname.replace(/\/wp-json$/, '') || parsed.pathname;
+    } catch {
+      return endpoint;
+    }
+  }
+  return endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+}
+
 export const authService = {
+  async isRegistrationAvailable(): Promise<boolean> {
+    try {
+      const routes = await getWPRoutes();
+      return AUTH_REGISTER_ENDPOINTS.some((endpoint: string) => endpointPath(endpoint) in routes);
+    } catch {
+      return false;
+    }
+  },
+
   async login(username: string, password: string): Promise<AuthResponse> {
     let lastError: unknown;
 
@@ -82,25 +119,37 @@ export const authService = {
   },
 
   async register(username: string, email: string, password: string): Promise<UserProfile> {
-    const response = await fetch(`${WP_BASE_URL}/wp/v2/users/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, email, password }),
-    });
+    const routes = await getWPRoutes();
+    let lastError: unknown;
 
-    if (response.status === 404) {
-      throw new Error('Registration endpoint not found. Please ensure the "WP REST API User Registration" plugin is installed and active on your WordPress site.');
+    for (const endpoint of AUTH_REGISTER_ENDPOINTS) {
+      const routePath = endpointPath(endpoint);
+      if (!(routePath in routes)) {
+        lastError = { message: `Route ${routePath} is not exposed by your WordPress REST API.` };
+        continue;
+      }
+
+      const response = await fetch(resolveEndpoint(endpoint), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Registration failed' }));
+        lastError = error;
+        continue;
+      }
+
+      return response.json();
     }
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Registration failed' }));
-      const errorMessage = error.message || error.code || 'Registration failed';
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
+    const message = (lastError as { message?: string; code?: string } | undefined)?.message
+      || (lastError as { message?: string; code?: string } | undefined)?.code
+      || 'Registration is currently unavailable. Please contact support or enable a WordPress REST registration endpoint.';
+    throw new Error(message);
   },
 
   async getCurrentUser(): Promise<UserProfile> {

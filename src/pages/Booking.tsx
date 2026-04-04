@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
-import type { Lead, TravelPackage } from '../types';
+import type { BookingContent, Lead, TravelPackage } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
@@ -43,7 +43,8 @@ const CustomDropdown = ({
   placeholder, 
   label,
   icon: Icon,
-  formatPrice
+  formatPrice,
+  isLoading = false
 }: { 
   options: DropdownOption[], 
   value: string, 
@@ -51,7 +52,8 @@ const CustomDropdown = ({
   placeholder: string,
   label: string,
   icon: React.ElementType,
-  formatPrice?: (price: number) => string
+  formatPrice?: (price: number) => string,
+  isLoading?: boolean
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -72,17 +74,19 @@ const CustomDropdown = ({
       <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{label}</label>
       <button
         type="button"
-        disabled={options.length === 0}
+        disabled={options.length === 0 || isLoading}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-white border border-brand-100 rounded-xl sm:rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex items-center justify-between transition-all hover:border-brand-accent/50 group ${isOpen ? 'ring-2 ring-brand-accent/20 border-brand-accent' : ''} ${options.length === 0 ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}`}
+        className={`w-full bg-white border border-brand-100 rounded-xl sm:rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex items-center justify-between transition-all hover:border-brand-accent/50 group ${isOpen ? 'ring-2 ring-brand-accent/20 border-brand-accent' : ''} ${options.length === 0 || isLoading ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}`}
       >
         <div className="flex items-center gap-3">
           <Icon className={`transition-colors ${selectedOption ? 'text-brand-accent' : 'text-brand-200 group-hover:text-brand-accent/50'}`} size={18} />
           <span className={`text-sm sm:text-base ${selectedOption ? 'text-brand-900 font-medium' : 'text-brand-300'}`}>
-            {selectedOption ? (selectedOption.title || selectedOption.name) : placeholder}
+            {selectedOption ? (selectedOption.title || selectedOption.name) : (isLoading ? 'Loading packages...' : placeholder)}
           </span>
         </div>
-        {options.length > 0 && (
+        {isLoading ? (
+          <Loader2 size={18} className="text-brand-400 animate-spin" />
+        ) : options.length > 0 && (
           isOpen ? <ChevronUp size={18} className="text-brand-400" /> : <ChevronDown size={18} className="text-brand-400" />
         )}
       </button>
@@ -146,17 +150,17 @@ interface BookingFormProps {
     message: string;
   };
   packages: TravelPackage[];
+  isPackagesLoading: boolean;
+  bookingContent: BookingContent;
   addLead: (lead: Lead) => Promise<boolean>;
   formatPrice: (price: number) => string;
 }
 
-const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFormProps) => {
+const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent, addLead, formatPrice }: BookingFormProps) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(initialData);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const isBespoke = formData.packageId === 'bespoke';
 
   const selectedPkg = useMemo(() => 
     packages.find(p => p.id === formData.packageId),
@@ -176,7 +180,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
     const newLead: Lead = {
       id: generateId(),
       packageId: formData.packageId,
-      packageName: isBespoke ? 'Bespoke Custom Journey' : (selectedPkg?.title || ''),
+      packageName: selectedPkg?.title || '',
       departureDate: formData.departureDate,
       adults: formData.adults,
       children: formData.children,
@@ -191,12 +195,15 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
     };
 
     try {
-      await addLead(newLead);
+      const saved = await addLead(newLead);
+      if (!saved) {
+        throw new Error('Lead was not persisted to WordPress');
+      }
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Error submitting enquiry:', error);
-      alert('There was an error submitting your enquiry. Please try again.');
+      alert('We could not save your enquiry to our backend. Please try again in a moment.');
     } finally {
       setIsSubmitting(false);
     }
@@ -214,16 +221,22 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
           <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-10">
             <CheckCircle2 size={48} />
           </div>
-          <h1 className="text-4xl font-serif text-brand-900">Enquiry Received!</h1>
+          <h1 className="text-4xl font-serif text-brand-900">{bookingContent.success.title}</h1>
           <p className="text-brand-600 text-lg leading-relaxed">
-            Thank you for reaching out to The Honeymooner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.
+            {bookingContent.success.message}
           </p>
-          <div className="pt-10">
+          <div className="pt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => setIsSubmitted(false)}
+              className="btn-outline px-12 py-4"
+            >
+              Back to Booking
+            </button>
             <button
               onClick={() => navigate('/')}
               className="btn-primary px-12 py-4"
             >
-              Return Home
+              {bookingContent.success.cta}
             </button>
           </div>
         </motion.div>
@@ -247,10 +260,10 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
           {/* Form Side */}
           <div className="space-y-10 lg:space-y-12">
             <div>
-              <p className="script-font mb-4">The First Step</p>
-              <h1 className="text-3xl md:text-5xl font-serif text-brand-900 mb-6">Plan Your Dream Escape</h1>
+              <p className="script-font mb-4">{bookingContent.hero.eyebrow}</p>
+              <h1 className="text-3xl md:text-5xl font-serif text-brand-900 mb-6">{bookingContent.hero.title}</h1>
               <p className="text-brand-600 leading-relaxed text-base sm:text-lg">
-                Fill out the form below and our specialists will create a personalized itinerary for your romantic journey.
+                {bookingContent.hero.description}
               </p>
             </div>
 
@@ -258,64 +271,42 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
               {/* Package Selection */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                 <CustomDropdown
-                  label="Select Package"
-                  placeholder="Choose a package..."
+                  label={bookingContent.labels.package}
+                  placeholder={bookingContent.labels.packagePlaceholder}
                   icon={PackageIcon}
+                  isLoading={isPackagesLoading}
                   value={formData.packageId}
-                  options={[
-                    { id: 'bespoke', title: '✨ Tailor-Made Bespoke Journey', summary: 'Let us craft a completely unique experience for you.' },
-                    ...packages.map(p => ({
-                      ...p,
-                      price: Math.min(...p.tiers.map(t => t.price))
-                    }))
-                  ]}
+                  options={packages.map(p => ({
+                    ...p,
+                    price: Math.min(...p.tiers.map(t => t.price))
+                  }))}
                   onChange={(pkgId) => {
                     const pkg = packages.find(p => p.id === pkgId);
                     setFormData({
                       ...formData,
                       packageId: pkgId,
-                      tierId: pkgId === 'bespoke' ? 'bespoke' : (pkg?.tiers[0]?.id || '')
+                      tierId: pkg?.tiers[0]?.id || ''
                     });
                   }}
                   formatPrice={formatPrice}
                 />
-                {!isBespoke ? (
-                  <CustomDropdown
-                    label="Experience Level"
-                    placeholder={formData.packageId ? "Choose experience..." : "Select a package first"}
-                    icon={Crown}
-                    value={formData.tierId}
-                    options={selectedPkg?.tiers.map(t => ({
-                      ...t,
-                      title: `${t.name} - ${formatPrice(t.price)}`
-                    })) || []}
-                    onChange={(tierId) => setFormData({ ...formData, tierId })}
-                    formatPrice={formatPrice}
-                  />
-                ) : (
-                  <div className="space-y-3 sm:space-y-4">
-                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Estimated Budget (USD)</label>
-                    <div className="relative">
-                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
-                      <select
-                        className="w-full pl-12 pr-4 sm:pr-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base bg-white appearance-none"
-                        value={formData.message.includes('Budget:') ? formData.message.split('Budget: ')[1].split('\n')[0] : ''}
-                        onChange={(e) => setFormData({ ...formData, message: `Budget: ${e.target.value}\n${formData.message}` })}
-                      >
-                        <option value="">Select budget range</option>
-                        <option value="$5,000 - $10,000">$5,000 - $10,000</option>
-                        <option value="$10,000 - $25,000">$10,000 - $25,000</option>
-                        <option value="$25,000 - $50,000">$25,000 - $50,000</option>
-                        <option value="$50,000+">$50,000+</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
+                <CustomDropdown
+                  label={bookingContent.labels.tier}
+                  placeholder={formData.packageId ? bookingContent.labels.tierPlaceholder : 'Select a package first'}
+                  icon={Crown}
+                  value={formData.tierId}
+                  options={selectedPkg?.tiers.map(t => ({
+                    ...t,
+                    title: `${t.name} - ${formatPrice(t.price)}`
+                  })) || []}
+                  onChange={(tierId) => setFormData({ ...formData, tierId })}
+                  formatPrice={formatPrice}
+                />
               </div>
 
               {/* Occasion Selection */}
               <div className="space-y-3 sm:space-y-4">
-                <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">The Occasion</label>
+                <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{bookingContent.labels.occasion}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   {(['honeymoon', 'anniversary', 'proposal', 'other'] as const).map(occ => (
                     <button
@@ -382,7 +373,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                   </div>
                 </div>
                 <div className="space-y-3 sm:space-y-4">
-                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Departure Date</label>
+                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{bookingContent.labels.departureDate}</label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
                     {selectedPkg?.departures && selectedPkg.departures.length > 0 ? (
@@ -415,7 +406,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                 <div className="space-y-3 sm:space-y-4">
-                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Country of Residence</label>
+                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{bookingContent.labels.country}</label>
                   <div className="relative">
                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
                     <input
@@ -429,7 +420,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                   </div>
                 </div>
                 <div className="space-y-3 sm:space-y-4">
-                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Travellers</label>
+                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{bookingContent.labels.travellers}</label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <UsersIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={16} />
@@ -438,9 +429,12 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                         min="1"
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-brand-100 text-sm"
                         value={formData.adults}
-                        onChange={(e) => setFormData({ ...formData, adults: parseInt(e.target.value) })}
+                        onChange={(e) => {
+                          const parsed = Number.parseInt(e.target.value, 10);
+                          setFormData({ ...formData, adults: Number.isNaN(parsed) ? 1 : Math.max(1, parsed) });
+                        }}
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-bold">Adults</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-bold">{bookingContent.labels.adults}</span>
                     </div>
                     <div className="relative">
                       <UsersIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={16} />
@@ -449,16 +443,19 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                         min="0"
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-brand-100 text-sm"
                         value={formData.children}
-                        onChange={(e) => setFormData({ ...formData, children: parseInt(e.target.value) })}
+                        onChange={(e) => {
+                          const parsed = Number.parseInt(e.target.value, 10);
+                          setFormData({ ...formData, children: Number.isNaN(parsed) ? 0 : Math.max(0, parsed) });
+                        }}
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-bold">Kids</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-bold">{bookingContent.labels.children}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
-                <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Special Requests</label>
+                <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{bookingContent.labels.specialRequests}</label>
                 <div className="relative">
                   <MessageSquare className="absolute left-4 top-6 text-brand-200" size={18} />
                   <textarea
@@ -479,11 +476,11 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                 {isSubmitting ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
-                    Processing...
+                    {bookingContent.labels.submitting}
                   </>
                 ) : (
                   <>
-                    Submit Enquiry
+                    {bookingContent.labels.submit}
                     <Send size={20} />
                   </>
                 )}
@@ -493,37 +490,7 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
 
           {/* Info Side */}
           <div className="space-y-8 lg:space-y-10 xl:sticky xl:top-32 h-fit">
-            {isBespoke ? (
-              <div className="bg-brand-900 text-white rounded-[40px] p-8 sm:p-12 space-y-10 relative overflow-hidden shadow-2xl border border-white/10">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/10 rounded-full -mr-32 -mt-32 blur-[80px]" />
-                <div className="relative z-10">
-                  <div className="w-16 h-16 bg-brand-accent/20 rounded-2xl flex items-center justify-center text-brand-accent mb-8">
-                    <Star size={32} fill="currentColor" />
-                  </div>
-                  <h3 className="text-3xl md:text-4xl font-serif leading-tight mb-8 italic">
-                    Your Vision, <br /> Our Craftsmanship.
-                  </h3>
-                  <div className="space-y-6">
-                    <p className="text-brand-100 text-lg leading-relaxed opacity-80 font-light">
-                      A bespoke journey is more than a trip—it's a masterpiece tailored to your specific romantic narrative. 
-                    </p>
-                    <ul className="space-y-4 pt-6 border-t border-white/10">
-                      {[
-                        'Fully customizable itinerary',
-                        'Private, hand-picked locations',
-                        'Dedicated travel designer',
-                        'Ultra-exclusive experiences'
-                      ].map((feature, i) => (
-                        <li key={i} className="flex items-center gap-4 text-brand-50/90 font-medium">
-                          <CheckCircle2 size={18} className="text-brand-accent" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            ) : (selectedPkg && selectedTier) ? (
+            {(selectedPkg && selectedTier) ? (
               <div className="bg-white rounded-[32px] overflow-hidden border border-brand-100 shadow-xl">
                 <div className="h-48 sm:h-64 relative">
                   <img
@@ -551,27 +518,21 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                     <span className="text-lg sm:text-xl font-serif text-brand-900">{formatPrice(selectedTier.price)}</span>
                   </div>
                   <div className="pt-4 sm:pt-6 border-t border-brand-50 space-y-3 sm:space-y-4">
-                    <div className="flex items-start gap-3 text-xs sm:text-sm text-brand-600">
-                      <CheckCircle2 size={16} className="text-brand-accent mt-0.5 shrink-0" />
-                      <span>Complimentary Consultation</span>
-                    </div>
-                    <div className="flex items-start gap-3 text-xs sm:text-sm text-brand-600">
-                      <CheckCircle2 size={16} className="text-brand-accent mt-0.5 shrink-0" />
-                      <span>Customized Itinerary Planning</span>
-                    </div>
-                    <div className="flex items-start gap-3 text-xs sm:text-sm text-brand-600">
-                      <CheckCircle2 size={16} className="text-brand-accent mt-0.5 shrink-0" />
-                      <span>24/7 Travel Assistance</span>
-                    </div>
+                    {bookingContent.packageBenefits.map((benefit) => (
+                      <div key={benefit} className="flex items-start gap-3 text-xs sm:text-sm text-brand-600">
+                        <CheckCircle2 size={16} className="text-brand-accent mt-0.5 shrink-0" />
+                        <span>{benefit}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             ) : (
               <div className="bg-brand-900 text-white rounded-[32px] p-8 sm:p-12 space-y-8 sm:space-y-10">
                 <Heart className="text-brand-accent fill-brand-accent sm:w-12 sm:h-12" size="40" />
-                <h3 className="text-2xl sm:text-3xl font-serif leading-tight">Expertly Crafted <br /> Romantic Journeys</h3>
+                <h3 className="text-2xl sm:text-3xl font-serif leading-tight">{bookingContent.fallbackInfo.title}</h3>
                 <p className="text-brand-300 leading-relaxed text-sm sm:text-base">
-                  Our specialists have traveled to every destination we recommend. We know the best suites, the most private beaches, and the hidden spots that make a trip truly romantic.
+                  {bookingContent.fallbackInfo.description}
                 </p>
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
@@ -579,8 +540,8 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
                       <Star size={18} className="sm:w-5 sm:h-5" fill="currentColor" />
                     </div>
                     <div>
-                      <p className="font-serif text-base sm:text-lg">98% Satisfaction</p>
-                      <p className="text-[10px] text-brand-400 uppercase tracking-widest font-bold">Couples rated 5-stars</p>
+                      <p className="font-serif text-base sm:text-lg">{bookingContent.fallbackInfo.satisfactionTitle}</p>
+                      <p className="text-[10px] text-brand-400 uppercase tracking-widest font-bold">{bookingContent.fallbackInfo.satisfactionSubtitle}</p>
                     </div>
                   </div>
                 </div>
@@ -588,12 +549,16 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
             )}
 
             <div className="p-6 sm:p-8 bg-brand-accent/5 rounded-[32px] border border-brand-accent/10">
-              <h4 className="font-serif text-lg sm:text-xl text-brand-900 mb-3 sm:mb-4">Need help choosing?</h4>
+              <h4 className="font-serif text-lg sm:text-xl text-brand-900 mb-3 sm:mb-4">{bookingContent.consultation.title}</h4>
               <p className="text-brand-600 text-xs sm:text-sm mb-6 leading-relaxed">
-                If you're not sure which package is right for you, book a free consultation call and we'll help you decide.
+                {bookingContent.consultation.description}
               </p>
-              <button className="text-brand-accent font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center gap-2 hover:gap-4 transition-all">
-                Book a call <ArrowRight size={16} />
+              <button
+                type="button"
+                onClick={() => navigate('/contact')}
+                className="text-brand-accent font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center gap-2 hover:gap-4 transition-all"
+              >
+                {bookingContent.consultation.cta} <ArrowRight size={16} />
               </button>
             </div>
           </div>
@@ -605,8 +570,17 @@ const BookingForm = ({ initialData, packages, addLead, formatPrice }: BookingFor
 
 const Booking = () => {
   const location = useLocation();
-  const { packages, addLead, isLoading } = useData();
+  const { packages, bookingContent, addLead, isLoading } = useData();
   const { formatPrice } = useCurrency();
+  const [allowFallbackRender, setAllowFallbackRender] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setAllowFallbackRender(true);
+    }, 2500);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const initialData = useMemo(() => {
     const pkgId = location.state?.packageId || '';
@@ -627,12 +601,12 @@ const Booking = () => {
     };
   }, [packages, location.state]);
 
-  if (isLoading || packages.length === 0) {
+  if (isLoading && packages.length === 0 && !allowFallbackRender) {
     return (
       <div className="min-h-screen bg-brand-50/50 flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="animate-spin text-brand-accent mx-auto" size={48} />
-          <p className="text-brand-500 font-medium italic">Preparing your romantic journey...</p>
+          <p className="text-brand-500 font-medium italic">{bookingContent.labels.loading}</p>
         </div>
       </div>
     );
@@ -644,6 +618,8 @@ const Booking = () => {
       key={initialData.packageId}
       initialData={initialData} 
       packages={packages} 
+      isPackagesLoading={isLoading && packages.length === 0}
+      bookingContent={bookingContent}
       addLead={addLead} 
       formatPrice={formatPrice} 
     />

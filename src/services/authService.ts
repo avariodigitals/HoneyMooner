@@ -1,4 +1,4 @@
-const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonner.com/wp-json';
+const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
 
 export interface AuthResponse {
   token_type?: string;

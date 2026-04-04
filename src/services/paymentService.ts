@@ -1,4 +1,4 @@
-const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonner.com/wp-json';
+const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
 const PAYMENTS_ENABLED = (import.meta.env.VITE_WP_PAYMENTS_ENABLED ?? 'true') === 'true';
 const PAYMENTS_NAMESPACE = import.meta.env.VITE_WP_PAYMENTS_NAMESPACE ?? '/custom/v1/payments';
 

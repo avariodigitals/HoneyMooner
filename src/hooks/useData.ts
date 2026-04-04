@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import type { Destination, TravelPackage, Lead, Testimonial, BlogPost, HomeContent, BookingContent } from '../types';
 import { dataService } from '../services/dataService';
+import { initialDestinations, initialPackages, initialPosts, initialTestimonials } from '../data/mock';
 
 const defaultHomeContent: HomeContent = {
+  fallbackImages: {
+    hero: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070',
+    package: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80',
+    destination: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80',
+    testimonial: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800',
+    general: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80'
+  },
   hero: {
     title: "Plan a Once-in-a-Lifetime Honeymoon — Without the Stress",
     subtitle: "We design fully personalized luxury honeymoon experiences — from destination selection to every intimate detail.",
@@ -18,6 +26,18 @@ const defaultHomeContent: HomeContent = {
     title: "Leave Where Your New Life Begins",
     subtitle: "Signature Packages",
     description: "We don’t just plan trips — we design deeply personal honeymoon experiences that reflect your story, your pace, and your idea of romance."
+  },
+  giftPackage: {
+    eyebrow: 'For Families of Newlyweds',
+    title: 'Honeymoon Gift Package',
+    description: 'Gift your children a stress-free, unforgettable honeymoon experience.',
+    note: 'A meaningful wedding gift with expert planning, curated stays, and full support from start to finish.',
+    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80',
+    imageAlt: 'Parents gifting honeymoon package',
+    primaryCtaLabel: 'View Packages',
+    primaryCtaUrl: '/packages',
+    secondaryCtaLabel: 'Start Planning',
+    secondaryCtaUrl: '/booking'
   }
 };
 
@@ -29,7 +49,7 @@ const defaultBookingContent: BookingContent = {
   },
   success: {
     title: 'Enquiry Received!',
-    message: 'Thank you for reaching out to The Honeymooner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
+    message: 'Thank you for reaching out to The Honeymoonner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
     cta: 'Return Home'
   },
   bespoke: {
@@ -92,17 +112,52 @@ type DataSnapshot = {
   posts: BlogPost[];
 };
 
-const emptySnapshot: DataSnapshot = {
-  packages: [],
-  destinations: [],
+const SNAPSHOT_STORAGE_KEY = 'honeymoonner:data-snapshot:v1';
+
+function loadPersistedSnapshot(): DataSnapshot | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<DataSnapshot>;
+    if (!parsed || typeof parsed !== 'object') return null;
+
+    return {
+      packages: Array.isArray(parsed.packages) ? parsed.packages as TravelPackage[] : [],
+      destinations: Array.isArray(parsed.destinations) ? parsed.destinations as Destination[] : [],
+      leads: Array.isArray(parsed.leads) ? parsed.leads as Lead[] : [],
+      testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials as Testimonial[] : [],
+      homeContent: parsed.homeContent as HomeContent || defaultHomeContent,
+      bookingContent: parsed.bookingContent as BookingContent || defaultBookingContent,
+      posts: Array.isArray(parsed.posts) ? parsed.posts as BlogPost[] : []
+    };
+  } catch {
+    return null;
+  }
+}
+
+function persistSnapshot(snapshot: DataSnapshot): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshot));
+  } catch {
+    // Ignore localStorage write failures (e.g., private mode / quota).
+  }
+}
+
+const initialSnapshot: DataSnapshot = {
+  packages: initialPackages,
+  destinations: initialDestinations,
   leads: [],
-  testimonials: [],
+  testimonials: initialTestimonials,
   homeContent: defaultHomeContent,
   bookingContent: defaultBookingContent,
-  posts: []
+  posts: initialPosts
 };
 
-let cachedSnapshot: DataSnapshot | null = null;
+const emptySnapshot: DataSnapshot = initialSnapshot;
+
+let cachedSnapshot: DataSnapshot | null = loadPersistedSnapshot() || initialSnapshot;
 let coreResolved = false;
 let secondaryResolved = false;
 let inflightCorePromise: Promise<DataSnapshot> | null = null;
@@ -150,6 +205,7 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
       }
 
       cachedSnapshot = snapshot;
+      persistSnapshot(snapshot);
       return snapshot;
     } catch (error) {
       console.error('Failed to sync with WordPress:', error);
@@ -167,6 +223,7 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
         shouldResolveCore = false;
       }
       cachedSnapshot = snapshot;
+      persistSnapshot(snapshot);
       return snapshot;
     } finally {
       coreResolved = shouldResolveCore;
@@ -199,6 +256,7 @@ async function ensureSecondarySnapshot(): Promise<DataSnapshot> {
         testimonials: wpTestimonials.length > 0 ? wpTestimonials : current.testimonials
       };
       cachedSnapshot = snapshot;
+      persistSnapshot(snapshot);
       return snapshot;
     } catch (error) {
       console.error('Failed to sync secondary WordPress data:', error);
@@ -207,6 +265,7 @@ async function ensureSecondarySnapshot(): Promise<DataSnapshot> {
         shouldResolveSecondary = false;
       }
       cachedSnapshot = snapshot;
+      persistSnapshot(snapshot);
       return snapshot;
     } finally {
       secondaryResolved = shouldResolveSecondary;
@@ -225,15 +284,12 @@ export const useData = () => {
   const [homeContent, setHomeContent] = useState<HomeContent>(getCurrentSnapshot().homeContent);
   const [bookingContent, setBookingContent] = useState<BookingContent>(getCurrentSnapshot().bookingContent);
   const [posts, setPosts] = useState<BlogPost[]>(getCurrentSnapshot().posts);
-  const [isLoading, setIsLoading] = useState(!coreResolved);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSecondaryLoading, setIsSecondaryLoading] = useState(!secondaryResolved);
 
   useEffect(() => {
     let cancelled = false;
     const fetchCore = async () => {
-      if (!hasCoreContent(getCurrentSnapshot())) {
-        setIsLoading(true);
-      }
       const snapshot = await ensureCoreSnapshot();
       if (cancelled) return;
       setDestinations(snapshot.destinations);
@@ -271,6 +327,7 @@ export const useData = () => {
         ...cachedSnapshot,
         leads: [lead, ...cachedSnapshot.leads]
       };
+      persistSnapshot(cachedSnapshot);
     }
     return true;
   };

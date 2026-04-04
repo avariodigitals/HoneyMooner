@@ -107,6 +107,13 @@ export interface BlogPost {
 }
 
 export interface HomeContent {
+  fallbackImages: {
+    hero: string;
+    package: string;
+    destination: string;
+    testimonial: string;
+    general: string;
+  };
   hero: {
     title: string;
     subtitle: string;
@@ -122,6 +129,18 @@ export interface HomeContent {
     title: string;
     subtitle: string;
     description: string;
+  };
+  giftPackage: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    note: string;
+    image: string;
+    imageAlt: string;
+    primaryCtaLabel: string;
+    primaryCtaUrl: string;
+    secondaryCtaLabel: string;
+    secondaryCtaUrl: string;
   };
 }
 

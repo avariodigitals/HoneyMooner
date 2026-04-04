@@ -22,7 +22,7 @@ const Contact = () => {
   };
 
   const contactInfo = [
-    { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'hello@thehoneymooner.com' },
+    { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'info@thehoneymoonner.com' },
     { icon: <Phone className="w-5 h-5" />, label: 'Phone', value: '+2348131760694' },
     { icon: <MapPin className="w-5 h-5" />, label: 'Office', value: 'Lagos, United Kingdom' },
   ];
@@ -36,7 +36,7 @@ const Contact = () => {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?auto=format&fit=crop&q=80&w=2070" 
-            alt="Contact The Honeymooner" 
+            alt="Contact The Honeymoonner" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-[1px]" />

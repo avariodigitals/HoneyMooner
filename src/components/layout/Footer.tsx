@@ -43,7 +43,7 @@ const Footer = () => {
           <Link to="/" className="flex items-center justify-center sm:justify-start gap-2">
             <img 
               src="https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20White%20only.png" 
-              alt="The Honeymooner" 
+              alt="The Honeymoonner" 
               className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
             />
           </Link>
@@ -98,7 +98,7 @@ const Footer = () => {
             </li>
             <li className="flex items-center justify-center sm:justify-start gap-3">
               <Mail size={18} className="text-brand-accent shrink-0" />
-              <span>hello@thehoneymooner.com</span>
+              <span>info@thehoneymoonner.com</span>
             </li>
           </ul>
         </div>

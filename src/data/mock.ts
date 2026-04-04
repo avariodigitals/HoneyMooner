@@ -187,7 +187,7 @@ Object.keys(packageData).forEach(category => {
           { id: `dep-${category}-${item.destId}-1`, date: '2026-06-15', availability: 'available' },
           { id: `dep-${category}-${item.destId}-2`, date: '2026-09-20', availability: 'limited' }
         ],
-        seo: { title: `${dest.name} ${category} | The Honeymooner`, description: `Book your ${category} trip to ${dest.name}.`, keywords: [dest.name, category, 'luxury travel'] }
+        seo: { title: `${dest.name} ${category} | The Honeymoonner`, description: `Book your ${category} trip to ${dest.name}.`, keywords: [dest.name, category, 'luxury travel'] }
       });
     }
   });
@@ -202,7 +202,7 @@ export const initialTestimonials: Testimonial[] = [
     location: 'Lagos, Nigeria',
     destination: 'Maldives',
     quote: 'A dream beyond our wildest imagination.',
-    story: 'From the private seaplane arrival to the candlelit dinner on our own sandbank, The Honeymooner handled every detail with such intimacy. We didn\'t just visit the Maldives; we felt like the only two people there.',
+    story: 'From the private seaplane arrival to the candlelit dinner on our own sandbank, The Honeymoonner handled every detail with such intimacy. We didn\'t just visit the Maldives; we felt like the only two people there.',
     image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800',
     rating: 5,
     date: 'Dec 2023'
@@ -224,7 +224,7 @@ export const initialTestimonials: Testimonial[] = [
     location: 'New York, USA',
     destination: 'Paris',
     quote: 'The level of detail was unlike anything we\'ve experienced.',
-    story: 'The Honeymooner arranged a private after-hours tour of the Louvre followed by a hidden rooftop dinner overlooking the Eiffel Tower. They know the secrets of Paris that you won\'t find in any guidebook.',
+    story: 'The Honeymoonner arranged a private after-hours tour of the Louvre followed by a hidden rooftop dinner overlooking the Eiffel Tower. They know the secrets of Paris that you won\'t find in any guidebook.',
     image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&q=80&w=800',
     rating: 5,
     date: 'June 2023'

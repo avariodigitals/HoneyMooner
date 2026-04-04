@@ -10,6 +10,7 @@ import ScrollToTopButton from './components/ui/ScrollToTopButton';
 import Home from './pages/Home';
 import Destinations from './pages/Destinations';
 import Packages from './pages/Packages';
+import PackageTypeLanding from './pages/PackageTypeLanding';
 import PackageDetail from './pages/PackageDetail';
 import Booking from './pages/Booking';
 import About from './pages/About';
@@ -30,6 +31,7 @@ const AnimatedRoutes = () => {
         <Route path="/destinations" element={<Destinations />} />
         <Route path="/destinations/:slug" element={<Destinations />} />
         <Route path="/packages" element={<Packages />} />
+        <Route path="/packages/type/:slug" element={<PackageTypeLanding />} />
         <Route path="/packages/:slug" element={<PackageDetail />} />
         <Route path="/journal" element={<Journal />} />
         <Route path="/journal/:slug" element={<JournalDetail />} />

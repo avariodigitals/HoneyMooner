@@ -142,7 +142,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
       const order = await paymentService.createPayPalOrder({
         packageId,
         tierId,
-        description: description || 'The Honeymooner Deposit',
+        description: description || 'The Honeymoonner Deposit',
         customId: customId || `deposit-${Date.now()}`,
         returnUrl: returnUrl.toString(),
         cancelUrl: cancelUrl.toString()

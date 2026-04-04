@@ -18,7 +18,7 @@ const Hero = () => {
           alt="Luxury Honeymoon"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            target.src = ASSETS.FALLBACK_HERO;
+            target.src = homeContent.fallbackImages.hero || ASSETS.FALLBACK_HERO;
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-900/40 via-transparent to-brand-900/80" />

@@ -129,7 +129,7 @@ const PackageDetail = () => {
     "description": pkg.summary,
     "brand": {
       "@type": "Brand",
-      "name": "The Honeymooner"
+      "name": "The Honeymoonner"
     },
     "offers": {
       "@type": "AggregateOffer",

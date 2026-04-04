@@ -3,11 +3,16 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { motion } from 'framer-motion';
-import { Filter, Calendar, MapPin, Heart, X } from 'lucide-react';
+import { Calendar, MapPin, Heart, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
+import { PACKAGE_COLLECTIONS } from '../config/packageCollections';
+
+function normalizeCollectionTitle(value: string): string {
+  return value.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, ' ').trim();
+}
 
 const STYLE_ALIASES: Record<string, string[]> = {
   'beach bliss': ['Beach Bliss', 'Beach Romance'],
@@ -15,6 +20,154 @@ const STYLE_ALIASES: Record<string, string[]> = {
   'romantic adventure': ['Romantic Adventure', 'Bespoke Luxury'],
   'city romance': ['City Romance', 'City Intimacy']
 };
+
+const MENU_THEMES = [
+  {
+    name: 'The Honeymoonner Signature Experience',
+    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Couples who want a premium surprise-led honeymoon',
+    highlights: [
+      'Surprise itinerary elements',
+      'Cinematic love story photoshoot',
+      'Personalized gifts and storytelling',
+      'Scripture-based blessings'
+    ],
+    destinations: ['Curated globally based on couple preferences'],
+    tagline: 'Not just a honeymoon... a love story designed by The Honeymoonner.'
+  },
+  {
+    name: 'Cultural and Spiritual Romance',
+    image: 'https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Deep, meaningful couples',
+    highlights: ['History, culture, spiritual depth'],
+    destinations: ['Morocco', 'Turkey', 'Israel', 'Egypt'],
+    tagline: 'Love with meaning, not just moments.'
+  },
+  {
+    name: 'City Lights Romance',
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Urban, stylish couples',
+    highlights: ['Fine dining', 'Nightlife', 'Shopping'],
+    destinations: ['Paris', 'London', 'New York City', 'Tokyo'],
+    tagline: 'Love shines brighter in the city.'
+  },
+  {
+    name: 'Winter Wonderland Romance',
+    image: 'https://images.unsplash.com/photo-1517002161666-1b81c0c6cc70?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Couples who want something different',
+    highlights: ['Snow escapes', 'Fireplaces', 'Hot chocolate vibes'],
+    destinations: ['Switzerland', 'Iceland', 'Lapland'],
+    tagline: 'Love in the cold, hearts on fire.'
+  },
+  {
+    name: 'Safari and Beach Combo',
+    image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Couples who want adventure and relaxation',
+    highlights: ['Wildlife and beach in one trip', 'Popular for Africans and internationals'],
+    destinations: ['Kenya and Zanzibar', 'South Africa and Mauritius'],
+    tagline: 'Wild love meets ocean calm.'
+  },
+  {
+    name: 'Island Hopping Romance',
+    image: 'https://images.unsplash.com/photo-1506929662033-75393ca9940b?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Couples who love water and aesthetics',
+    highlights: ['Move between islands', 'Boat rides, beach clubs, sunsets'],
+    destinations: ['Greece', 'Maldives', 'Caribbean', 'Philippines'],
+    tagline: 'Every island, a new love story.'
+  },
+  {
+    name: 'Multi-Destination Adventure Love',
+    image: 'https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Couples who want variety and memories',
+    highlights: ['2-4 countries in one honeymoon', 'Mix of city, nature, and beach'],
+    destinations: ['Dubai/Doha -> Bali -> Singapore', 'Paris -> Rome -> Santorini'],
+    tagline: 'One love, multiple destinations.'
+  },
+  {
+    name: 'Ultra Luxury',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'High-net-worth couples and aspirational clients',
+    highlights: ['Overwater villas', 'Private jets', 'Yacht dinners', 'VIP experiences'],
+    destinations: ['Maldives', 'Dubai', 'Santorini', 'Amalfi Coast'],
+    tagline: 'If money was not a problem... this is it.'
+  },
+  {
+    name: 'Soft Luxury Escape (Starter Honeymoon)',
+    image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&q=80&w=1200',
+    perfectFor: 'Budget-conscious couples who still want elegance',
+    highlights: ['Africa plus island combo', '4-star resorts, spa treatments, beach dinners', 'Slow and romantic pace'],
+    destinations: ['Zanzibar', 'Cape Verde', 'Mauritius'],
+    tagline: 'Luxury, but make it attainable.'
+  }
+];
+
+const DESTINATION_COMBOS = [
+  {
+    name: 'West Africa -> Island -> South Africa',
+    image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Cotonou', 'Cape Verde', 'Cape Town', 'Johannesburg', 'Lagos']
+  },
+  {
+    name: 'The Asian Love Tour',
+    image: 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia', 'Lagos']
+  },
+  {
+    name: 'East Africa -> Southern Africa (Safari + Beach Combo)',
+    image: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa', 'Lagos']
+  },
+  {
+    name: 'Classic South Africa Loop',
+    image: 'https://images.unsplash.com/photo-1577948000111-9c97cdeb20b8?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Johannesburg', 'Port of Arrival']
+  },
+  {
+    name: 'Ultra Romance Route',
+    image: 'https://images.unsplash.com/photo-1513415277900-a62401e19be4?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Nairobi', 'Mauritius', 'Cape Town', 'Johannesburg', 'Port of Arrival']
+  },
+  {
+    name: 'Europe Love Trail',
+    image: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Paris', 'Santorini', 'Rome', 'Venice']
+  },
+  {
+    name: 'Turkey + Greece Romance',
+    image: 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Istanbul', 'Cappadocia', 'Santorini', 'Mykonos']
+  },
+  {
+    name: 'Morocco + Zanzibar (Culture + Beach)',
+    image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&q=80&w=1200',
+    route: ['Port of Departure', 'Marrakech', 'Sahara', 'Zanzibar']
+  },
+  {
+    name: 'The Island Obsession',
+    image: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&q=80&w=1200',
+    route: ['Maldives + UAE', 'Bora Bora', 'Seychelles + Mauritius']
+  },
+  {
+    name: 'European Love Trail (Extended)',
+    image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&q=80&w=1200',
+    route: ['Paris', 'Venice', 'Amalfi Coast', 'Switzerland', 'Rome', 'Florence']
+  },
+  {
+    name: 'Caribbean Slow Love',
+    image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&q=80&w=1200',
+    route: ['Saint Lucia', 'Jamaica + Bahamas', 'Antigua and Barbuda']
+  },
+  {
+    name: 'Safari + Luxe Beach',
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=1200',
+    route: ['Kenya -> Zanzibar', 'Tanzania (Serengeti) -> Seychelles', 'South Africa -> Mauritius']
+  },
+  {
+    name: 'USA Dream Honeymoon',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1200',
+    route: ['Hawaii (Maui/Oahu)', 'Napa Valley -> Los Angeles', 'New York City -> Las Vegas']
+  }
+];
 
 function matchesStyleFilter(pkgTags: string[], selectedStyle: string): boolean {
   if (selectedStyle === 'all') return true;
@@ -31,9 +184,13 @@ const Packages = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDestination, setSelectedDestination] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStyle, setSelectedCategoryStyle] = useState(() => location.state?.style || 'all');
   const [wishlistItems, setWishlistItems] = useState<string[]>([]);
+
+  const getCollectionPath = (name: string) => {
+    const collection = PACKAGE_COLLECTIONS.find((item) => normalizeCollectionTitle(item.title) === normalizeCollectionTitle(name));
+    return collection ? `/packages/type/${collection.slug}` : '/packages';
+  };
 
   // Adjust style filter when navigation state changes (e.g. user clicks a style on Home page)
   useEffect(() => {
@@ -68,14 +225,14 @@ const Packages = () => {
   };
 
   const filteredPackages = packages.filter(pkg => {
+    if (pkg.category !== 'honeymoon') return false;
     const matchesSearch = pkg.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          pkg.summary.toLowerCase().includes(searchTerm.toLowerCase());
     const destination = destinations.find(d => d.id === pkg.destinationId);
     const matchesDestination = selectedDestination === 'all' || destination?.slug === selectedDestination;
-    const matchesCategory = selectedCategory === 'all' || pkg.category === selectedCategory;
     const matchesStyle = matchesStyleFilter(pkg.tags, selectedStyle);
     
-    return matchesSearch && matchesDestination && matchesCategory && matchesStyle;
+    return matchesSearch && matchesDestination && matchesStyle;
   });
 
   if (isLoading) {
@@ -130,7 +287,7 @@ const Packages = () => {
             transition={{ delay: 0.2 }}
             className="text-brand-50 max-w-2xl mx-auto text-lg leading-relaxed font-medium"
           >
-            Discover our handpicked selection of the world's most romantic escapes, family vacations, and group adventures.
+            Discover our handpicked selection of the world's most romantic honeymoon escapes.
           </motion.p>
         </div>
       </section>
@@ -153,20 +310,6 @@ const Packages = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full lg:w-auto">
-              <div className="flex items-center gap-4 w-full sm:w-auto bg-brand-50 px-6 py-3 sm:py-4 rounded-full border-2 border-transparent focus-within:border-brand-accent/30 focus-within:bg-white transition-all">
-                <Filter className="text-brand-accent" size={18} />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-transparent border-none py-0 px-2 text-brand-900 focus:ring-0 appearance-none cursor-pointer font-medium text-sm sm:text-base min-w-[120px] sm:min-w-[140px]"
-                >
-                  <option value="all">All Love Stories</option>
-                  <option value="honeymoon">Honeymoons</option>
-                  <option value="family">Family Love</option>
-                  <option value="group">Shared Journeys</option>
-                </select>
-              </div>
-
               <div className="flex items-center gap-4 w-full sm:w-auto bg-brand-50 px-6 py-3 sm:py-4 rounded-full border-2 border-transparent focus-within:border-brand-accent/30 focus-within:bg-white transition-all">
                 <MapPin className="text-brand-accent" size={18} />
                 <select
@@ -204,6 +347,114 @@ const Packages = () => {
             </div>
           )}
         </div>
+
+        {/* Themes */}
+        <section id="themes" className="mb-16 sm:mb-20">
+          <div className="text-center mb-10 sm:mb-12">
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] font-bold text-brand-accent mb-4">Themes</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-4">Curated Honeymoon Themes</h2>
+            <p className="text-brand-600 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed">
+              Thoughtfully designed experiences for different travel styles, budgets, and personalities.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+            {MENU_THEMES.map((theme, idx) => (
+              <Link key={theme.name} to={getCollectionPath(theme.name)} className="block h-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="relative bg-white rounded-3xl border border-brand-100 p-6 sm:p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full"
+                >
+                    <div className="relative h-44 sm:h-48 -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 overflow-hidden rounded-t-3xl">
+                      <img
+                        src={theme.image}
+                        alt={theme.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-brand-900/55 via-brand-900/15 to-transparent" />
+                    </div>
+
+                  <div className="absolute left-6 right-6 top-0 h-1 rounded-b-full bg-gradient-to-r from-brand-accent/20 via-brand-accent to-brand-accent/20" />
+
+                  <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-3 leading-snug pt-2">{theme.name}</h3>
+                  <p className="text-xs uppercase tracking-[0.18em] font-bold text-brand-accent mb-4">Perfect for: {theme.perfectFor}</p>
+
+                  <ul className="space-y-2.5 mb-5">
+                    {theme.highlights.map((item) => (
+                      <li key={item} className="flex items-start gap-2.5 text-sm text-brand-700 leading-relaxed">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-accent/70 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400 mb-2">Destinations</p>
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {theme.destinations.map((destination) => (
+                      <span key={destination} className="text-xs bg-brand-50 border border-brand-100 rounded-full px-3 py-1 text-brand-700">
+                        {destination}
+                      </span>
+                    ))}
+                  </div>
+
+                  <p className="text-sm italic text-brand-600 border-l-2 border-brand-accent/30 pl-3">"{theme.tagline}"</p>
+                  <p className="mt-6 text-[10px] uppercase tracking-[0.25em] font-bold text-brand-accent">Open collection</p>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Multi-Destination Combos */}
+        <section className="mb-16 sm:mb-20">
+          <div className="text-center mb-10 sm:mb-12">
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] font-bold text-brand-accent mb-4">Multiple Destination Combos</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-4">Popular Route Ideas</h2>
+            <p className="text-brand-600 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed">
+              These route collections can be customized to each couple's budget, visa profile, and travel goals.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+            {DESTINATION_COMBOS.map((combo, idx) => (
+              <Link key={combo.name} to={getCollectionPath(combo.name)} className="block h-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.04 }}
+                  className="bg-white border border-brand-100 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-lg transition-all h-full"
+                >
+                    <div className="relative h-40 sm:h-44 -mx-5 -mt-5 sm:-mx-6 sm:-mt-6 mb-5 overflow-hidden rounded-t-2xl sm:rounded-t-3xl">
+                      <img
+                        src={combo.image}
+                        alt={combo.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-brand-900/55 via-brand-900/15 to-transparent" />
+                    </div>
+
+                  <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400 mb-2">Route {idx + 1}</p>
+                  <h3 className="text-lg sm:text-xl font-serif text-brand-900 mb-4">{combo.name}</h3>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {combo.route.map((stop, stopIdx) => (
+                      <div key={`${combo.name}-${stop}`} className="flex items-center gap-2.5">
+                        <span className="text-xs sm:text-sm px-3 py-1.5 rounded-full border border-brand-100 bg-brand-50 text-brand-700">
+                          {stop}
+                        </span>
+                        {stopIdx < combo.route.length - 1 && <span className="text-brand-300 text-xs">{'->'}</span>}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-5 text-[10px] uppercase tracking-[0.25em] font-bold text-brand-accent">Open route</p>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -284,7 +535,6 @@ const Packages = () => {
               onClick={() => {
                 setSearchTerm('');
                 setSelectedDestination('all');
-                setSelectedCategory('all');
                 setSelectedCategoryStyle('all');
               }}
               className="text-brand-accent font-medium mt-4 hover:underline"

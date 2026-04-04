@@ -21,6 +21,14 @@ const Home = () => {
   // Featured packages for the home page (first 2 honeymoons)
   const featuredPackages = packages.filter(p => p.category === 'honeymoon').slice(0, 2);
   const featuredDestinations = destinations.slice(0, 3);
+  const giftEyebrow = 'For Families of Newlyweds';
+  const giftTitle = 'Honeymoon Gift Package';
+  const giftPrimaryUrl = homeContent.giftPackage.primaryCtaUrl?.startsWith('/')
+    ? homeContent.giftPackage.primaryCtaUrl
+    : '/packages';
+  const giftSecondaryUrl = homeContent.giftPackage.secondaryCtaUrl?.startsWith('/')
+    ? homeContent.giftPackage.secondaryCtaUrl
+    : '/booking';
 
   useEffect(() => {
     let ignore = false;
@@ -82,7 +90,7 @@ const Home = () => {
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
+                  target.src = homeContent.fallbackImages.destination || "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/30 to-transparent" />
@@ -154,7 +162,7 @@ const Home = () => {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = ASSETS.FALLBACK_DESTINATION;
+                    target.src = homeContent.fallbackImages.package || ASSETS.FALLBACK_PACKAGE;
                   }}
                 />
                   <button
@@ -362,6 +370,51 @@ const Home = () => {
                 <Link to="/about" className="btn-primary w-full sm:w-auto px-10 py-4 inline-flex items-center justify-center gap-3 text-sm sm:text-base uppercase tracking-widest font-bold">
                   Our Philosophy <ArrowRight size={18} />
                 </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Honeymoon Gift Package */}
+      <section className="bg-brand-50/60 py-12 sm:py-16 px-4">
+        <div className="section-container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 items-center bg-white rounded-3xl sm:rounded-[42px] border border-brand-100 p-6 sm:p-10 lg:p-12 shadow-sm">
+            <div className="space-y-5 sm:space-y-6 text-center lg:text-left">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] font-bold text-brand-accent">
+                {giftEyebrow}
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 leading-tight">
+                {giftTitle}
+              </h2>
+              <p className="text-brand-700 text-base sm:text-lg leading-relaxed">
+                {homeContent.giftPackage.description}
+              </p>
+              <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 sm:gap-5 pt-2">
+                <Link to={giftPrimaryUrl} className="btn-primary w-full sm:w-auto px-8 py-3 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
+                  {homeContent.giftPackage.primaryCtaLabel}
+                </Link>
+                <Link to={giftSecondaryUrl} className="btn-outline w-full sm:w-auto px-8 py-3 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
+                  {homeContent.giftPackage.secondaryCtaLabel}
+                </Link>
+              </div>
+            </div>
+
+            <div className="relative h-64 sm:h-80 lg:h-[360px] rounded-2xl sm:rounded-3xl overflow-hidden">
+              <img
+                src={homeContent.giftPackage.image || ASSETS.ROMANTIC_MOMENT_HOME}
+                alt={homeContent.giftPackage.imageAlt}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = homeContent.fallbackImages.general || ASSETS.ROMANTIC_MOMENT_HOME;
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-brand-900/10 to-transparent" />
+              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                <p className="text-white text-sm sm:text-base font-medium leading-relaxed">
+                  {homeContent.giftPackage.note}
+                </p>
               </div>
             </div>
           </div>

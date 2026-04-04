@@ -12,15 +12,15 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({
-  title = 'The Honeymooner | Luxury Romantic Travel & Honeymoon Packages',
-  description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymooner.',
+  title = 'The Honeymoonner | Luxury Romantic Travel & Honeymoon Packages',
+  description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymoonner.',
   keywords = 'honeymoon, romantic travel, luxury travel, honeymoon packages, romantic getaways, destination wedding',
   image = 'https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png',
-  url = 'https://thehoneymooner.com',
+  url = 'https://thehoneymoonner.com',
   type = 'website',
   schema
 }) => {
-  const siteTitle = title.includes('The Honeymooner') ? title : `${title} | The Honeymooner`;
+  const siteTitle = title.includes('The Honeymoonner') ? title : `${title} | The Honeymoonner`;
 
   return (
     <Helmet>

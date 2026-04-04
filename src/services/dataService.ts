@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { ASSETS } from '../config/images';
 import type { 
   Destination, 
   TravelPackage, 
@@ -17,9 +18,62 @@ import type {
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
 const WP_SYNC_ENABLED = (import.meta.env.VITE_WP_SYNC_ENABLED ?? 'true') === 'true';
 const WP_PUBLIC_LEAD_ENDPOINT = import.meta.env.VITE_WP_PUBLIC_LEAD_ENDPOINT ?? '/custom/v1/leads';
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070';
 
 let wpReachable: boolean | null = null;
+let wpCheckPromise: Promise<boolean> | null = null;
+let siteImageFallbacksPromise: Promise<SiteImageFallbacks> | null = null;
+
+interface SiteImageFallbacks {
+  hero: string;
+  package: string;
+  destination: string;
+  testimonial: string;
+  general: string;
+}
+
+const DEFAULT_SITE_IMAGE_FALLBACKS: SiteImageFallbacks = {
+  hero: ASSETS.FALLBACK_HERO,
+  package: ASSETS.FALLBACK_PACKAGE,
+  destination: ASSETS.FALLBACK_DESTINATION,
+  testimonial: ASSETS.TESTIMONIALS.SARAH,
+  general: ASSETS.FALLBACK_PACKAGE
+};
+
+const FALLBACK_TESTIMONIALS: Testimonial[] = [
+  {
+    id: 't1',
+    coupleName: 'The Adewales',
+    location: 'Lagos, Nigeria',
+    destination: 'Maldives',
+    quote: 'A dream beyond our wildest imagination.',
+    story: 'From private seaplane arrivals to candlelit dinners, every detail was carefully planned and executed.',
+    image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800',
+    rating: 5,
+    date: 'Dec 2023'
+  },
+  {
+    id: 't2',
+    coupleName: 'Sarah & James',
+    location: 'London, UK',
+    destination: 'Santorini',
+    quote: 'Every sunset felt like a painting made just for us.',
+    story: 'Our villa and private experiences were perfectly matched to what we wanted from the trip.',
+    image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800',
+    rating: 5,
+    date: 'Sept 2023'
+  },
+  {
+    id: 't3',
+    coupleName: 'David & Elena',
+    location: 'New York, USA',
+    destination: 'Paris',
+    quote: 'The level of detail was unlike anything we have experienced.',
+    story: 'From hidden dining spots to seamless logistics, the trip felt effortless from beginning to end.',
+    image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&q=80&w=800',
+    rating: 5,
+    date: 'June 2023'
+  }
+];
 
 function bearerHeaders(token: string) {
   return {
@@ -32,19 +86,26 @@ async function checkWP(): Promise<boolean> {
     return false;
   }
   if (wpReachable === true) return true;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(`${WP_BASE_URL}/wp/v2`, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (res.ok) {
-      wpReachable = true;
-      return true;
+  if (wpReachable === false) return false;
+  if (wpCheckPromise) return wpCheckPromise;
+
+  wpCheckPromise = (async () => {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
+      const res = await fetch(`${WP_BASE_URL}/wp/v2`, { signal: controller.signal });
+      clearTimeout(timeout);
+      wpReachable = res.ok;
+      return res.ok;
+    } catch {
+      wpReachable = false;
+      return false;
+    } finally {
+      wpCheckPromise = null;
     }
-    return false;
-  } catch {
-    return false;
-  }
+  })();
+
+  return wpCheckPromise;
 }
 
 interface WPResponseItem {
@@ -95,6 +156,21 @@ interface WPPageItem {
     packages_title?: string;
     packages_subtitle?: string;
     packages_description?: string;
+    gift_eyebrow?: string;
+    gift_title?: string;
+    gift_description?: string;
+    gift_note?: string;
+    gift_image?: string | number | { url?: string; source_url?: string };
+    gift_image_alt?: string;
+    gift_primary_cta_label?: string;
+    gift_primary_cta_url?: string;
+    gift_secondary_cta_label?: string;
+    gift_secondary_cta_url?: string;
+    fallback_hero_image?: string | number | { url?: string; source_url?: string };
+    fallback_package_image?: string | number | { url?: string; source_url?: string };
+    fallback_destination_image?: string | number | { url?: string; source_url?: string };
+    fallback_testimonial_image?: string | number | { url?: string; source_url?: string };
+    fallback_general_image?: string | number | { url?: string; source_url?: string };
     booking_hero_eyebrow?: string;
     booking_hero_title?: string;
     booking_hero_description?: string;
@@ -326,6 +402,46 @@ async function resolveImageValue(value: unknown): Promise<string> {
   return '';
 }
 
+async function getSiteImageFallbacks(): Promise<SiteImageFallbacks> {
+  if (siteImageFallbacksPromise) return siteImageFallbacksPromise;
+
+  siteImageFallbacksPromise = (async () => {
+    const ok = await checkWP();
+    if (!ok) return DEFAULT_SITE_IMAGE_FALLBACKS;
+
+    try {
+      const response = await fetch(`${WP_BASE_URL}/wp/v2/pages?slug=home-settings&per_page=1`);
+      if (!response.ok) return DEFAULT_SITE_IMAGE_FALLBACKS;
+
+      const data = await response.json() as WPPageItem[];
+      const page = data[0];
+      if (!page?.acf) return DEFAULT_SITE_IMAGE_FALLBACKS;
+
+      const [hero, packageImage, destination, testimonial, general] = await Promise.all([
+        resolveImageValue(page.acf.fallback_hero_image),
+        resolveImageValue(page.acf.fallback_package_image),
+        resolveImageValue(page.acf.fallback_destination_image),
+        resolveImageValue(page.acf.fallback_testimonial_image),
+        resolveImageValue(page.acf.fallback_general_image)
+      ]);
+
+      return {
+        hero: hero || DEFAULT_SITE_IMAGE_FALLBACKS.hero,
+        package: packageImage || DEFAULT_SITE_IMAGE_FALLBACKS.package,
+        destination: destination || DEFAULT_SITE_IMAGE_FALLBACKS.destination,
+        testimonial: testimonial || DEFAULT_SITE_IMAGE_FALLBACKS.testimonial,
+        general: general || DEFAULT_SITE_IMAGE_FALLBACKS.general
+      };
+    } catch {
+      return DEFAULT_SITE_IMAGE_FALLBACKS;
+    } finally {
+      siteImageFallbacksPromise = null;
+    }
+  })();
+
+  return siteImageFallbacksPromise;
+}
+
 export const dataService = {
   checkWP,
   // --- Destinations ---
@@ -333,6 +449,7 @@ export const dataService = {
     try {
       const ok = await checkWP();
       if (!ok) return [];
+      const siteImageFallbacks = await getSiteImageFallbacks();
       const response = await fetch(`${WP_BASE_URL}/wp/v2/destinations?_embed&per_page=100`);
       if (!response.ok) return [];
       const raw = await response.json();
@@ -343,7 +460,7 @@ export const dataService = {
         country: cleanText(item.acf?.country || ''),
         continent: item.acf?.continent || 'Africa',
         description: cleanText(item?.content?.rendered || ''),
-        image: item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || await resolveImageValue(item?.acf?.image) || FALLBACK_IMAGE,
+        image: item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || await resolveImageValue(item?.acf?.image) || siteImageFallbacks.destination,
         slug: item?.slug || `destination-${item?.id ?? 'unknown'}`
       }))).then((items) => items.filter((item) => Boolean(item.id)));
     } catch (error) {
@@ -386,6 +503,7 @@ export const dataService = {
     try {
       const ok = await checkWP();
       if (!ok) return [];
+      const siteImageFallbacks = await getSiteImageFallbacks();
       const response = await fetch(`${WP_BASE_URL}/wp/v2/packages?_embed&per_page=100`);
       if (!response.ok) return [];
       const raw = await response.json();
@@ -393,7 +511,7 @@ export const dataService = {
       return await Promise.all(data.map(async (item: WPResponseItem) => {
         const gallery = parseGallery(item?.acf?.gallery);
         const resolvedFeaturedImage = await resolveImageValue(item?.acf?.featured_image);
-        const featuredImage = item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || resolvedFeaturedImage || gallery[0] || FALLBACK_IMAGE;
+        const featuredImage = item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || resolvedFeaturedImage || gallery[0] || siteImageFallbacks.package;
         const tiers = parsePricingTiers(item?.acf?.pricing_tiers);
         return {
           id: String(item?.id ?? ''),
@@ -527,6 +645,7 @@ export const dataService = {
     try {
       const ok = await checkWP();
       if (!ok) return [];
+      const siteImageFallbacks = await getSiteImageFallbacks();
       const testimonialsCategoryId = await getCategoryIdBySlug('testimonials');
       const categoriesExclude = testimonialsCategoryId ? `&categories_exclude=${testimonialsCategoryId}` : '';
       const response = await fetch(`${WP_BASE_URL}/wp/v2/posts?_embed&per_page=20${categoriesExclude}`);
@@ -537,9 +656,9 @@ export const dataService = {
         title: cleanText(item.title?.rendered || ''),
         excerpt: `${cleanText(item.excerpt?.rendered || '').substring(0, 160)}...`,
         category: cleanText(item._embedded?.['wp:term']?.[0]?.[0]?.name || 'Travel'),
-        author: cleanText(item._embedded?.author?.[0]?.name || 'The Honeymooner'),
+        author: cleanText(item._embedded?.author?.[0]?.name || 'The Honeymoonner'),
         date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        image: item._embedded?.['wp:featuredmedia']?.[0]?.source_url || FALLBACK_IMAGE,
+        image: item._embedded?.['wp:featuredmedia']?.[0]?.source_url || siteImageFallbacks.general,
         readTime: '8 min read',
         slug: item.slug,
         content: item.content?.rendered || ''
@@ -553,15 +672,20 @@ export const dataService = {
   async getTestimonials(): Promise<Testimonial[]> {
     try {
       const ok = await checkWP();
-      if (!ok) return [];
+      if (!ok) return FALLBACK_TESTIMONIALS;
+      const siteImageFallbacks = await getSiteImageFallbacks();
 
       const categoryId = await getCategoryIdBySlug('testimonials');
-      if (!categoryId) return [];
+      if (!categoryId) return FALLBACK_TESTIMONIALS;
 
       const response = await fetch(`${WP_BASE_URL}/wp/v2/posts?_embed&per_page=20&categories=${categoryId}`);
-      if (!response.ok) return [];
+      if (!response.ok) return FALLBACK_TESTIMONIALS;
 
       const data = await response.json() as WPResponseItem[];
+
+      if (!Array.isArray(data) || data.length === 0) {
+        return FALLBACK_TESTIMONIALS;
+      }
 
       return data.map((item) => {
         const meta = parseTestimonialMeta(item.content?.rendered || '');
@@ -574,14 +698,14 @@ export const dataService = {
           destination: cleanText(meta.destination || ''),
           quote,
           story,
-          image: item._embedded?.['wp:featuredmedia']?.[0]?.source_url || FALLBACK_IMAGE,
+          image: item._embedded?.['wp:featuredmedia']?.[0]?.source_url || siteImageFallbacks.testimonial,
           rating: Number(meta.rating || 5),
           date: meta.date || new Date(item.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
         };
       });
     } catch (error) {
       console.error('Error fetching testimonials:', error);
-      return [];
+      return FALLBACK_TESTIMONIALS;
     }
   },
 
@@ -589,6 +713,7 @@ export const dataService = {
     try {
       const ok = await checkWP();
       if (!ok) return null;
+      const siteImageFallbacks = await getSiteImageFallbacks();
       const response = await fetch(`${WP_BASE_URL}/wp/v2/pages?slug=home-settings&per_page=1`);
       if (!response.ok) return null;
       const data = await response.json() as WPPageItem[];
@@ -596,12 +721,13 @@ export const dataService = {
       if (!page?.acf) return null;
 
       const heroImage = await resolveImageValue(page.acf.hero_image);
+      const giftImage = await resolveImageValue(page.acf.gift_image);
 
       const fallbackHomeContent: HomeContent = {
         hero: {
           title: 'Plan a Once-in-a-Lifetime Honeymoon - Without the Stress',
           subtitle: 'We design fully personalized luxury honeymoon experiences - from destination selection to every intimate detail.',
-          image: FALLBACK_IMAGE,
+          image: siteImageFallbacks.hero,
           cta: 'Start Planning Your Honeymoon'
         },
         destinations: {
@@ -613,6 +739,19 @@ export const dataService = {
           title: 'Leave Where Your New Life Begins',
           subtitle: 'Signature Packages',
           description: "We don't just plan trips - we design deeply personal honeymoon experiences that reflect your story, your pace, and your idea of romance."
+        },
+        fallbackImages: siteImageFallbacks,
+        giftPackage: {
+          eyebrow: 'For Families of Newlyweds',
+          title: 'Honeymoon Gift Package',
+          description: 'Gift your children a stress-free, unforgettable honeymoon experience.',
+          note: 'A meaningful wedding gift with expert planning, curated stays, and full support from start to finish.',
+          image: siteImageFallbacks.general,
+          imageAlt: 'Parents gifting honeymoon package',
+          primaryCtaLabel: 'View Packages',
+          primaryCtaUrl: '/packages',
+          secondaryCtaLabel: 'Start Planning',
+          secondaryCtaUrl: '/booking'
         }
       };
 
@@ -637,6 +776,19 @@ export const dataService = {
           title: pick(page.acf.packages_title, fallbackHomeContent.packages.title),
           subtitle: pick(page.acf.packages_subtitle, fallbackHomeContent.packages.subtitle),
           description: pick(page.acf.packages_description, fallbackHomeContent.packages.description)
+        },
+        fallbackImages: siteImageFallbacks,
+        giftPackage: {
+          eyebrow: pick(page.acf.gift_eyebrow, fallbackHomeContent.giftPackage.eyebrow),
+          title: pick(page.acf.gift_title, fallbackHomeContent.giftPackage.title),
+          description: pick(page.acf.gift_description, fallbackHomeContent.giftPackage.description),
+          note: pick(page.acf.gift_note, fallbackHomeContent.giftPackage.note),
+          image: giftImage || siteImageFallbacks.general,
+          imageAlt: pick(page.acf.gift_image_alt, fallbackHomeContent.giftPackage.imageAlt),
+          primaryCtaLabel: pick(page.acf.gift_primary_cta_label, fallbackHomeContent.giftPackage.primaryCtaLabel),
+          primaryCtaUrl: pick(page.acf.gift_primary_cta_url, fallbackHomeContent.giftPackage.primaryCtaUrl),
+          secondaryCtaLabel: pick(page.acf.gift_secondary_cta_label, fallbackHomeContent.giftPackage.secondaryCtaLabel),
+          secondaryCtaUrl: pick(page.acf.gift_secondary_cta_url, fallbackHomeContent.giftPackage.secondaryCtaUrl)
         }
       };
     } catch (error) {
@@ -663,7 +815,7 @@ export const dataService = {
         },
         success: {
           title: 'Enquiry Received!',
-          message: 'Thank you for reaching out to The Honeymooner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
+          message: 'Thank you for reaching out to The Honeymoonner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
           cta: 'Return Home'
         },
         bespoke: {

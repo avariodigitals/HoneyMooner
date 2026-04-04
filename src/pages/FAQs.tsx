@@ -70,7 +70,7 @@ const FAQs = () => {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1455218873509-8097305ee378?auto=format&fit=crop&q=80&w=2070" 
-            alt="FAQs The Honeymooner" 
+            alt="FAQs The Honeymoonner" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-[1px]" />

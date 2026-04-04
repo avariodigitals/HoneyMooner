@@ -26,6 +26,33 @@ export interface PackageCollectionDefinition {
 }
 
 const romanticHeroImage = 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/yuriy-bogdanov-XuN44TajBGo-unsplash-scaled.jpg';
+const defaultCollectionHeroImage = 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg';
+
+const collectionHeroOverrides: Record<string, string> = {
+  'cultural-spiritual-romance': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1583939003579-730e3918a45a.jpg',
+  'city-lights-romance': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1502602898657-3e91760cbb34-2-scaled.jpg',
+  'winter-wonderland-romance': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/fernando-gago-MY7yQ1ISEIk-unsplash-scaled.jpg',
+  'safari-beach-combo': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/pablo-heimplatz-OSboZGvoEz4-unsplash.jpg',
+  'multi-destination-adventure-love': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1464822759023-fed622ff2c3b-scaled.jpg',
+  'ultra-luxury': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/cedric-dhaenens-69_7CRJUIOc-unsplash-scaled.jpg',
+  'soft-luxury-escape': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg',
+  'asian-love-tour': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hoi-an-and-da-nang-photographer-f1Yk1rGf3tE-unsplash-scaled.jpg',
+  'east-africa-southern-africa': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/pablo-heimplatz-OSboZGvoEz4-unsplash.jpg',
+  'europe-love-trail': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1502602898657-3e91760cbb34-2-scaled.jpg',
+  'turkey-greece-romance': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1439066615861-d1af74d74000-scaled.jpg',
+  'morocco-zanzibar-culture-beach': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/natalya-zaritskaya-SIOdjcYotms-unsplash-scaled.jpg',
+  'european-love-trail': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/fernando-gago-MY7yQ1ISEIk-unsplash-scaled.jpg',
+  'caribbean-slow-love': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg',
+  'safari-luxe-beach': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/pablo-heimplatz-OSboZGvoEz4-unsplash.jpg',
+  'usa-dream-honeymoon': 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg'
+};
+
+function resolveCollectionHeroImage(collection: PackageCollectionDefinition): string {
+  const image = collection.heroImage?.trim();
+  const hasPlaceholder = !image || image.includes('/images/placeholder-travel.svg');
+  if (!hasPlaceholder) return image;
+  return collectionHeroOverrides[collection.slug] || romanticHeroImage || defaultCollectionHeroImage;
+}
 
 export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
   {
@@ -445,5 +472,10 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
 ];
 
 export function findPackageCollection(slug: string): PackageCollectionDefinition | undefined {
-  return PACKAGE_COLLECTIONS.find((collection) => collection.slug === slug);
+  const collection = PACKAGE_COLLECTIONS.find((item) => item.slug === slug);
+  if (!collection) return undefined;
+  return {
+    ...collection,
+    heroImage: resolveCollectionHeroImage(collection)
+  };
 }

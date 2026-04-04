@@ -21,10 +21,29 @@ const STYLE_ALIASES: Record<string, string[]> = {
   'city romance': ['City Romance', 'City Intimacy']
 };
 
+const WP_MEDIA = {
+  romantic: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1519741497674-611481863552-scaled.jpg',
+  city: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1502602898657-3e91760cbb34-2-scaled.jpg',
+  winter: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/fernando-gago-MY7yQ1ISEIk-unsplash-scaled.jpg',
+  safari: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/pablo-heimplatz-OSboZGvoEz4-unsplash.jpg',
+  island: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1439066615861-d1af74d74000-scaled.jpg',
+  beach: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg',
+  adventure: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1464822759023-fed622ff2c3b-scaled.jpg',
+  coupleSnow: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/yuriy-bogdanov-XuN44TajBGo-unsplash-scaled.jpg',
+  dubai: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/cedric-dhaenens-69_7CRJUIOc-unsplash-scaled.jpg',
+  boraBora: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/romeo-a-oSIoto5nhqU-unsplash-scaled.jpg',
+  coastal: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hugh-whyte-SBOHLtENzEY-unsplash-scaled.jpg',
+  contact: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/natalya-zaritskaya-SIOdjcYotms-unsplash-scaled.jpg',
+  route: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/ibrahim-mushan-B5fzqOl7BdE-unsplash-scaled.jpg',
+  routeAlt: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hoi-an-and-da-nang-photographer-f1Yk1rGf3tE-unsplash-scaled.jpg',
+  story: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg',
+  fallback: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg'
+};
+
 const MENU_THEMES = [
   {
     name: 'The Honeymoonner Signature Experience',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.coupleSnow,
     perfectFor: 'Couples who want a premium surprise-led honeymoon',
     highlights: [
       'Surprise itinerary elements',
@@ -37,7 +56,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Cultural and Spiritual Romance',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.story,
     perfectFor: 'Deep, meaningful couples',
     highlights: ['History, culture, spiritual depth'],
     destinations: ['Morocco', 'Turkey', 'Israel', 'Egypt'],
@@ -45,7 +64,7 @@ const MENU_THEMES = [
   },
   {
     name: 'City Lights Romance',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.city,
     perfectFor: 'Urban, stylish couples',
     highlights: ['Fine dining', 'Nightlife', 'Shopping'],
     destinations: ['Paris', 'London', 'New York City', 'Tokyo'],
@@ -53,7 +72,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Winter Wonderland Romance',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.winter,
     perfectFor: 'Couples who want something different',
     highlights: ['Snow escapes', 'Fireplaces', 'Hot chocolate vibes'],
     destinations: ['Switzerland', 'Iceland', 'Lapland'],
@@ -61,7 +80,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Safari and Beach Combo',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.safari,
     perfectFor: 'Couples who want adventure and relaxation',
     highlights: ['Wildlife and beach in one trip', 'Popular for Africans and internationals'],
     destinations: ['Kenya and Zanzibar', 'South Africa and Mauritius'],
@@ -69,7 +88,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Island Hopping Romance',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.island,
     perfectFor: 'Couples who love water and aesthetics',
     highlights: ['Move between islands', 'Boat rides, beach clubs, sunsets'],
     destinations: ['Greece', 'Maldives', 'Caribbean', 'Philippines'],
@@ -77,7 +96,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Multi-Destination Adventure Love',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.adventure,
     perfectFor: 'Couples who want variety and memories',
     highlights: ['2-4 countries in one honeymoon', 'Mix of city, nature, and beach'],
     destinations: ['Dubai/Doha -> Bali -> Singapore', 'Paris -> Rome -> Santorini'],
@@ -85,7 +104,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Ultra Luxury',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.dubai,
     perfectFor: 'High-net-worth couples and aspirational clients',
     highlights: ['Overwater villas', 'Private jets', 'Yacht dinners', 'VIP experiences'],
     destinations: ['Maldives', 'Dubai', 'Santorini', 'Amalfi Coast'],
@@ -93,7 +112,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Soft Luxury Escape (Starter Honeymoon)',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.beach,
     perfectFor: 'Budget-conscious couples who still want elegance',
     highlights: ['Africa plus island combo', '4-star resorts, spa treatments, beach dinners', 'Slow and romantic pace'],
     destinations: ['Zanzibar', 'Cape Verde', 'Mauritius'],
@@ -104,67 +123,67 @@ const MENU_THEMES = [
 const DESTINATION_COMBOS = [
   {
     name: 'West Africa -> Island -> South Africa',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.route,
     route: ['Port of Departure', 'Cotonou', 'Cape Verde', 'Cape Town', 'Johannesburg', 'Lagos']
   },
   {
     name: 'The Asian Love Tour',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.routeAlt,
     route: ['Port of Departure', 'Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia', 'Lagos']
   },
   {
     name: 'East Africa -> Southern Africa (Safari + Beach Combo)',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.safari,
     route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa', 'Lagos']
   },
   {
     name: 'Classic South Africa Loop',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.coastal,
     route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Johannesburg', 'Port of Arrival']
   },
   {
     name: 'Ultra Romance Route',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.romantic,
     route: ['Port of Departure', 'Nairobi', 'Mauritius', 'Cape Town', 'Johannesburg', 'Port of Arrival']
   },
   {
     name: 'Europe Love Trail',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.city,
     route: ['Port of Departure', 'Paris', 'Santorini', 'Rome', 'Venice']
   },
   {
     name: 'Turkey + Greece Romance',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.island,
     route: ['Port of Departure', 'Istanbul', 'Cappadocia', 'Santorini', 'Mykonos']
   },
   {
     name: 'Morocco + Zanzibar (Culture + Beach)',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.contact,
     route: ['Port of Departure', 'Marrakech', 'Sahara', 'Zanzibar']
   },
   {
     name: 'The Island Obsession',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.boraBora,
     route: ['Maldives + UAE', 'Bora Bora', 'Seychelles + Mauritius']
   },
   {
     name: 'European Love Trail (Extended)',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.winter,
     route: ['Paris', 'Venice', 'Amalfi Coast', 'Switzerland', 'Rome', 'Florence']
   },
   {
     name: 'Caribbean Slow Love',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.beach,
     route: ['Saint Lucia', 'Jamaica + Bahamas', 'Antigua and Barbuda']
   },
   {
     name: 'Safari + Luxe Beach',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.safari,
     route: ['Kenya -> Zanzibar', 'Tanzania (Serengeti) -> Seychelles', 'South Africa -> Mauritius']
   },
   {
     name: 'USA Dream Honeymoon',
-    image: '/images/placeholder-travel.svg',
+    image: WP_MEDIA.fallback,
     route: ['Hawaii (Maui/Oahu)', 'Napa Valley -> Los Angeles', 'New York City -> Las Vegas']
   }
 ];

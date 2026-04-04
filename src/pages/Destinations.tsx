@@ -318,7 +318,7 @@ const Destinations = () => {
             </div>
             <div className="relative">
               <img
-                src="/images/placeholder-travel.svg"
+                src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1583939003579-730e3918a45a.jpg"
                 alt="Santorini"
                 className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl"
               />

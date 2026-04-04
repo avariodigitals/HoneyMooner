@@ -41,6 +41,12 @@ const categoryIcons: { [key: string]: LucideIcon } = {
   payment: CreditCard
 };
 
+const PACKAGE_HERO_FALLBACK = 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg';
+
+function hasUsableImage(image?: string): image is string {
+  return Boolean(image && image.trim().length > 0 && !image.includes('/images/placeholder-travel.svg'));
+}
+
 const PackageDetail = () => {
   const { slug } = useParams();
   const { packages, destinations, posts, isLoading } = useData();
@@ -93,6 +99,15 @@ const PackageDetail = () => {
   }
 
   if (!pkg) return <div className="pt-32 min-h-screen section-container">Package not found</div>;
+
+  const selectedGalleryImage = pkg.gallery[currentImgIndex];
+  const heroImage = hasUsableImage(selectedGalleryImage)
+    ? selectedGalleryImage
+    : hasUsableImage(destination?.image)
+      ? destination.image
+      : hasUsableImage(pkg.featuredImage)
+        ? pkg.featuredImage
+        : PACKAGE_HERO_FALLBACK;
 
   const selectedTier = pkg.tiers.find(t => t.id === selectedTierId) || pkg.tiers[0];
 
@@ -151,7 +166,7 @@ const PackageDetail = () => {
         title={pkg.seo?.title || pkg.title}
         description={pkg.seo?.description || pkg.summary}
         keywords={pkg.seo?.keywords?.join(', ')}
-        image={pkg.featuredImage}
+        image={heroImage}
         type="product"
         schema={packageSchema}
       />
@@ -162,12 +177,12 @@ const PackageDetail = () => {
       <section className="relative h-[60vh] sm:h-[70vh] min-h-[450px] sm:min-h-[500px] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={pkg.gallery[currentImgIndex]}
+            src={heroImage}
             alt={pkg.title}
             className="w-full h-full object-cover brightness-[0.8]"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = "/images/placeholder-travel.svg";
+              target.src = PACKAGE_HERO_FALLBACK;
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-brand-900/80 via-brand-900/20 to-transparent" />

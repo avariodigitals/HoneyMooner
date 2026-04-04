@@ -48,6 +48,16 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
         return;
       }
 
+      if (!paymentService.isEnabled()) {
+        if (!ignore) {
+          setQuoteAmount(null);
+          setQuoteBaseAmount(null);
+          setIsQuoteLoading(false);
+          setErrorMessage('PayPal payments are unavailable in this environment.');
+        }
+        return;
+      }
+
       setIsQuoteLoading(true);
       setErrorMessage('');
 

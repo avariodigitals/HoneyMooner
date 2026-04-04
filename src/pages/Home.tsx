@@ -58,8 +58,8 @@ const Home = () => {
       <Hero />
 
       {/* Featured Destinations */}
-      <section className="section-container px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <div className="text-center mb-12 sm:mb-16 max-w-2xl mx-auto">
+      <section className="section-container">
+        <div className="text-center mb-10 sm:mb-12 max-w-2xl mx-auto">
           <p className="script-font mb-4 text-2xl sm:text-3xl lg:text-4xl">{homeContent.destinations.subtitle}</p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-6 px-2 leading-tight">
             {homeContent.destinations.title}
@@ -123,9 +123,9 @@ const Home = () => {
       </section>
 
       {/* Signature Packages */}
-      <section className="bg-brand-100/50 py-16 sm:py-24">
+      <section className="bg-brand-100/50 py-12 sm:py-16">
         <div className="section-container px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-12 sm:mb-16 gap-8 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-10 sm:mb-12 gap-8 text-center md:text-left">
             <div className="max-w-2xl">
               <p className="script-font mb-4 text-2xl sm:text-3xl lg:text-4xl">{homeContent.packages.subtitle}</p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-6 leading-tight">
@@ -217,12 +217,12 @@ const Home = () => {
       </section>
 
       {/* Browse by Style */}
-      <section className="py-24 bg-white overflow-hidden">
+      <section className="py-12 sm:py-16 bg-white overflow-hidden">
         <div className="section-container">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-12">
             <p className="script-font mb-4 text-brand-accent italic">Your Perfect Match</p>
             <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">Browse by Style</h2>
-            <p className="text-brand-600/90 max-w-2xl mx-auto text-lg">Every love story is unique. Find the experience that speaks to yours.</p>
+            <p className="text-brand-600/90 max-w-2xl mx-auto text-lg">Every couple is unique. Find the experience that fits yours.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -291,7 +291,7 @@ const Home = () => {
       </section>
 
       {/* Why Choose Us / Reassurance */}
-      <section className="py-16 sm:py-24 bg-brand-50/50 overflow-hidden">
+      <section className="py-12 sm:py-16 bg-brand-50/50 overflow-hidden">
         <div className="section-container px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-20 items-center">
             <div className="relative order-2 lg:order-1">
@@ -316,7 +316,7 @@ const Home = () => {
                       <Heart className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" />
                     </div>
                     <div>
-                      <p className="font-serif text-base sm:text-lg text-brand-900 leading-tight">1,200+ Love Stories</p>
+                      <p className="font-serif text-base sm:text-lg text-brand-900 leading-tight">1,200+ Trips Planned</p>
                       <p className="text-[8px] sm:text-[10px] text-brand-400 uppercase tracking-widest font-bold">Planned with perfection</p>
                     </div>
                   </div>
@@ -340,7 +340,7 @@ const Home = () => {
                   Where Your New <br className="hidden sm:block" /> Life Begins
                 </h2>
                 <p className="text-brand-600/90 text-base sm:text-lg leading-relaxed mb-8">
-                  We don't just book trips; we curate the opening chapter of your forever. From the first consultation to the final sunset, every detail is handled with the intimacy and care your love story deserves.
+                  We plan every detail from your first consultation to your final day abroad, so your honeymoon feels seamless, personal, and stress-free.
                 </p>
               </div>
 
@@ -369,13 +369,13 @@ const Home = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 sm:py-24 bg-white relative overflow-hidden">
+      <section className="py-12 sm:py-16 bg-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-brand-100 to-transparent" />
         <div className="section-container px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
+          <div className="text-center mb-10 sm:mb-12">
             <p className="script-font mb-4 text-brand-accent italic text-xl sm:text-2xl">Romantic Reality</p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-6 leading-tight">Love Stories from Our Couples</h2>
-            <p className="text-brand-600/90 max-w-2xl mx-auto text-base sm:text-lg">Real moments, shared journeys, and the beginning of forever.</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-6 leading-tight">Stories from Our Couples</h2>
+            <p className="text-brand-600/90 max-w-2xl mx-auto text-base sm:text-lg">Real moments and memorable trips from couples we have planned for.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
@@ -429,7 +429,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-brand-900 py-16 sm:py-24 text-center px-4">
+      <section className="bg-brand-900 py-12 sm:py-16 text-center px-4">
         <div className="section-container">
           <p className="script-font text-brand-accent mb-6 italic text-xl sm:text-2xl">Ready to Begin?</p>
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif text-white mb-6 sm:mb-8 max-w-3xl mx-auto leading-tight">

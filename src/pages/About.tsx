@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Heart, Globe, Users, Award, Camera } from 'lucide-react';
+import { Heart, Globe, Users, Award } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 
 const About = () => {
@@ -30,7 +30,7 @@ const About = () => {
             animate={{ opacity: 1, y: 0 }}
             className="script-font text-white mb-4 block"
           >
-            Our Love Story
+            Our Story
           </motion.span>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
@@ -38,7 +38,7 @@ const About = () => {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-serif mb-6"
           >
-            Crafting Moments That Last Forever
+            Planning Exceptional Honeymoons
           </motion.h1>
         </div>
       </section>
@@ -53,9 +53,9 @@ const About = () => {
           >
             <h2 className="text-3xl md:text-4xl font-serif mb-6 text-brand-900">The Honeymooner Philosophy</h2>
             <p className="text-lg text-brand-700 mb-6 leading-relaxed">
-              We believe that the start of your journey as a married couple should be as magical as the wedding itself. 
-              The Honeymooner was born out of a desire to create a standalone, premium sanctuary for couples seeking 
-              more than just a trip—they seek an experience that reflects their unique love story.
+              We believe your honeymoon should be as intentional and memorable as your wedding day.
+              The Honeymooner was built to offer a premium planning experience for couples who want
+              more than a standard package.
             </p>
             <p className="text-lg text-brand-700 mb-8 leading-relaxed">
               From the crystal-clear waters of the Maldives to the rustic charm of Tuscany, we curate every detail 
@@ -85,10 +85,6 @@ const About = () => {
               alt="Romantic Dinner" 
               className="rounded-2xl shadow-2xl"
             />
-            <div className="absolute -bottom-6 -left-6 p-6 bg-white rounded-xl shadow-xl hidden md:block">
-              <Camera className="w-8 h-8 text-brand-accent mb-2" />
-              <p className="font-serif italic text-brand-900">Capturing love in its purest form.</p>
-            </div>
           </motion.div>
         </div>
       </section>

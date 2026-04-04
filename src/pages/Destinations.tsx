@@ -199,7 +199,7 @@ const Destinations = () => {
             transition={{ delay: 0.2 }}
             className="text-brand-50 max-w-2xl mx-auto text-lg leading-relaxed font-medium"
           >
-            From tropical islands to historic cities, find the perfect backdrop for your love story.
+            From tropical islands to historic cities, find the perfect setting for your honeymoon.
           </motion.p>
         </div>
       </section>

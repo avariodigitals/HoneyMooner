@@ -220,88 +220,100 @@ const PackageDetail = () => {
       </section>
 
       {/* Main Content Grid */}
-      <section className="section-container px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 sm:gap-16 py-12 sm:py-20">
+      <section className="section-container px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 sm:gap-16">
         <div className="lg:col-span-2 space-y-12 sm:space-y-16">
           {/* Summary & Description */}
           <div className="space-y-6 sm:space-y-8">
             <p className="script-font text-brand-accent italic text-xl sm:text-2xl">The Experience</p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-brand-900 leading-tight">Experience the magic of {destination?.name}</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-brand-900 leading-tight">Experience {destination?.name}</h2>
             <p className="text-brand-700 text-base sm:text-lg leading-relaxed first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-3 first-letter:text-brand-accent">
               {pkg.description}
             </p>
           </div>
 
           {/* Interactive Journey Map (Stylized) */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-brand-accent/5 rounded-[32px] sm:rounded-[48px] -rotate-1 scale-105 transition-transform group-hover:rotate-0 group-hover:scale-100 duration-700" />
-            <div className="relative bg-white rounded-[24px] sm:rounded-[40px] overflow-hidden border border-brand-100 shadow-xl aspect-[4/3] xs:aspect-[16/9] sm:aspect-[21/9]">
-              <img 
-                src={pkg.featuredImage} 
-                className="w-full h-full object-cover opacity-40 grayscale-[0.5] contrast-[1.1]" 
-                alt="Journey Map"
-              />
-              <div className="absolute inset-0 bg-brand-900/10" />
-              
-              {/* Animated Path & Markers */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 400">
-                <motion.path
-                  d="M 150 200 Q 300 100 500 250 T 850 150"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeDasharray="10 10"
-                  className="text-brand-accent opacity-60"
-                  initial={{ pathLength: 0 }}
-                  whileInView={{ pathLength: 1 }}
-                  transition={{ duration: 2.5, ease: "easeInOut" }}
+          <div className="space-y-5 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <p className="script-font text-brand-accent italic text-xl sm:text-2xl">Journey Visualization</p>
+                <h3 className="text-2xl sm:text-3xl font-serif text-brand-900 leading-tight">Journey at a Glance</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-brand-600 max-w-md sm:text-right leading-relaxed">
+                Track your route from arrival to departure.
+              </p>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute -inset-1 sm:-inset-2 bg-gradient-to-r from-brand-accent/20 via-amber-300/20 to-brand-900/15 rounded-[28px] sm:rounded-[44px] blur-md sm:blur-lg" />
+              <div className="relative bg-white rounded-[24px] sm:rounded-[40px] overflow-hidden border border-brand-100 shadow-2xl aspect-[16/10] sm:aspect-[21/9]">
+                <img
+                  src={pkg.featuredImage}
+                  className="w-full h-full object-cover opacity-45 saturate-[0.9] contrast-[1.08] scale-[1.02] group-hover:scale-105 transition-transform duration-1000"
+                  alt="Journey Map"
                 />
-                
-                {/* Marker 1 */}
-                <motion.g 
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-brand-accent"
-                >
-                  <circle cx="150" cy="200" r="8" fill="currentColor" />
-                  <circle cx="150" cy="200" r="16" stroke="currentColor" fill="none" className="animate-ping opacity-40" />
-                  <foreignObject x="170" y="185" width="150" height="50">
-                    <div className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full shadow-sm border border-brand-100">Arrival</div>
-                  </foreignObject>
-                </motion.g>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-brand-50/10 to-brand-900/35" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.35),transparent_42%),radial-gradient(circle_at_82%_78%,rgba(212,168,106,0.2),transparent_38%)]" />
 
-                {/* Marker 2 */}
-                <motion.g 
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.5 }}
-                  className="text-brand-accent"
-                >
-                  <circle cx="500" cy="250" r="8" fill="currentColor" />
-                  <foreignObject x="520" y="235" width="150" height="50">
-                    <div className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full shadow-sm border border-brand-100">The Heart</div>
-                  </foreignObject>
-                </motion.g>
-
-                {/* Marker 3 */}
-                <motion.g 
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 2.5 }}
-                  className="text-brand-accent"
-                >
-                  <circle cx="850" cy="150" r="8" fill="currentColor" />
-                  <foreignObject x="870" y="135" width="150" height="50">
-                    <div className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-900 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full shadow-sm border border-brand-100">Sunset Departure</div>
-                  </foreignObject>
-                </motion.g>
-              </svg>
-
-              <div className="absolute top-4 sm:top-6 left-4 sm:left-6 flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-accent/20 backdrop-blur-md flex items-center justify-center text-brand-accent border border-brand-accent/20">
-                  <MapPin className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                <div className="absolute top-4 sm:top-6 left-4 sm:left-6 flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-md border border-white/60 rounded-full px-3 sm:px-4 py-2 shadow-lg">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-brand-accent/15 flex items-center justify-center text-brand-accent border border-brand-accent/25">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </div>
+                  <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-brand-900">Journey Visualization</p>
                 </div>
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-brand-900">Journey Visualization</p>
+
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 400" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="journeyPathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#D4A86A" />
+                      <stop offset="50%" stopColor="#FFFFFF" />
+                      <stop offset="100%" stopColor="#8C6C4A" />
+                    </linearGradient>
+                  </defs>
+                  <motion.path
+                    d="M 140 235 Q 330 80 520 230 T 860 135"
+                    fill="none"
+                    stroke="url(#journeyPathGradient)"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray="10 11"
+                    className="opacity-90"
+                    initial={{ pathLength: 0 }}
+                    whileInView={{ pathLength: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 2.2, ease: 'easeInOut' }}
+                  />
+
+                  {[{ x: 140, y: 235 }, { x: 520, y: 230 }, { x: 860, y: 135 }].map((point, idx) => (
+                    <motion.g
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.7 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.45 + idx * 0.45, duration: 0.45 }}
+                    >
+                      <circle cx={point.x} cy={point.y} r="8" fill="#D4A86A" />
+                      <circle cx={point.x} cy={point.y} r="17" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="2" fill="none" />
+                    </motion.g>
+                  ))}
+                </svg>
+
+                <div className="absolute left-[11%] top-[58%] sm:left-[14%] sm:top-[56%]">
+                  <span className="inline-flex items-center rounded-full border border-white/70 bg-white/85 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold text-brand-900 shadow-md backdrop-blur-sm">
+                    Arrival
+                  </span>
+                </div>
+                <div className="absolute left-[45%] top-[57%] sm:left-[52%] sm:top-[54%]">
+                  <span className="inline-flex items-center rounded-full border border-white/70 bg-white/85 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold text-brand-900 shadow-md backdrop-blur-sm">
+                    The Heart
+                  </span>
+                </div>
+                <div className="absolute left-[74%] top-[33%] sm:left-[87%] sm:top-[31%] sm:-translate-x-full">
+                  <span className="inline-flex items-center rounded-full border border-white/70 bg-white/85 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold text-brand-900 shadow-md backdrop-blur-sm whitespace-nowrap">
+                    Sunset Departure
+                  </span>
+                </div>
+
+                <div className="absolute left-0 right-0 bottom-0 h-16 sm:h-20 bg-gradient-to-t from-brand-900/70 via-brand-900/20 to-transparent" />
               </div>
             </div>
           </div>
@@ -490,7 +502,7 @@ const PackageDetail = () => {
                 onSuccess={(details) => console.log('Deposit paid', details)} 
               />
               <p className="text-[9px] sm:text-[10px] text-center text-brand-400 italic">
-                Secure your romantic escape with a non-refundable deposit.
+                Secure your romantic escape with a deposit.
               </p>
             </div>
 

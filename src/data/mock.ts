@@ -153,7 +153,7 @@ Object.keys(packageData).forEach(category => {
           if (name === 'Maldives') return '7 Days of private overwater luxury, sunset dinners, and curated romantic moments.';
           if (name === 'Santorini') return 'Breathtaking caldera views, private infinity pools, and candlelit dinners under the stars.';
           if (name === 'Paris') return 'The ultimate city of love with private river cruises and hidden rooftop experiences.';
-          return `A deeply personal ${name} honeymoon experience designed to reflect your unique love story.`;
+          return `A personalized ${name} honeymoon experience designed around your preferences.`;
         }
         return `Luxury ${cat} trip to ${name}.`;
       };

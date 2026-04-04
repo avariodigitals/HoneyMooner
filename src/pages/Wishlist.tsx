@@ -92,7 +92,7 @@ const Wishlist = () => {
             transition={{ duration: 1, delay: 0.4 }}
             className="text-white/80 text-base lg:text-xl font-light italic max-w-2xl mx-auto drop-shadow-lg"
           >
-            "Every great love story begins with a shared dream."
+            "Great trips start with a shared plan."
           </motion.p>
         </div>
       </section>
@@ -199,9 +199,9 @@ const Wishlist = () => {
                   </div>
                 </div>
                 <div className="space-y-6">
-                  <h2 className="text-4xl font-serif text-brand-900 italic">Your Account is Silent.</h2>
+                  <h2 className="text-4xl font-serif text-brand-900 italic">Your wishlist is empty.</h2>
                   <p className="text-brand-500 max-w-lg mx-auto text-lg font-light leading-relaxed">
-                    A thousand romantic escapes are waiting to be part of your story. Explore our curated collections and let your heart decide.
+                    Explore our destinations and save the experiences you want to plan next.
                   </p>
                 </div>
                 <Link to="/destinations" className="btn-primary inline-flex items-center gap-4 py-5 px-12 text-lg shadow-xl shadow-brand-accent/20 group">
@@ -228,14 +228,14 @@ const Wishlist = () => {
               <div className="space-y-3 lg:space-y-4">
                 <p className="script-font text-brand-accent text-2xl lg:text-3xl italic">The Next Chapter</p>
                 <h2 className="text-3xl sm:text-4xl lg:text-6xl font-serif text-white max-w-3xl mx-auto leading-tight">
-                  Ready to Turn These Dreams <br />
-                  <span className="italic font-light opacity-80">Into Your Forever?</span>
+                  Ready to Turn These Picks <br />
+                  <span className="italic font-light opacity-80">Into a Booked Trip?</span>
                 </h2>
               </div>
               
               <p className="text-brand-200/70 text-base lg:text-lg max-w-xl mx-auto font-light leading-relaxed">
-                Our concierge is ready to craft your bespoke itinerary based on your collection. 
-                Your effortless romance begins with a single conversation.
+                Our concierge team can build an itinerary based on your saved collection.
+                Start with a quick consultation.
               </p>
 
               <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 lg:gap-8 pt-4 lg:pt-6">

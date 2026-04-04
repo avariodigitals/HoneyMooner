@@ -10,7 +10,6 @@ import {
   User as UserIcon, 
   ArrowRight, 
   Loader2, 
-  Sparkles,
   ChevronRight
 } from 'lucide-react';
 
@@ -149,9 +148,6 @@ const Account = () => {
                     <div className="w-16 h-16 bg-brand-900 rounded-2xl flex items-center justify-center text-brand-accent shadow-xl shadow-brand-900/20 rotate-12">
                       <Heart size={28} fill="currentColor" />
                     </div>
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-brand-accent rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
-                      <Sparkles size={12} />
-                    </div>
                   </div>
                 </div>
 
@@ -160,7 +156,7 @@ const Account = () => {
                     {isLogin ? "Welcome Back" : "Start Your Journey"}
                   </h2>
                   <p className="text-brand-50 text-xs italic opacity-80">
-                    {isLogin ? "Your personal sanctuary awaits..." : "Begin the opening chapter of your forever."}
+                    {isLogin ? "Access your saved plans and preferences." : "Create an account to manage your travel plans."}
                   </p>
                 </div>
 
@@ -181,7 +177,7 @@ const Account = () => {
                             required
                             autoComplete="email"
                             className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
-                            placeholder="love@example.com"
+                            placeholder="email@example.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           />
@@ -207,7 +203,7 @@ const Account = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Secret Password</label>
+                    <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Password</label>
                     <div className="relative">
                       <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
                       <input
@@ -230,7 +226,7 @@ const Account = () => {
                         exit={{ opacity: 0, height: 0 }}
                         className="space-y-1.5"
                       >
-                        <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Confirm Secret</label>
+                        <label className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block ml-4">Confirm Password</label>
                         <div className="relative">
                           <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
                           <input
@@ -251,7 +247,7 @@ const Account = () => {
                     <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 mb-1">
                       <p className="text-red-500 text-[10px] text-center italic font-medium">
                         {error.includes('already exists') || error.includes('user_exists') 
-                          ? "This love story has already begun! Please login instead."
+                          ? "Account already exists. Please login instead."
                           : error}
                       </p>
                     </div>

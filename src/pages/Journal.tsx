@@ -161,8 +161,8 @@ const Journal = () => {
             <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-8 text-brand-accent/40">
               <Heart size={40} />
             </div>
-            <h3 className="text-3xl font-serif text-brand-900 mb-4">No stories found matching your heart's desire...</h3>
-            <p className="text-brand-600 max-w-md mx-auto">Try adjusting your search or explore our popular categories for romantic inspiration.</p>
+            <h3 className="text-3xl font-serif text-brand-900 mb-4">No stories found for your search.</h3>
+            <p className="text-brand-600 max-w-md mx-auto">Try a different keyword or explore our popular categories.</p>
             <button 
               onClick={() => setSearchTerm('')}
               className="mt-8 text-brand-accent font-bold uppercase tracking-widest text-xs border-b-2 border-brand-accent/20 hover:border-brand-accent transition-all pb-1"
@@ -188,7 +188,7 @@ const Journal = () => {
           <form className="max-w-md mx-auto flex flex-col sm:flex-row gap-4">
             <input 
               type="email" 
-              placeholder="Your love story's email..." 
+              placeholder="Your email address..." 
               className="flex-grow px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white placeholder:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/50 transition-all"
               required
             />

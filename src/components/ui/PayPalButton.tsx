@@ -29,9 +29,11 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
   const [errorMessage, setErrorMessage] = useState('');
   const [quoteAmount, setQuoteAmount] = useState<number | null>(null);
   const [quoteCurrency, setQuoteCurrency] = useState<string>('USD');
+  const [quoteBaseAmount, setQuoteBaseAmount] = useState<number | null>(null);
+  const [quoteDepositType, setQuoteDepositType] = useState<'fixed' | 'percentage'>('fixed');
   const [isQuoteLoading, setIsQuoteLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PayPalPaymentDetails | null>(null);
-  const { currency } = useCurrency();
+  const { currency, formatPrice } = useCurrency();
 
   useEffect(() => {
     let ignore = false;
@@ -54,11 +56,14 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
         if (ignore) return;
         setQuoteAmount(quote.amount);
         setQuoteCurrency(quote.currency);
+        setQuoteBaseAmount(quote.base_amount);
+        setQuoteDepositType(quote.deposit_type);
       } catch (error) {
         if (ignore) return;
         const message = error instanceof Error ? error.message : 'Unable to load payment amount.';
         setErrorMessage(message);
         setQuoteAmount(null);
+        setQuoteBaseAmount(null);
       } finally {
         if (!ignore) {
           setIsQuoteLoading(false);
@@ -156,6 +161,12 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
   };
 
   const isUnavailable = disabled || isProcessing || isQuoteLoading || quoteAmount === null;
+  const percentageValue = quoteBaseAmount && quoteBaseAmount > 0
+    ? Math.round((quoteAmount ?? 0) / quoteBaseAmount * 100)
+    : null;
+  const hasCurrencyConversion = quoteAmount !== null && quoteCurrency !== currency.code;
+  const selectedCurrencyAmount = quoteAmount !== null ? formatPrice(quoteAmount, quoteCurrency) : null;
+  const chargeAmount = quoteAmount !== null ? `${quoteCurrency} ${quoteAmount.toFixed(2)}` : null;
 
   return (
     <>
@@ -179,9 +190,9 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
             </svg>
             <span className="italic">Pay with</span>
             <span className="font-extrabold italic text-[#003087]">PayPal</span>
-            {quoteAmount !== null && (
+            {selectedCurrencyAmount && (
               <span className="text-xs font-semibold text-[#2C2E2F]">
-                {quoteCurrency} {quoteAmount.toFixed(2)}
+                {selectedCurrencyAmount}
               </span>
             )}
           </>
@@ -192,6 +203,17 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
         <p className="mt-3 text-center text-xs text-red-600">
           {errorMessage}
         </p>
+      )}
+
+      {quoteAmount !== null && !errorMessage && (
+        <div className="mt-3 space-y-1 text-center">
+          <p className="text-[11px] text-brand-500">
+            {quoteDepositType === 'percentage' && percentageValue !== null
+              ? `${percentageValue}% deposit due now.`
+              : 'Deposit due now.'}
+            {hasCurrencyConversion && chargeAmount ? ` Charged as ${chargeAmount}.` : ''}
+          </p>
+        </div>
       )}
 
       <SuccessModal

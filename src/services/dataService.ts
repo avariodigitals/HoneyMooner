@@ -605,7 +605,7 @@ export const dataService = {
           cta: 'Start Planning Your Honeymoon'
         },
         destinations: {
-          title: 'Where Do You Want Your Love Story to Begin?',
+          title: 'Where Do You Want to Begin?',
           subtitle: "Choose from the world's most romantic destinations - curated for unforgettable experiences.",
           description: "Our handpicked collection of the world's most romantic escapes, designed for couples who seek more than just a trip."
         },
@@ -659,7 +659,7 @@ export const dataService = {
         hero: {
           eyebrow: 'The First Step',
           title: 'Plan Your Dream Escape',
-          description: 'Fill out the form below and our specialists will create a personalized itinerary for your romantic journey.'
+          description: 'Fill out the form below and our specialists will create a personalized itinerary for your trip.'
         },
         success: {
           title: 'Enquiry Received!',
@@ -668,7 +668,7 @@ export const dataService = {
         },
         bespoke: {
           title: 'Your Vision, Our Craftsmanship.',
-          description: "A bespoke journey is more than a trip-it's a masterpiece tailored to your specific romantic narrative.",
+          description: 'A bespoke itinerary tailored to your travel goals and preferences.',
           features: [
             'Fully customizable itinerary',
             'Private, hand-picked locations',
@@ -688,7 +688,7 @@ export const dataService = {
           '24/7 Travel Assistance'
         ],
         fallbackInfo: {
-          title: 'Expertly Crafted Romantic Journeys',
+          title: 'Expertly Crafted Honeymoon Experiences',
           description: 'Our specialists have traveled to every destination we recommend. We know the best suites, the most private beaches, and the hidden spots that make a trip truly romantic.',
           satisfactionTitle: '98% Satisfaction',
           satisfactionSubtitle: 'Couples rated 5-stars'
@@ -709,7 +709,7 @@ export const dataService = {
           specialRequests: 'Special Requests',
           submit: 'Submit Enquiry',
           submitting: 'Processing...',
-          loading: 'Preparing your romantic journey...',
+          loading: 'Preparing your itinerary...',
           occasion: 'The Occasion',
           packagePlaceholder: 'Choose a package...',
           tierPlaceholder: 'Choose experience...'

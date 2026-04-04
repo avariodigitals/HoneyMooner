@@ -403,7 +403,7 @@ const Navbar = () => {
 
                       <div className="text-center space-y-4">
                         <p className="script-font text-brand-accent text-3xl opacity-80">The Honeymooner</p>
-                        <p className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-medium italic">Bespoke Romantic Journeys &copy; 2026</p>
+                        <p className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-medium italic">Luxury Honeymoon Planning &copy; 2026</p>
                       </div>
                     </motion.div>
                   </div>

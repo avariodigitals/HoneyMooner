@@ -100,7 +100,7 @@ const JournalDetail = () => {
       </header>
 
       {/* Article Content */}
-      <article className="section-container py-24">
+      <article className="section-container">
         <div className="max-w-3xl mx-auto">
           {/* Excerpt/Intro */}
           <p className="text-2xl font-serif text-brand-900 mb-12 italic leading-relaxed border-l-4 border-brand-accent pl-8 py-2">
@@ -117,7 +117,7 @@ const JournalDetail = () => {
             
             <div className="my-12 rounded-[40px] overflow-hidden shadow-2xl">
               <img src={post.image} alt="Romantic moment" className="w-full h-auto" />
-              <p className="bg-brand-50 p-4 text-center text-sm italic text-brand-500">Every detail is handpicked to reflect your unique love story.</p>
+              <p className="bg-brand-50 p-4 text-center text-sm italic text-brand-500">Every detail is selected to match your travel style.</p>
             </div>
           </div>
 
@@ -146,7 +146,7 @@ const JournalDetail = () => {
       </article>
 
       {/* Newsletter Re-use */}
-      <section className="bg-brand-50 py-24">
+      <section className="bg-brand-50 py-12 sm:py-16">
         <div className="section-container text-center">
           <p className="script-font text-brand-accent mb-4">Continue the Journey</p>
           <h2 className="text-3xl md:text-5xl font-serif text-brand-900 mb-8">Never Miss a Story</h2>

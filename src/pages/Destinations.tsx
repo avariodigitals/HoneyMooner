@@ -170,7 +170,7 @@ const Destinations = () => {
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=2070" 
+            src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hugh-whyte-SBOHLtENzEY-unsplash-scaled.jpg" 
             alt="Dream Destinations" 
             className="w-full h-full object-cover"
           />
@@ -318,7 +318,7 @@ const Destinations = () => {
             </div>
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&q=80"
+                src="/images/placeholder-travel.svg"
                 alt="Santorini"
                 className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl"
               />

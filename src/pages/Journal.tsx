@@ -51,7 +51,7 @@ const Journal = () => {
       <section className="relative h-[50vh] sm:h-[60vh] flex items-center justify-center overflow-hidden mb-12 sm:mb-20">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=2070" 
+            src="/images/placeholder-travel.svg" 
             alt="The Honeymoonner Journal" 
             className="w-full h-full object-cover"
           />

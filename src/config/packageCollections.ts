@@ -25,7 +25,7 @@ export interface PackageCollectionDefinition {
   match: PackageCollectionMatch;
 }
 
-const romanticHeroImage = 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2070';
+const romanticHeroImage = '/images/placeholder-travel.svg';
 
 export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
   {
@@ -63,7 +63,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
       'Rich storytelling throughout the trip'
     ],
     destinations: ['Morocco', 'Turkey', 'Israel', 'Egypt'],
-    heroImage: 'https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Morocco', 'Turkey', 'Israel', 'Egypt'],
       fallbackCategory: 'honeymoon'
@@ -83,7 +83,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
       'Shopping'
     ],
     destinations: ['Paris', 'London', 'New York City', 'Tokyo'],
-    heroImage: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationNames: ['Paris', 'London', 'New York City', 'Tokyo'],
       fallbackCategory: 'honeymoon'
@@ -103,7 +103,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
       'Hot chocolate vibes'
     ],
     destinations: ['Switzerland', 'Iceland', 'Lapland'],
-    heroImage: 'https://images.unsplash.com/photo-1517002161666-1b81c0c6cc70?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Switzerland', 'Iceland', 'Lapland'],
       fallbackCategory: 'honeymoon'
@@ -122,7 +122,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
       'Very popular for Africans and internationals'
     ],
     destinations: ['Kenya + Zanzibar', 'South Africa + Mauritius'],
-    heroImage: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationNames: ['Nairobi', 'Zanzibar', 'Cape Town', 'Johannesburg', 'Mauritius'],
       destinationCountries: ['Kenya', 'Tanzania', 'South Africa', 'Mauritius'],
@@ -163,7 +163,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     ],
     destinations: ['Dubai/Doha -> Bali -> Singapore', 'Paris -> Rome -> Santorini'],
     route: ['Port of Departure', 'First Stop', 'Second Stop', 'Third Stop', 'Return'],
-    heroImage: 'https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       categories: ['honeymoon'],
       fallbackCategory: 'honeymoon'
@@ -184,7 +184,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
       'VIP experiences'
     ],
     destinations: ['Maldives', 'Dubai', 'Santorini', 'Amalfi Coast'],
-    heroImage: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationNames: ['Maldives', 'Dubai', 'Santorini', 'Amalfi Coast'],
       destinationCountries: ['UAE', 'Greece', 'Italy'],
@@ -206,7 +206,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
       'Slow, romantic, not stressful'
     ],
     destinations: ['Zanzibar', 'Cape Verde', 'Mauritius'],
-    heroImage: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationNames: ['Zanzibar', 'Cape Verde', 'Mauritius'],
       destinationCountries: ['Tanzania', 'Cape Verde', 'Mauritius'],
@@ -241,7 +241,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Big-city stops', 'Beach downtime', 'Ideal for adventurous couples'],
     destinations: ['Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia'],
     route: ['Port of Departure', 'Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia', 'Lagos'],
-    heroImage: 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationNames: ['Bali', 'Bangkok', 'Singapore'],
       destinationCountries: ['Indonesia', 'Thailand', 'Singapore', 'Malaysia'],
@@ -259,7 +259,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Safari and beach blend', 'Popular for African couples', 'Flexible stopover options'],
     destinations: ['Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa', 'Lagos'],
     route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa', 'Lagos'],
-    heroImage: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Kenya', 'Tanzania', 'South Africa', 'Namibia', 'Ethiopia'],
       fallbackCategory: 'honeymoon'
@@ -311,7 +311,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Cultural richness', 'Iconic photo opportunities', 'Elegant multi-city feel'],
     destinations: ['Paris', 'Santorini', 'Rome', 'Venice'],
     route: ['Port of Departure', 'Paris', 'Santorini', 'Rome', 'Venice'],
-    heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationNames: ['Paris', 'Santorini', 'Rome', 'Venice'],
       destinationCountries: ['France', 'Greece', 'Italy'],
@@ -329,7 +329,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Deep cultural value', 'Great visual variety', 'Flexible luxury levels'],
     destinations: ['Istanbul', 'Cappadocia', 'Santorini', 'Mykonos'],
     route: ['Port of Departure', 'Istanbul', 'Cappadocia', 'Santorini', 'Mykonos'],
-    heroImage: 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Turkey', 'Greece'],
       destinationNames: ['Istanbul', 'Cappadocia', 'Santorini', 'Mykonos'],
@@ -347,7 +347,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Strong contrast', 'High emotional appeal', 'Easy to market visually'],
     destinations: ['Marrakech', 'Sahara', 'Zanzibar'],
     route: ['Port of Departure', 'Marrakech', 'Sahara', 'Zanzibar'],
-    heroImage: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Morocco', 'Tanzania'],
       destinationNames: ['Marrakesh', 'Zanzibar'],
@@ -383,7 +383,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Ideal for longer honeymoons', 'Excellent upsell opportunity', 'Strong content value'],
     destinations: ['Paris', 'Venice', 'Amalfi Coast', 'Switzerland', 'Rome', 'Florence'],
     route: ['Paris', 'Venice', 'Amalfi Coast', 'Switzerland', 'Rome', 'Florence'],
-    heroImage: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['France', 'Italy', 'Switzerland'],
       destinationNames: ['Paris', 'Venice', 'Amalfi Coast', 'Rome', 'Florence'],
@@ -401,7 +401,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Relaxed pacing', 'Warm water and beaches', 'Great for long stays'],
     destinations: ['Saint Lucia', 'Jamaica + Bahamas', 'Antigua and Barbuda'],
     route: ['Saint Lucia', 'Jamaica + Bahamas', 'Antigua and Barbuda'],
-    heroImage: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Jamaica', 'Bahamas', 'Antigua and Barbuda', 'Saint Lucia'],
       fallbackCategory: 'honeymoon'
@@ -418,7 +418,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Strong Africa appeal', 'Great for couples seeking balance', 'Easy to adapt'],
     destinations: ['Kenya -> Zanzibar', 'Tanzania (Serengeti) -> Seychelles', 'South Africa -> Mauritius'],
     route: ['Kenya -> Zanzibar', 'Tanzania (Serengeti) -> Seychelles', 'South Africa -> Mauritius'],
-    heroImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Kenya', 'Tanzania', 'South Africa', 'Mauritius', 'Seychelles'],
       fallbackCategory: 'honeymoon'
@@ -435,7 +435,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     highlights: ['Easy for domestic clients', 'Varied landscapes', 'Good for short or extended itineraries'],
     destinations: ['Hawaii (Maui/Oahu)', 'Napa Valley -> Los Angeles', 'New York City -> Las Vegas'],
     route: ['Hawaii (Maui/Oahu)', 'Napa Valley -> Los Angeles', 'New York City -> Las Vegas'],
-    heroImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=2070',
+    heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['USA'],
       destinationNames: ['Hawaii', 'Cancun', 'Los Cabos', 'Mendoza', 'Puerto Rico'],

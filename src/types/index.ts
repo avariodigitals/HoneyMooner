@@ -114,6 +114,12 @@ export interface HomeContent {
     testimonial: string;
     general: string;
   };
+  styleImages: {
+    beach: string;
+    island: string;
+    adventure: string;
+    city: string;
+  };
   hero: {
     title: string;
     subtitle: string;

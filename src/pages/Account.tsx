@@ -84,7 +84,7 @@ const Account = () => {
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070" 
+          src="/images/placeholder-travel.svg" 
           className="w-full h-full object-cover opacity-30"
           alt=""
         />

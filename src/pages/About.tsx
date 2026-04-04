@@ -17,7 +17,7 @@ const About = () => {
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070" 
+            src="/images/placeholder-travel.svg" 
             alt="Romantic Sunset" 
             className="w-full h-full object-cover"
           />
@@ -81,7 +81,7 @@ const About = () => {
             className="relative"
           >
             <img 
-              src="https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=1974" 
+              src="/images/placeholder-travel.svg" 
               alt="Romantic Dinner" 
               className="rounded-2xl shadow-2xl"
             />

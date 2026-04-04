@@ -24,7 +24,7 @@ const STYLE_ALIASES: Record<string, string[]> = {
 const MENU_THEMES = [
   {
     name: 'The Honeymoonner Signature Experience',
-    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Couples who want a premium surprise-led honeymoon',
     highlights: [
       'Surprise itinerary elements',
@@ -37,7 +37,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Cultural and Spiritual Romance',
-    image: 'https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Deep, meaningful couples',
     highlights: ['History, culture, spiritual depth'],
     destinations: ['Morocco', 'Turkey', 'Israel', 'Egypt'],
@@ -45,7 +45,7 @@ const MENU_THEMES = [
   },
   {
     name: 'City Lights Romance',
-    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Urban, stylish couples',
     highlights: ['Fine dining', 'Nightlife', 'Shopping'],
     destinations: ['Paris', 'London', 'New York City', 'Tokyo'],
@@ -53,7 +53,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Winter Wonderland Romance',
-    image: 'https://images.unsplash.com/photo-1517002161666-1b81c0c6cc70?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Couples who want something different',
     highlights: ['Snow escapes', 'Fireplaces', 'Hot chocolate vibes'],
     destinations: ['Switzerland', 'Iceland', 'Lapland'],
@@ -61,7 +61,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Safari and Beach Combo',
-    image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Couples who want adventure and relaxation',
     highlights: ['Wildlife and beach in one trip', 'Popular for Africans and internationals'],
     destinations: ['Kenya and Zanzibar', 'South Africa and Mauritius'],
@@ -69,7 +69,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Island Hopping Romance',
-    image: 'https://images.unsplash.com/photo-1506929662033-75393ca9940b?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Couples who love water and aesthetics',
     highlights: ['Move between islands', 'Boat rides, beach clubs, sunsets'],
     destinations: ['Greece', 'Maldives', 'Caribbean', 'Philippines'],
@@ -77,7 +77,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Multi-Destination Adventure Love',
-    image: 'https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Couples who want variety and memories',
     highlights: ['2-4 countries in one honeymoon', 'Mix of city, nature, and beach'],
     destinations: ['Dubai/Doha -> Bali -> Singapore', 'Paris -> Rome -> Santorini'],
@@ -85,7 +85,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Ultra Luxury',
-    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'High-net-worth couples and aspirational clients',
     highlights: ['Overwater villas', 'Private jets', 'Yacht dinners', 'VIP experiences'],
     destinations: ['Maldives', 'Dubai', 'Santorini', 'Amalfi Coast'],
@@ -93,7 +93,7 @@ const MENU_THEMES = [
   },
   {
     name: 'Soft Luxury Escape (Starter Honeymoon)',
-    image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     perfectFor: 'Budget-conscious couples who still want elegance',
     highlights: ['Africa plus island combo', '4-star resorts, spa treatments, beach dinners', 'Slow and romantic pace'],
     destinations: ['Zanzibar', 'Cape Verde', 'Mauritius'],
@@ -104,67 +104,67 @@ const MENU_THEMES = [
 const DESTINATION_COMBOS = [
   {
     name: 'West Africa -> Island -> South Africa',
-    image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Cotonou', 'Cape Verde', 'Cape Town', 'Johannesburg', 'Lagos']
   },
   {
     name: 'The Asian Love Tour',
-    image: 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia', 'Lagos']
   },
   {
     name: 'East Africa -> Southern Africa (Safari + Beach Combo)',
-    image: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa', 'Lagos']
   },
   {
     name: 'Classic South Africa Loop',
-    image: 'https://images.unsplash.com/photo-1577948000111-9c97cdeb20b8?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Johannesburg', 'Port of Arrival']
   },
   {
     name: 'Ultra Romance Route',
-    image: 'https://images.unsplash.com/photo-1513415277900-a62401e19be4?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Nairobi', 'Mauritius', 'Cape Town', 'Johannesburg', 'Port of Arrival']
   },
   {
     name: 'Europe Love Trail',
-    image: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Paris', 'Santorini', 'Rome', 'Venice']
   },
   {
     name: 'Turkey + Greece Romance',
-    image: 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Istanbul', 'Cappadocia', 'Santorini', 'Mykonos']
   },
   {
     name: 'Morocco + Zanzibar (Culture + Beach)',
-    image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Port of Departure', 'Marrakech', 'Sahara', 'Zanzibar']
   },
   {
     name: 'The Island Obsession',
-    image: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Maldives + UAE', 'Bora Bora', 'Seychelles + Mauritius']
   },
   {
     name: 'European Love Trail (Extended)',
-    image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Paris', 'Venice', 'Amalfi Coast', 'Switzerland', 'Rome', 'Florence']
   },
   {
     name: 'Caribbean Slow Love',
-    image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Saint Lucia', 'Jamaica + Bahamas', 'Antigua and Barbuda']
   },
   {
     name: 'Safari + Luxe Beach',
-    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Kenya -> Zanzibar', 'Tanzania (Serengeti) -> Seychelles', 'South Africa -> Mauritius']
   },
   {
     name: 'USA Dream Honeymoon',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1200',
+    image: '/images/placeholder-travel.svg',
     route: ['Hawaii (Maui/Oahu)', 'Napa Valley -> Los Angeles', 'New York City -> Las Vegas']
   }
 ];
@@ -258,7 +258,7 @@ const Packages = () => {
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?auto=format&fit=crop&q=80&w=2070" 
+            src="/images/placeholder-travel.svg" 
             alt="Travel Packages" 
             className="w-full h-full object-cover"
           />

@@ -47,6 +47,17 @@ You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-re
 
 ```js
 // eslint.config.js
+
+## WordPress Home Settings
+
+The homepage "Browse by Style" cards now read their images from the `home-settings` ACF page. In WordPress, set these fields to the uploaded media URLs below:
+
+- `browse_style_beach_image`: `https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg`
+- `browse_style_island_image`: `https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1439066615861-d1af74d74000-scaled.jpg`
+- `browse_style_adventure_image`: `https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1464822759023-fed622ff2c3b-scaled.jpg`
+- `browse_style_city_image`: `https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1502602898657-3e91760cbb34-2-scaled.jpg`
+
+If any field is left empty, the app falls back to the built-in placeholder image.
 import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
 

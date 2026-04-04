@@ -5,16 +5,22 @@ import { initialDestinations, initialPackages, initialPosts, initialTestimonials
 
 const defaultHomeContent: HomeContent = {
   fallbackImages: {
-    hero: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070',
-    package: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80',
-    destination: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80',
-    testimonial: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800',
-    general: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80'
+    hero: '/images/placeholder-travel.svg',
+    package: '/images/placeholder-travel.svg',
+    destination: '/images/placeholder-travel.svg',
+    testimonial: '/images/placeholder-travel.svg',
+    general: '/images/placeholder-travel.svg'
+  },
+  styleImages: {
+    beach: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg',
+    island: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1439066615861-d1af74d74000-scaled.jpg',
+    adventure: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1464822759023-fed622ff2c3b-scaled.jpg',
+    city: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1502602898657-3e91760cbb34-2-scaled.jpg'
   },
   hero: {
     title: "Plan a Once-in-a-Lifetime Honeymoon — Without the Stress",
     subtitle: "We design fully personalized luxury honeymoon experiences — from destination selection to every intimate detail.",
-    image: "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070",
+    image: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg",
     cta: "Start Planning Your Honeymoon"
   },
   destinations: {
@@ -32,7 +38,7 @@ const defaultHomeContent: HomeContent = {
     title: 'Honeymoon Gift Package',
     description: 'Gift your children a stress-free, unforgettable honeymoon experience.',
     note: 'A meaningful wedding gift with expert planning, curated stays, and full support from start to finish.',
-    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80',
+    image: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg',
     imageAlt: 'Parents gifting honeymoon package',
     primaryCtaLabel: 'View Packages',
     primaryCtaUrl: '/packages',

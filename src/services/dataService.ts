@@ -47,7 +47,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     destination: 'Maldives',
     quote: 'A dream beyond our wildest imagination.',
     story: 'From private seaplane arrivals to candlelit dinners, every detail was carefully planned and executed.',
-    image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800',
+    image: '/images/placeholder-travel.svg',
     rating: 5,
     date: 'Dec 2023'
   },
@@ -58,7 +58,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     destination: 'Santorini',
     quote: 'Every sunset felt like a painting made just for us.',
     story: 'Our villa and private experiences were perfectly matched to what we wanted from the trip.',
-    image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800',
+    image: '/images/placeholder-travel.svg',
     rating: 5,
     date: 'Sept 2023'
   },
@@ -69,7 +69,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     destination: 'Paris',
     quote: 'The level of detail was unlike anything we have experienced.',
     story: 'From hidden dining spots to seamless logistics, the trip felt effortless from beginning to end.',
-    image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&q=80&w=800',
+    image: '/images/placeholder-travel.svg',
     rating: 5,
     date: 'June 2023'
   }
@@ -166,6 +166,10 @@ interface WPPageItem {
     gift_primary_cta_url?: string;
     gift_secondary_cta_label?: string;
     gift_secondary_cta_url?: string;
+    browse_style_beach_image?: string | number | { url?: string; source_url?: string };
+    browse_style_island_image?: string | number | { url?: string; source_url?: string };
+    browse_style_adventure_image?: string | number | { url?: string; source_url?: string };
+    browse_style_city_image?: string | number | { url?: string; source_url?: string };
     fallback_hero_image?: string | number | { url?: string; source_url?: string };
     fallback_package_image?: string | number | { url?: string; source_url?: string };
     fallback_destination_image?: string | number | { url?: string; source_url?: string };
@@ -722,8 +726,20 @@ export const dataService = {
 
       const heroImage = await resolveImageValue(page.acf.hero_image);
       const giftImage = await resolveImageValue(page.acf.gift_image);
+      const [styleBeachImage, styleIslandImage, styleAdventureImage, styleCityImage] = await Promise.all([
+        resolveImageValue(page.acf.browse_style_beach_image),
+        resolveImageValue(page.acf.browse_style_island_image),
+        resolveImageValue(page.acf.browse_style_adventure_image),
+        resolveImageValue(page.acf.browse_style_city_image)
+      ]);
 
       const fallbackHomeContent: HomeContent = {
+        styleImages: {
+          beach: ASSETS.HOME_EXPERIENCES.BEACH,
+          island: ASSETS.HOME_EXPERIENCES.ISLAND,
+          adventure: ASSETS.HOME_EXPERIENCES.ADVENTURE,
+          city: ASSETS.HOME_EXPERIENCES.CITY
+        },
         hero: {
           title: 'Plan a Once-in-a-Lifetime Honeymoon - Without the Stress',
           subtitle: 'We design fully personalized luxury honeymoon experiences - from destination selection to every intimate detail.',
@@ -746,7 +762,7 @@ export const dataService = {
           title: 'Honeymoon Gift Package',
           description: 'Gift your children a stress-free, unforgettable honeymoon experience.',
           note: 'A meaningful wedding gift with expert planning, curated stays, and full support from start to finish.',
-          image: siteImageFallbacks.general,
+          image: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg',
           imageAlt: 'Parents gifting honeymoon package',
           primaryCtaLabel: 'View Packages',
           primaryCtaUrl: '/packages',
@@ -777,13 +793,19 @@ export const dataService = {
           subtitle: pick(page.acf.packages_subtitle, fallbackHomeContent.packages.subtitle),
           description: pick(page.acf.packages_description, fallbackHomeContent.packages.description)
         },
+        styleImages: {
+          beach: styleBeachImage || fallbackHomeContent.styleImages.beach,
+          island: styleIslandImage || fallbackHomeContent.styleImages.island,
+          adventure: styleAdventureImage || fallbackHomeContent.styleImages.adventure,
+          city: styleCityImage || fallbackHomeContent.styleImages.city
+        },
         fallbackImages: siteImageFallbacks,
         giftPackage: {
           eyebrow: pick(page.acf.gift_eyebrow, fallbackHomeContent.giftPackage.eyebrow),
           title: pick(page.acf.gift_title, fallbackHomeContent.giftPackage.title),
           description: pick(page.acf.gift_description, fallbackHomeContent.giftPackage.description),
           note: pick(page.acf.gift_note, fallbackHomeContent.giftPackage.note),
-          image: giftImage || siteImageFallbacks.general,
+          image: giftImage || fallbackHomeContent.giftPackage.image,
           imageAlt: pick(page.acf.gift_image_alt, fallbackHomeContent.giftPackage.imageAlt),
           primaryCtaLabel: pick(page.acf.gift_primary_cta_label, fallbackHomeContent.giftPackage.primaryCtaLabel),
           primaryCtaUrl: pick(page.acf.gift_primary_cta_url, fallbackHomeContent.giftPackage.primaryCtaUrl),

@@ -29,6 +29,12 @@ const Home = () => {
   const giftSecondaryUrl = homeContent.giftPackage.secondaryCtaUrl?.startsWith('/')
     ? homeContent.giftPackage.secondaryCtaUrl
     : '/booking';
+  const styleImages = homeContent.styleImages || {
+    beach: ASSETS.HOME_EXPERIENCES.BEACH,
+    island: ASSETS.HOME_EXPERIENCES.ISLAND,
+    adventure: ASSETS.HOME_EXPERIENCES.ADVENTURE,
+    city: ASSETS.HOME_EXPERIENCES.CITY
+  };
 
   useEffect(() => {
     let ignore = false;
@@ -90,7 +96,7 @@ const Home = () => {
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = homeContent.fallbackImages.destination || "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80";
+                  target.src = homeContent.fallbackImages.destination || "/images/placeholder-travel.svg";
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/30 to-transparent" />
@@ -239,28 +245,28 @@ const Home = () => {
                 label: 'Beach Bliss', 
                 icon: <Sun size={32} />, 
                 color: 'from-orange-500/20 to-brand-accent/20',
-                image: ASSETS.HOME_EXPERIENCES.BEACH,
+                image: styleImages.beach,
                 count: 12
               },
               { 
                 label: 'Island Escape', 
                 icon: <Anchor size={32} />, 
                 color: 'from-blue-500/20 to-cyan-500/20',
-                image: ASSETS.HOME_EXPERIENCES.ISLAND,
+                image: styleImages.island,
                 count: 8
               },
               { 
                 label: 'Romantic Adventure', 
                 icon: <Mountain size={32} />, 
                 color: 'from-emerald-500/20 to-teal-500/20',
-                image: ASSETS.HOME_EXPERIENCES.ADVENTURE,
+                image: styleImages.adventure,
                 count: 5
               },
               { 
                 label: 'City Romance', 
                 icon: <Coffee size={32} />, 
                 color: 'from-purple-500/20 to-pink-500/20',
-                image: ASSETS.HOME_EXPERIENCES.CITY,
+                image: styleImages.city,
                 count: 15
               },
             ].map((style, idx) => (
@@ -274,6 +280,10 @@ const Home = () => {
                   src={style.image} 
                   alt={style.label} 
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = homeContent.fallbackImages.general || ASSETS.FALLBACK_DESTINATION;
+                  }}
                 />
                 <div className={`absolute inset-0 bg-gradient-to-b ${style.color} mix-blend-multiply opacity-60 group-hover:opacity-40 transition-opacity`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/20 to-transparent" />

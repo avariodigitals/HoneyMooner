@@ -69,7 +69,7 @@ const FAQs = () => {
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1455218873509-8097305ee378?auto=format&fit=crop&q=80&w=2070" 
+            src="/images/placeholder-travel.svg" 
             alt="FAQs The Honeymoonner" 
             className="w-full h-full object-cover"
           />

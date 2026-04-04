@@ -167,7 +167,7 @@ const PackageDetail = () => {
             className="w-full h-full object-cover brightness-[0.8]"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=2070";
+              target.src = "/images/placeholder-travel.svg";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-brand-900/80 via-brand-900/20 to-transparent" />

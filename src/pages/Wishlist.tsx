@@ -58,7 +58,7 @@ const Wishlist = () => {
       <section className="relative min-h-[40vh] lg:h-[50vh] flex items-center justify-center overflow-hidden py-12 lg:py-0">
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=2070" 
+            src="/images/placeholder-travel.svg" 
             className="w-full h-full object-cover brightness-[0.6]"
             alt="Romantic Background"
           />

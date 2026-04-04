@@ -10,7 +10,7 @@ const Footer = () => {
           {/* Background Image with Overlay */}
           <div className="absolute inset-0 z-0">
             <img 
-              src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=2073" 
+              src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/abshky-5D5Pyj33S5o-unsplash-scaled.jpg" 
               alt="Romantic Background" 
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
             />

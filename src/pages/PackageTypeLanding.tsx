@@ -13,6 +13,9 @@ function matchesCollection(pkg: TravelPackage, destination: Destination | undefi
   const collection = findPackageCollection(collectionSlug);
   if (!collection) return false;
 
+  // Public collection pages should only surface honeymoon packages.
+  if (pkg.category !== 'honeymoon') return false;
+
   const { categories, destinationNames, destinationCountries, tags } = collection.match;
 
   if (categories && !categories.includes(pkg.category)) return false;
@@ -27,7 +30,16 @@ function matchesCollection(pkg: TravelPackage, destination: Destination | undefi
 
   const tagMatch = tags ? tags.some((tag) => pkg.tags.some((pkgTag) => pkgTag.toLowerCase() === tag.toLowerCase())) : false;
 
-  return Boolean(nameMatch || countryMatch || tagMatch || categories?.includes(pkg.category));
+  const hasCoverageCriteria = Boolean(destinationNames?.length || destinationCountries?.length || tags?.length);
+
+  // If a collection defines specific coverage, only show packages that match it.
+  if (hasCoverageCriteria) {
+    return Boolean(nameMatch || countryMatch || tagMatch);
+  }
+
+  // Collections without specific coverage criteria (e.g. curated global experiences)
+  // can still rely on category-level filtering.
+  return Boolean(categories?.includes(pkg.category));
 }
 
 const PackageTypeLanding = () => {
@@ -40,15 +52,10 @@ const PackageTypeLanding = () => {
   const matchingPackages = useMemo(() => {
     if (!collection) return [];
 
-    const filtered = packages.filter((pkg) => {
+    return packages.filter((pkg) => {
       const destination = destinations.find((item) => item.id === pkg.destinationId);
       return matchesCollection(pkg, destination, collection.slug);
     });
-
-    if (filtered.length > 0) return filtered;
-
-    const fallbackCategory = collection.match.fallbackCategory || 'honeymoon';
-    return packages.filter((pkg) => pkg.category === fallbackCategory).slice(0, 6);
   }, [collection, destinations, packages]);
 
   if (isLoading) {
@@ -337,7 +344,7 @@ const PackageTypeLanding = () => {
                     <div className="flex items-center justify-between mb-5 text-[10px] uppercase tracking-[0.2em] font-bold text-brand-accent">
                       <div className="flex items-center gap-2">
                         <Calendar size={14} />
-                        <span>{pkg.duration.days} Days of Magic</span>
+                        <span>Timeless Romance</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin size={14} />

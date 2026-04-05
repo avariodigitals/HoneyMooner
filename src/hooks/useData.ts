@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import type { Destination, TravelPackage, Lead, Testimonial, BlogPost, HomeContent, BookingContent } from '../types';
 import { dataService } from '../services/dataService';
 import { initialDestinations, initialPackages, initialPosts, initialTestimonials } from '../data/mock';
+import { ASSETS } from '../config/images';
+
+const PLACEHOLDER_IMAGE_PATH = '/images/placeholder-travel.svg';
 
 const defaultHomeContent: HomeContent = {
   fallbackImages: {
-    hero: '/images/placeholder-travel.svg',
-    package: '/images/placeholder-travel.svg',
-    destination: '/images/placeholder-travel.svg',
-    testimonial: '/images/placeholder-travel.svg',
-    general: '/images/placeholder-travel.svg'
+    hero: ASSETS.FALLBACK_HERO,
+    package: ASSETS.FALLBACK_PACKAGE,
+    destination: ASSETS.FALLBACK_DESTINATION,
+    testimonial: ASSETS.TESTIMONIALS.SARAH,
+    general: ASSETS.PLACEHOLDER_GENERAL
   },
   styleImages: {
     beach: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg',
@@ -120,6 +123,73 @@ type DataSnapshot = {
 
 const SNAPSHOT_STORAGE_KEY = 'honeymoonner:data-snapshot:v1';
 
+function isPlaceholderImage(url?: string): boolean {
+  return !url || url.trim().length === 0 || url.includes(PLACEHOLDER_IMAGE_PATH);
+}
+
+function normalizeImage(url: string | undefined, fallback: string): string {
+  return isPlaceholderImage(url) ? fallback : (url as string);
+}
+
+function sanitizeHomeContent(content: HomeContent): HomeContent {
+  return {
+    ...content,
+    fallbackImages: {
+      hero: normalizeImage(content.fallbackImages?.hero, defaultHomeContent.fallbackImages.hero),
+      package: normalizeImage(content.fallbackImages?.package, defaultHomeContent.fallbackImages.package),
+      destination: normalizeImage(content.fallbackImages?.destination, defaultHomeContent.fallbackImages.destination),
+      testimonial: normalizeImage(content.fallbackImages?.testimonial, defaultHomeContent.fallbackImages.testimonial),
+      general: normalizeImage(content.fallbackImages?.general, defaultHomeContent.fallbackImages.general)
+    },
+    hero: {
+      ...content.hero,
+      image: normalizeImage(content.hero?.image, defaultHomeContent.hero.image)
+    },
+    giftPackage: {
+      ...content.giftPackage,
+      image: normalizeImage(content.giftPackage?.image, defaultHomeContent.giftPackage.image)
+    },
+    styleImages: {
+      beach: normalizeImage(content.styleImages?.beach, defaultHomeContent.styleImages.beach),
+      island: normalizeImage(content.styleImages?.island, defaultHomeContent.styleImages.island),
+      adventure: normalizeImage(content.styleImages?.adventure, defaultHomeContent.styleImages.adventure),
+      city: normalizeImage(content.styleImages?.city, defaultHomeContent.styleImages.city)
+    }
+  };
+}
+
+function sanitizeSnapshot(snapshot: DataSnapshot): DataSnapshot {
+  const homeContent = sanitizeHomeContent(snapshot.homeContent || defaultHomeContent);
+  const destinationFallback = homeContent.fallbackImages.destination;
+  const packageFallback = homeContent.fallbackImages.package;
+  const testimonialFallback = homeContent.fallbackImages.testimonial;
+  const generalFallback = homeContent.fallbackImages.general;
+
+  return {
+    ...snapshot,
+    homeContent,
+    destinations: snapshot.destinations.map((destination) => ({
+      ...destination,
+      image: normalizeImage(destination.image, destinationFallback)
+    })),
+    packages: snapshot.packages.map((pkg) => ({
+      ...pkg,
+      featuredImage: normalizeImage(pkg.featuredImage, packageFallback),
+      gallery: Array.isArray(pkg.gallery)
+        ? pkg.gallery.map((image) => normalizeImage(image, packageFallback))
+        : [packageFallback]
+    })),
+    testimonials: snapshot.testimonials.map((testimonial) => ({
+      ...testimonial,
+      image: normalizeImage(testimonial.image, testimonialFallback)
+    })),
+    posts: snapshot.posts.map((post) => ({
+      ...post,
+      image: normalizeImage(post.image, generalFallback)
+    }))
+  };
+}
+
 function loadPersistedSnapshot(): DataSnapshot | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -128,7 +198,7 @@ function loadPersistedSnapshot(): DataSnapshot | null {
     const parsed = JSON.parse(raw) as Partial<DataSnapshot>;
     if (!parsed || typeof parsed !== 'object') return null;
 
-    return {
+    const snapshot: DataSnapshot = {
       packages: Array.isArray(parsed.packages) ? parsed.packages as TravelPackage[] : [],
       destinations: Array.isArray(parsed.destinations) ? parsed.destinations as Destination[] : [],
       leads: Array.isArray(parsed.leads) ? parsed.leads as Lead[] : [],
@@ -137,6 +207,7 @@ function loadPersistedSnapshot(): DataSnapshot | null {
       bookingContent: parsed.bookingContent as BookingContent || defaultBookingContent,
       posts: Array.isArray(parsed.posts) ? parsed.posts as BlogPost[] : []
     };
+    return sanitizeSnapshot(snapshot);
   } catch {
     return null;
   }
@@ -163,14 +234,14 @@ const initialSnapshot: DataSnapshot = {
 
 const emptySnapshot: DataSnapshot = initialSnapshot;
 
-let cachedSnapshot: DataSnapshot | null = loadPersistedSnapshot() || initialSnapshot;
+let cachedSnapshot: DataSnapshot | null = loadPersistedSnapshot() || sanitizeSnapshot(initialSnapshot);
 let coreResolved = false;
 let secondaryResolved = false;
 let inflightCorePromise: Promise<DataSnapshot> | null = null;
 let inflightSecondaryPromise: Promise<DataSnapshot> | null = null;
 
 function getCurrentSnapshot(): DataSnapshot {
-  return cachedSnapshot || emptySnapshot;
+  return cachedSnapshot || sanitizeSnapshot(emptySnapshot);
 }
 
 function hasCoreContent(snapshot: DataSnapshot): boolean {
@@ -204,15 +275,16 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
         homeContent: nextHomeContent,
         bookingContent: nextBookingContent
       };
+      const sanitizedSnapshot = sanitizeSnapshot(snapshot);
 
       // If this fetch yielded no core data and we had no previous core data, allow future retry.
-      if (!hasCoreContent(snapshot)) {
+      if (!hasCoreContent(sanitizedSnapshot)) {
         shouldResolveCore = false;
       }
 
-      cachedSnapshot = snapshot;
-      persistSnapshot(snapshot);
-      return snapshot;
+      cachedSnapshot = sanitizedSnapshot;
+      persistSnapshot(sanitizedSnapshot);
+      return sanitizedSnapshot;
     } catch (error) {
       console.error('Failed to sync with WordPress:', error);
       const current = getCurrentSnapshot();
@@ -225,12 +297,13 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
             homeContent: current.homeContent || defaultHomeContent,
             bookingContent: current.bookingContent || defaultBookingContent
           };
-      if (!hasCoreContent(snapshot)) {
+      const sanitizedSnapshot = sanitizeSnapshot(snapshot);
+      if (!hasCoreContent(sanitizedSnapshot)) {
         shouldResolveCore = false;
       }
-      cachedSnapshot = snapshot;
-      persistSnapshot(snapshot);
-      return snapshot;
+      cachedSnapshot = sanitizedSnapshot;
+      persistSnapshot(sanitizedSnapshot);
+      return sanitizedSnapshot;
     } finally {
       coreResolved = shouldResolveCore;
       inflightCorePromise = null;
@@ -261,12 +334,13 @@ async function ensureSecondarySnapshot(): Promise<DataSnapshot> {
         leads: wpLeads.length > 0 ? wpLeads : current.leads,
         testimonials: wpTestimonials.length > 0 ? wpTestimonials : current.testimonials
       };
-      cachedSnapshot = snapshot;
-      persistSnapshot(snapshot);
-      return snapshot;
+      const sanitizedSnapshot = sanitizeSnapshot(snapshot);
+      cachedSnapshot = sanitizedSnapshot;
+      persistSnapshot(sanitizedSnapshot);
+      return sanitizedSnapshot;
     } catch (error) {
       console.error('Failed to sync secondary WordPress data:', error);
-      const snapshot: DataSnapshot = getCurrentSnapshot();
+      const snapshot: DataSnapshot = sanitizeSnapshot(getCurrentSnapshot());
       if (snapshot.posts.length === 0 && snapshot.leads.length === 0 && snapshot.testimonials.length === 0) {
         shouldResolveSecondary = false;
       }

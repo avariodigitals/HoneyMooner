@@ -181,6 +181,8 @@ const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent,
       id: generateId(),
       packageId: formData.packageId,
       packageName: selectedPkg?.title || '',
+      tierId: selectedTier?.id,
+      tierName: selectedTier?.name,
       departureDate: formData.departureDate,
       adults: formData.adults,
       children: formData.children,
@@ -511,7 +513,7 @@ const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent,
                   </div>
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-brand-400">Duration</span>
-                    <span className="font-medium text-brand-900">{selectedPkg.duration.days} Days / {selectedPkg.duration.nights} Nights</span>
+                    <span className="font-medium text-brand-900">Based on selected package</span>
                   </div>
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-brand-400">Price ({selectedTier.basis})</span>

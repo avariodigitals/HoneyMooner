@@ -1,6 +1,29 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, matchPath, useLocation } from 'react-router-dom';
 import { ChevronRight, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const BREADCRUMB_ROUTE_PATTERNS = [
+  '/',
+  '/destinations',
+  '/destinations/:slug',
+  '/packages',
+  '/packages/type/:slug',
+  '/packages/:slug',
+  '/journal',
+  '/journal/:slug',
+  '/about',
+  '/contact',
+  '/booking',
+  '/faqs',
+  '/account',
+  '/account/wishlist'
+];
+
+function isExistingRoutePath(path: string): boolean {
+  return BREADCRUMB_ROUTE_PATTERNS.some((pattern) =>
+    Boolean(matchPath({ path: pattern, end: true }, path))
+  );
+}
 
 const Breadcrumbs = () => {
   const location = useLocation();
@@ -29,6 +52,7 @@ const Breadcrumbs = () => {
         {pathnames.map((value, index) => {
           const last = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+          const canNavigate = isExistingRoutePath(to);
           const label = value.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
           return (
@@ -38,13 +62,17 @@ const Breadcrumbs = () => {
                 <span className="text-brand-900 font-serif italic truncate max-w-[150px] md:max-w-none">
                   {label}
                 </span>
-              ) : (
+              ) : canNavigate ? (
                 <Link 
                   to={to} 
                   className="text-brand-400 hover:text-brand-accent transition-colors capitalize"
                 >
                   {label}
                 </Link>
+              ) : (
+                <span className="text-brand-300 capitalize cursor-default" aria-disabled="true">
+                  {label}
+                </span>
               )}
             </li>
           );

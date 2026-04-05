@@ -84,7 +84,7 @@ const Account = () => {
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/images/placeholder-travel.svg" 
+          src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg" 
           className="w-full h-full object-cover opacity-30"
           alt=""
         />

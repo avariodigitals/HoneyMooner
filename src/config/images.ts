@@ -12,18 +12,18 @@ export const ASSETS = {
 
   // Global Fallbacks (Used if primary image fails)
   FALLBACK_HERO: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg",
-  FALLBACK_PACKAGE: "/images/placeholder-travel.svg",
-  FALLBACK_DESTINATION: "/images/placeholder-travel.svg",
+  FALLBACK_PACKAGE: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg",
+  FALLBACK_DESTINATION: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg",
 
   // Page Backgrounds & Hero Images
-  WISHLIST_HERO: "/images/placeholder-travel.svg",
-  JOURNAL_HERO: "/images/placeholder-travel.svg",
-  SANCTUARY_HERO: "/images/placeholder-travel.svg",
-  DESTINATIONS_HERO: "/images/placeholder-travel.svg",
+  WISHLIST_HERO: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg",
+  JOURNAL_HERO: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hoi-an-and-da-nang-photographer-f1Yk1rGf3tE-unsplash-scaled.jpg",
+  SANCTUARY_HERO: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg",
+  DESTINATIONS_HERO: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hugh-whyte-SBOHLtENzEY-unsplash-scaled.jpg",
   ROMANTIC_MOMENT_HOME: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1519741497674-611481863552-scaled.jpg",
 
   // Category Placeholders (Used in Admin/Creation)
-  PLACEHOLDER_GENERAL: "/images/placeholder-travel.svg",
+  PLACEHOLDER_GENERAL: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg",
 
   // Curated Content (Initial Mock Data)
   HOME_EXPERIENCES: {
@@ -34,8 +34,8 @@ export const ASSETS = {
   },
 
   TESTIMONIALS: {
-    SARAH: '/images/placeholder-travel.svg',
-    MICHAEL: '/images/placeholder-travel.svg',
-    EMILY: '/images/placeholder-travel.svg',
+    SARAH: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1519741497674-611481863552-scaled.jpg',
+    MICHAEL: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg',
+    EMILY: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg',
   }
 };

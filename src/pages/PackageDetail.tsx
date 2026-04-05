@@ -375,12 +375,12 @@ const PackageDetail = () => {
           {/* Tier Selection */}
           <div className="space-y-6 sm:space-y-8">
             <h3 className="text-xl sm:text-2xl font-serif text-brand-900">Select Your Experience Level</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {pkg.tiers.map((tier) => (
                 <div
                   key={tier.id}
                   onClick={() => setSelectedTierId(tier.id)}
-                  className={`p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border-2 transition-all cursor-pointer relative overflow-hidden group ${
+                  className={`min-w-0 p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border-2 transition-all cursor-pointer relative overflow-hidden group ${
                     selectedTierId === tier.id
                       ? 'border-brand-accent bg-brand-accent/5 shadow-xl shadow-brand-accent/10'
                       : 'border-brand-100 bg-white hover:border-brand-200'
@@ -392,7 +392,7 @@ const PackageDetail = () => {
                     </div>
                   )}
                   <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-400 mb-1 sm:mb-2">{tier.name}</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-serif text-brand-900 mb-2 sm:mb-4">{formatPrice(tier.price)}</p>
+                  <p className="pr-8 text-xl sm:text-2xl lg:text-[30px] font-serif text-brand-900 mb-2 sm:mb-4 leading-tight break-words">{formatPrice(tier.price)}</p>
                   <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-brand-400 italic leading-tight">{tier.basis}</p>
                 </div>
               ))}
@@ -468,7 +468,7 @@ const PackageDetail = () => {
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full pl-14 sm:pl-16 pr-6 sm:pr-8 py-4 sm:py-5 bg-white border border-brand-100 rounded-xl sm:rounded-2xl text-sm sm:text-base text-brand-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all shadow-sm"
+                  className="w-full min-h-[52px] pl-14 sm:pl-16 pr-6 sm:pr-8 py-4 sm:py-5 bg-white border border-brand-100 rounded-xl sm:rounded-2xl text-base sm:text-base text-brand-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all shadow-sm"
                 />
               </div>
               <p className="mt-4 text-[10px] sm:text-sm text-brand-500 italic leading-relaxed">
@@ -493,7 +493,7 @@ const PackageDetail = () => {
             <div className="space-y-4 pt-4 border-t border-brand-50">
               <Link 
                 to="/booking" 
-                state={{ packageId: pkg.id, tierId: selectedTier.id }}
+                state={{ packageId: pkg.id, tierId: selectedTier.id, departureDate: selectedDate }}
                 className="btn-primary w-full py-3 sm:py-4 flex items-center justify-center gap-3 shadow-xl shadow-brand-accent/20 text-sm sm:text-base"
               >
                 Book Now

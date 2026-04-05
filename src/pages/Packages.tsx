@@ -196,6 +196,7 @@ function matchesStyleFilter(pkgTags: string[], selectedStyle: string): boolean {
 }
 
 const Packages = () => {
+  const HANDPICKED_ROTATION_KEY = 'honeymoonner:handpicked-rotation-index';
   const location = useLocation();
   const { packages, destinations, isLoading } = useData();
   const { formatPrice } = useCurrency();
@@ -205,6 +206,12 @@ const Packages = () => {
   const [selectedDestination, setSelectedDestination] = useState('all');
   const [selectedStyle, setSelectedCategoryStyle] = useState(() => location.state?.style || 'all');
   const [wishlistItems, setWishlistItems] = useState<string[]>([]);
+  const [handpickedStartIndex, setHandpickedStartIndex] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const stored = window.localStorage.getItem(HANDPICKED_ROTATION_KEY);
+    const parsed = stored ? Number.parseInt(stored, 10) : Number.NaN;
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  });
 
   const getCollectionPath = (name: string) => {
     const collection = PACKAGE_COLLECTIONS.find((item) => normalizeCollectionTitle(item.title) === normalizeCollectionTitle(name));
@@ -253,6 +260,106 @@ const Packages = () => {
     
     return matchesSearch && matchesDestination && matchesStyle;
   });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const listLength = filteredPackages.length;
+    if (listLength === 0) {
+      setHandpickedStartIndex(0);
+      return;
+    }
+
+    const rawStored = window.localStorage.getItem(HANDPICKED_ROTATION_KEY);
+    const storedIndex = rawStored ? Number.parseInt(rawStored, 10) : 0;
+    const safeStoredIndex = Number.isFinite(storedIndex) && storedIndex >= 0 ? storedIndex : 0;
+
+    let nextIndex = listLength <= 3 ? 0 : safeStoredIndex % listLength;
+
+    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    const isReload = navEntry?.type === 'reload';
+
+    // Advance only on browser reload, not while user stays on the page.
+    if (isReload && listLength > 3) {
+      nextIndex = (nextIndex + 1) % listLength;
+    }
+
+    setHandpickedStartIndex(nextIndex);
+    window.localStorage.setItem(HANDPICKED_ROTATION_KEY, String(nextIndex));
+  }, [filteredPackages.length]);
+
+  const handpickedPackages = filteredPackages.length <= 3
+    ? filteredPackages
+    : Array.from({ length: 3 }, (_, idx) => filteredPackages[(handpickedStartIndex + idx) % filteredPackages.length]);
+
+  const renderPackageCard = (pkg: typeof filteredPackages[number]) => (
+    <motion.div
+      key={pkg.id}
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="romantic-card group flex flex-col h-full"
+    >
+      <div className="relative h-64 overflow-hidden">
+        <img
+          src={pkg.featuredImage}
+          alt={pkg.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        <button
+          aria-label={wishlistItems.includes(pkg.id) ? 'Saved to wishlist' : 'Save to wishlist'}
+          onClick={() => toggleWishlist(pkg.id)}
+          className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent hover:scale-105 transition"
+        >
+          <Heart
+            size={18}
+            className={wishlistItems.includes(pkg.id) ? 'text-brand-accent' : 'text-brand-400'}
+            fill={wishlistItems.includes(pkg.id) ? 'currentColor' : 'none'}
+          />
+        </button>
+        <div className="absolute top-4 left-4">
+          <span className="px-3 py-1 bg-brand-900/60 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-bold rounded-full">
+            {pkg.category}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-8 flex flex-col flex-grow">
+        <div className="flex items-center justify-between mb-4 text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400">
+          <div className="flex items-center gap-2">
+            <Calendar size={12} />
+            <span>Based on package</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPin size={12} />
+            <span>{destinations.find(d => d.id === pkg.destinationId)?.name}</span>
+          </div>
+        </div>
+
+        <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors">
+          {pkg.title}
+        </h3>
+        <p className="text-brand-600 text-sm leading-relaxed mb-6 flex-grow line-clamp-2">
+          {pkg.summary}
+        </p>
+
+        <div className="pt-6 border-t border-brand-100 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-brand-400 mb-1">
+              Starting from
+            </p>
+            <p className="text-xl font-serif text-brand-900">
+              {formatPrice(pkg.tiers[0].price)}
+            </p>
+          </div>
+          <Link to={`/packages/${pkg.slug}`} className="btn-primary py-2 px-6 text-xs">
+            View Details
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
 
   if (isLoading) {
     return (
@@ -475,77 +582,24 @@ const Packages = () => {
           </div>
         </section>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPackages.map((pkg) => (
-            <motion.div
-              key={pkg.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
-              className="romantic-card group flex flex-col h-full"
-            >
-              <div className="relative h-64 overflow-hidden">
-                <img
-                  src={pkg.featuredImage}
-                  alt={pkg.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <button
-                  aria-label={wishlistItems.includes(pkg.id) ? 'Saved to wishlist' : 'Save to wishlist'}
-                  onClick={() => toggleWishlist(pkg.id)}
-                  className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent hover:scale-105 transition"
-                >
-                  <Heart
-                    size={18}
-                    className={wishlistItems.includes(pkg.id) ? 'text-brand-accent' : 'text-brand-400'}
-                    fill={wishlistItems.includes(pkg.id) ? 'currentColor' : 'none'}
-                  />
-                </button>
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-brand-900/60 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-bold rounded-full">
-                    {pkg.category}
-                  </span>
-                </div>
-              </div>
+        {/* Handpicked */}
+        <section className="mb-12 sm:mb-14 rounded-3xl border border-brand-accent/20 bg-gradient-to-b from-brand-accent/10 to-white px-4 sm:px-6 py-8 sm:py-10 shadow-sm">
+          <div className="text-center mb-10 sm:mb-12">
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] font-bold text-brand-accent mb-4">Packages</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-4">Handpicked for You</h2>
+          </div>
 
-              <div className="p-8 flex flex-col flex-grow">
-                <div className="flex items-center justify-between mb-4 text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={12} />
-                    <span>{pkg.duration.days} Days</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={12} />
-                    <span>{destinations.find(d => d.id === pkg.destinationId)?.name}</span>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {handpickedPackages.map((pkg) => renderPackageCard(pkg))}
+          </div>
+        </section>
 
-                <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors">
-                  {pkg.title}
-                </h3>
-                <p className="text-brand-600 text-sm leading-relaxed mb-6 flex-grow line-clamp-2">
-                  {pkg.summary}
-                </p>
-
-                <div className="pt-6 border-t border-brand-100 flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest font-bold text-brand-400 mb-1">
-                      Starting from
-                    </p>
-                    <p className="text-xl font-serif text-brand-900">
-                      {formatPrice(pkg.tiers[0].price)}
-                    </p>
-                  </div>
-                  <Link to={`/packages/${pkg.slug}`} className="btn-primary py-2 px-6 text-xs">
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* All Packages */}
+        <section className="mb-8 sm:mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPackages.map((pkg) => renderPackageCard(pkg))}
+          </div>
+        </section>
 
         {filteredPackages.length === 0 && (
           <div className="text-center py-24">

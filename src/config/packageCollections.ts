@@ -192,6 +192,8 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     route: ['Port of Departure', 'First Stop', 'Second Stop', 'Third Stop', 'Return'],
     heroImage: '/images/placeholder-travel.svg',
     match: {
+      destinationNames: ['Dubai', 'Doha', 'Bali', 'Singapore', 'Paris', 'Rome', 'Santorini'],
+      destinationCountries: ['UAE', 'Qatar', 'Indonesia', 'Singapore', 'France', 'Italy', 'Greece'],
       categories: ['honeymoon'],
       fallbackCategory: 'honeymoon'
     }

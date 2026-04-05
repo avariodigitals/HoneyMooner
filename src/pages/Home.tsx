@@ -12,15 +12,20 @@ import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
 
 const Home = () => {
+  const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
   const { packages, destinations, testimonials, homeContent } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
   const navigate = useNavigate();
   const [wishlistItems, setWishlistItems] = useState<string[]>([]);
+  const [loadedDestinationImages, setLoadedDestinationImages] = useState<Record<string, boolean>>({});
+  const [featuredStartIndex, setFeaturedStartIndex] = useState(0);
   
   // Featured packages for the home page (first 2 honeymoons)
   const featuredPackages = packages.filter(p => p.category === 'honeymoon').slice(0, 2);
-  const featuredDestinations = destinations.slice(0, 3);
+  const featuredDestinations = destinations.length <= 3
+    ? destinations
+    : Array.from({ length: 3 }, (_, idx) => destinations[(featuredStartIndex + idx) % destinations.length]);
   const giftEyebrow = 'For Families of Newlyweds';
   const giftTitle = 'Honeymoon Gift Package';
   const giftPrimaryUrl = homeContent.giftPackage.primaryCtaUrl?.startsWith('/')
@@ -45,6 +50,27 @@ const Home = () => {
     });
     return () => { ignore = true; };
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const total = destinations.length;
+    if (total <= 3) {
+      setFeaturedStartIndex(0);
+      return;
+    }
+
+    const rawStored = window.localStorage.getItem(FEATURED_DESTINATION_INDEX_KEY);
+    const storedIndex = rawStored ? Number.parseInt(rawStored, 10) : 0;
+    const safeStoredIndex = Number.isFinite(storedIndex) && storedIndex >= 0 ? storedIndex : 0;
+    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    const isReload = navEntry?.type === 'reload';
+    const baseIndex = safeStoredIndex % total;
+    const nextIndex = isReload ? (baseIndex + 1) % total : baseIndex;
+
+    setFeaturedStartIndex(nextIndex);
+    window.localStorage.setItem(FEATURED_DESTINATION_INDEX_KEY, String(nextIndex));
+  }, [destinations.length]);
 
   const toggleWishlist = async (pkgId: string) => {
     if (!isAuthenticated) {
@@ -84,19 +110,27 @@ const Home = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-          {featuredDestinations.map((destination) => (
+          {featuredDestinations.map((destination, idx) => (
             <Link
               key={destination.id}
               to={`/destinations/${destination.slug}`}
               className="group relative h-[350px] sm:h-[450px] lg:h-[500px] overflow-hidden rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500"
             >
+              <div className="absolute inset-0 bg-brand-200/30 animate-pulse" aria-hidden="true" />
               <img
                 src={destination.image}
                 alt={destination.name}
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                loading={idx === 0 ? 'eager' : 'lazy'}
+                fetchPriority={idx === 0 ? 'high' : 'low'}
+                decoding="async"
+                className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${loadedDestinationImages[destination.id] ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => {
+                  setLoadedDestinationImages((prev) => ({ ...prev, [destination.id]: true }));
+                }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = homeContent.fallbackImages.destination || "/images/placeholder-travel.svg";
+                  setLoadedDestinationImages((prev) => ({ ...prev, [destination.id]: true }));
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/30 to-transparent" />
@@ -194,7 +228,7 @@ const Home = () => {
                   <div className="flex flex-wrap items-center justify-between gap-4 mb-6 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400">
                     <div className="flex items-center gap-2">
                       <Calendar size={14} className="text-brand-accent" />
-                      <span>{pkg.duration.days} Days / {pkg.duration.nights} Nights</span>
+                      <span>Based on selected package</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin size={14} className="text-brand-accent" />
@@ -422,7 +456,7 @@ const Home = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-brand-900/10 to-transparent" />
               <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
-                <p className="text-white text-sm sm:text-base font-medium leading-relaxed">
+                <p className="inline-block max-w-[95%] text-brand-50 font-serif italic text-base sm:text-lg leading-relaxed tracking-[0.01em] bg-brand-900/30 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 shadow-lg">
                   {homeContent.giftPackage.note}
                 </p>
               </div>

@@ -74,6 +74,8 @@ export interface Lead {
   id: string;
   packageId: string;
   packageName: string;
+  tierId?: string;
+  tierName?: string;
   departureDate: string;
   adults: number;
   children: number;

@@ -9,6 +9,7 @@ interface SuccessModalProps {
   message: string;
   transactionId?: string;
   amount?: string;
+  actionLabel?: string;
 }
 
 const SuccessModal: React.FC<SuccessModalProps> = ({ 
@@ -17,7 +18,8 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
   title, 
   message, 
   transactionId,
-  amount 
+  amount,
+  actionLabel = 'Continue Our Love Story'
 }) => {
   return (
     <AnimatePresence>
@@ -93,7 +95,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
                   className="btn-primary w-full py-4 rounded-2xl shadow-xl shadow-brand-accent/20 flex items-center justify-center gap-2 group"
                 >
                   <Heart size={18} className="group-hover:fill-white transition-all" />
-                  Continue Your Journey
+                  {actionLabel}
                 </button>
                 <p className="text-[10px] text-brand-400 uppercase tracking-[0.2em] font-bold">
                   A confirmation email has been sent to you

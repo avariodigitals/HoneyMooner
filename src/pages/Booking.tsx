@@ -27,6 +27,22 @@ import {
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
+const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
+const PHONE_PATTERN = /^[+\d()\-\s]{7,25}$/;
+
+function sanitizeText(value: string, maxLength: number): string {
+  const withoutControls = Array.from(value)
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code >= 32 && code !== 127;
+    })
+    .join('');
+
+  return withoutControls
+    .replace(/[<>]/g, '')
+    .trim()
+    .slice(0, maxLength);
+}
 
 interface DropdownOption {
   id: string;
@@ -175,6 +191,23 @@ const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent,
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.packageId) return;
+
+    const sanitizedName = sanitizeText(formData.travelerName, 80);
+    const sanitizedEmail = sanitizeText(formData.email, 120).toLowerCase();
+    const sanitizedPhone = sanitizeText(formData.phone, 25);
+    const sanitizedCountry = sanitizeText(formData.countryOfResidence, 80);
+    const sanitizedMessage = sanitizeText(formData.message, 1500);
+
+    if (!EMAIL_PATTERN.test(sanitizedEmail)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    if (!PHONE_PATTERN.test(sanitizedPhone)) {
+      alert('Please enter a valid phone number.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     const newLead: Lead = {
@@ -186,12 +219,12 @@ const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent,
       departureDate: formData.departureDate,
       adults: formData.adults,
       children: formData.children,
-      travelerName: formData.travelerName,
-      email: formData.email,
-      phone: formData.phone,
-      countryOfResidence: formData.countryOfResidence,
+      travelerName: sanitizedName,
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
+      countryOfResidence: sanitizedCountry,
       occasion: formData.occasion,
-      message: formData.message,
+      message: sanitizedMessage,
       status: 'pending',
       createdAt: new Date().toISOString()
     };

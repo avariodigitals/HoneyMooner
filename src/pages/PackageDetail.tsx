@@ -6,6 +6,7 @@ import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
 import { motion } from 'framer-motion';
 import PayPalButton from '../components/ui/PayPalButton';
+import PaystackButton from '../components/ui/PaystackButton';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
 import { 
@@ -505,19 +506,30 @@ const PackageDetail = () => {
                   <span className="w-full border-t border-brand-100"></span>
                 </div>
                 <div className="relative flex justify-center text-[9px] sm:text-[10px] uppercase tracking-widest font-bold">
-                  <span className="bg-white px-4 text-brand-300">or secure your date</span>
+                  <span className="bg-white px-4 text-brand-300">or secure your date with a deposit</span>
                 </div>
               </div>
 
-              <PayPalButton 
-                packageId={pkg.id}
-                tierId={selectedTier.id}
-                description={`${pkg.title} deposit (${selectedTier.name})`}
-                customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}`}
-                onSuccess={(details) => console.log('Deposit paid', details)} 
-              />
+              <div className="space-y-4 sm:space-y-5">
+                <PayPalButton 
+                  packageId={pkg.id}
+                  tierId={selectedTier.id}
+                  description={`${pkg.title} deposit (${selectedTier.name})`}
+                  customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}`}
+                  onSuccess={(details) => console.log('PayPal deposit paid', details)} 
+                />
+
+                <PaystackButton
+                  packageId={pkg.id}
+                  tierId={selectedTier.id}
+                  description={`${pkg.title} deposit (${selectedTier.name})`}
+                  customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}:paystack`}
+                  onSuccess={(details) => console.log('Paystack deposit paid', details)}
+                />
+              </div>
+
               <p className="text-[9px] sm:text-[10px] text-center text-brand-400 italic">
-                Secure your romantic escape with a deposit.
+                Secure your romantic escape with PayPal or Paystack.
               </p>
             </div>
 

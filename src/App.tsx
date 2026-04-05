@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import CurrencyProvider from './context/CurrencyProvider';
 import { UserProvider } from './context/UserProvider';
@@ -41,6 +41,7 @@ const AnimatedRoutes = () => {
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/wishlist" element={<Wishlist />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
   );

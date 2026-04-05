@@ -233,6 +233,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
         message="Your deposit has been secured. Our team will contact you shortly to finalize your romantic escape."
         transactionId={paymentDetails?.id}
         amount={paymentDetails ? `${paymentDetails.currency} ${paymentDetails.amount.toFixed(2)}` : undefined}
+        actionLabel="Celebrate This Love"
       />
     </>
   );

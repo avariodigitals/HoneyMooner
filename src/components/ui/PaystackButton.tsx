@@ -1,0 +1,314 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Landmark, Loader2, Mail } from 'lucide-react';
+import { useCurrency } from '../../hooks/useCurrency';
+import { paymentService } from '../../services/paymentService';
+import SuccessModal from './SuccessModal';
+
+interface PaystackPaymentDetails {
+  reference: string;
+  status: string;
+  amount: number;
+  currency: string;
+  customer: {
+    email: string;
+    name: string;
+  };
+}
+
+interface PaystackButtonProps {
+  packageId: string;
+  tierId: string;
+  onSuccess?: (details: PaystackPaymentDetails) => void;
+  disabled?: boolean;
+  description?: string;
+  customId?: string;
+}
+
+type PaystackSetupOptions = {
+  key: string;
+  email: string;
+  amount: number;
+  currency?: string;
+  ref?: string;
+  callback?: (response: { reference: string }) => void;
+  onClose?: () => void;
+};
+
+type PaystackHandler = {
+  openIframe: () => void;
+};
+
+declare global {
+  interface Window {
+    PaystackPop?: {
+      setup: (options: PaystackSetupOptions) => PaystackHandler;
+    };
+  }
+}
+
+let paystackScriptPromise: Promise<void> | null = null;
+
+function loadPaystackScript(): Promise<void> {
+  if (window.PaystackPop) {
+    return Promise.resolve();
+  }
+
+  if (paystackScriptPromise) {
+    return paystackScriptPromise;
+  }
+
+  paystackScriptPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[data-paystack-inline="true"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => reject(new Error('Unable to load Paystack checkout script.')), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://js.paystack.co/v1/inline.js';
+    script.async = true;
+    script.defer = true;
+    script.dataset.paystackInline = 'true';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Unable to load Paystack checkout script.'));
+    document.body.appendChild(script);
+  });
+
+  return paystackScriptPromise;
+}
+
+const PaystackButton: React.FC<PaystackButtonProps> = ({ packageId, tierId, onSuccess, disabled, description, customId }) => {
+  const [email, setEmail] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [quoteAmount, setQuoteAmount] = useState<number | null>(null);
+  const [quoteCurrency, setQuoteCurrency] = useState<string>('NGN');
+  const [quoteBaseAmount, setQuoteBaseAmount] = useState<number | null>(null);
+  const [quoteDepositType, setQuoteDepositType] = useState<'fixed' | 'percentage'>('fixed');
+  const [isQuoteLoading, setIsQuoteLoading] = useState(true);
+  const [paymentDetails, setPaymentDetails] = useState<PaystackPaymentDetails | null>(null);
+  const { currency, formatPrice } = useCurrency();
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadQuote = async () => {
+      if (!packageId || !tierId) {
+        if (!ignore) {
+          setQuoteAmount(null);
+          setQuoteBaseAmount(null);
+          setIsQuoteLoading(false);
+          setErrorMessage('Select a package and tier to continue with Paystack.');
+        }
+        return;
+      }
+
+      if (!paymentService.isEnabled()) {
+        if (!ignore) {
+          setQuoteAmount(null);
+          setQuoteBaseAmount(null);
+          setIsQuoteLoading(false);
+          setErrorMessage('Paystack payments are unavailable in this environment.');
+        }
+        return;
+      }
+
+      setIsQuoteLoading(true);
+      setErrorMessage('');
+
+      try {
+        const quote = await paymentService.getPaystackQuote(packageId, tierId);
+        if (ignore) return;
+        setQuoteAmount(quote.amount);
+        setQuoteCurrency(quote.currency);
+        setQuoteBaseAmount(quote.base_amount);
+        setQuoteDepositType(quote.deposit_type);
+      } catch (error) {
+        if (ignore) return;
+        const message = error instanceof Error ? error.message : 'Unable to load Paystack amount.';
+        setErrorMessage(message);
+        setQuoteAmount(null);
+        setQuoteBaseAmount(null);
+      } finally {
+        if (!ignore) {
+          setIsQuoteLoading(false);
+        }
+      }
+    };
+
+    void loadQuote();
+
+    return () => {
+      ignore = true;
+    };
+  }, [packageId, tierId]);
+
+  const isEmailValid = useMemo(() => /\S+@\S+\.\S+/.test(email.trim()), [email]);
+
+  const handlePayment = async () => {
+    if (!paymentService.isEnabled()) {
+      setErrorMessage('Payments are currently disabled by configuration.');
+      return;
+    }
+
+    if (!isEmailValid) {
+      setErrorMessage('Enter a valid email address to continue with Paystack.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setErrorMessage('');
+
+    try {
+      const callbackUrl = `${window.location.origin}${window.location.pathname}`;
+      const initialized = await paymentService.initializePaystackTransaction({
+        packageId,
+        tierId,
+        email: email.trim(),
+        description: description || 'The Honeymoonner Deposit',
+        customId: customId || `deposit-${Date.now()}`,
+        callbackUrl
+      });
+
+      await loadPaystackScript();
+
+      const paystackPublicKey = initialized.public_key || (import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string | undefined);
+      if (!paystackPublicKey) {
+        throw new Error('Paystack public key was not provided by the backend.');
+      }
+
+      const amountInKobo = Math.round((initialized.amount || quoteAmount || 0) * 100);
+      if (amountInKobo <= 0) {
+        throw new Error('Unable to initialize payment amount.');
+      }
+
+      const paystack = window.PaystackPop;
+      if (!paystack) {
+        throw new Error('Paystack checkout is not available right now.');
+      }
+
+      const handler = paystack.setup({
+        key: paystackPublicKey,
+        email: email.trim(),
+        amount: amountInKobo,
+        currency: initialized.currency || quoteCurrency,
+        ref: initialized.reference,
+        callback: async (response) => {
+          try {
+            const verification = await paymentService.verifyPaystackTransaction(response.reference);
+            const details: PaystackPaymentDetails = {
+              reference: verification.reference,
+              status: verification.status,
+              amount: verification.amount,
+              currency: verification.currency || quoteCurrency,
+              customer: {
+                email: verification.customer_email || email.trim(),
+                name: verification.customer_name || 'Paystack Customer'
+              }
+            };
+
+            setPaymentDetails(details);
+            setShowSuccess(true);
+            onSuccess?.(details);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to verify your Paystack payment.';
+            setErrorMessage(message);
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        onClose: () => {
+          setIsProcessing(false);
+        }
+      });
+
+      handler.openIframe();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to initialize Paystack checkout.';
+      setErrorMessage(message);
+      setIsProcessing(false);
+    }
+  };
+
+  const isUnavailable = disabled || isProcessing || isQuoteLoading || quoteAmount === null;
+  const percentageValue = quoteBaseAmount && quoteBaseAmount > 0
+    ? Math.round((quoteAmount ?? 0) / quoteBaseAmount * 100)
+    : null;
+  const hasCurrencyConversion = quoteAmount !== null && quoteCurrency !== currency.code;
+  const selectedCurrencyAmount = quoteAmount !== null ? formatPrice(quoteAmount, quoteCurrency) : null;
+  const chargeAmount = quoteAmount !== null ? `${quoteCurrency} ${quoteAmount.toFixed(2)}` : null;
+
+  return (
+    <>
+      <div className="space-y-3">
+        <div className="relative">
+          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
+          <input
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="Email for your receipt"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className="w-full h-11 sm:h-12 pl-11 pr-4 rounded-xl border border-brand-100 bg-white text-sm text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent"
+          />
+        </div>
+
+        <button
+          onClick={handlePayment}
+          disabled={isUnavailable}
+          className={`w-full h-12 sm:h-13 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98] ${
+            isUnavailable
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-[#0BA4DB] hover:bg-[#0785B2] text-white'
+          }`}
+        >
+          {isProcessing ? (
+            <Loader2 className="animate-spin" size={18} />
+          ) : (
+            <>
+              <Landmark size={18} />
+              <span>Pay with Paystack</span>
+              {selectedCurrencyAmount && (
+                <span className="text-[11px] sm:text-xs font-medium text-white/90">
+                  {selectedCurrencyAmount}
+                </span>
+              )}
+            </>
+          )}
+        </button>
+      </div>
+
+      {errorMessage && (
+        <p className="mt-3 text-center text-xs text-red-600">
+          {errorMessage}
+        </p>
+      )}
+
+      {quoteAmount !== null && !errorMessage && (
+        <div className="mt-3 space-y-1 text-center">
+          <p className="text-[11px] text-brand-500">
+            {quoteDepositType === 'percentage' && percentageValue !== null
+              ? `${percentageValue}% deposit due now.`
+              : 'Deposit due now.'}
+            {hasCurrencyConversion && chargeAmount ? ` Charged as ${chargeAmount}.` : ''}
+          </p>
+        </div>
+      )}
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Payment Successful!"
+        message="Your Paystack payment has been confirmed. Our team will reach out shortly to finalize your romantic escape."
+        transactionId={paymentDetails?.reference}
+        amount={paymentDetails ? `${paymentDetails.currency} ${paymentDetails.amount.toFixed(2)}` : undefined}
+        actionLabel="Begin Forever Together"
+      />
+    </>
+  );
+};
+
+export default PaystackButton;

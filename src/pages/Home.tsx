@@ -264,7 +264,7 @@ const Home = () => {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="space-y-5 sm:space-y-6 text-center lg:text-left"
+              className="order-2 lg:order-1 space-y-5 sm:space-y-6 text-center lg:text-left"
             >
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] font-bold text-brand-accent">
                 {homeContent.giftPackage.eyebrow}
@@ -272,7 +272,7 @@ const Home = () => {
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 leading-tight">
                 {homeContent.giftPackage.title}
               </h2>
-              <p className="text-brand-700 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
+              <p className="hidden sm:block text-brand-700 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
                 {homeContent.giftPackage.description}
               </p>
 
@@ -283,7 +283,6 @@ const Home = () => {
                   'Expert support included'
                 ].map((item) => (
                   <div key={item} className="rounded-2xl border border-brand-100 bg-brand-50/70 px-4 py-4 text-left shadow-sm">
-                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] text-brand-400 mb-2">Gift-ready</p>
                     <p className="text-sm sm:text-base font-medium text-brand-900 leading-snug">{item}</p>
                   </div>
                 ))}
@@ -307,7 +306,7 @@ const Home = () => {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="relative h-64 sm:h-80 lg:h-[380px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl"
+              className="order-1 lg:order-2 relative h-64 sm:h-80 lg:h-[380px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl"
             >
               <img
                 src={homeContent.giftPackage.image || ASSETS.ROMANTIC_MOMENT_HOME}
@@ -319,7 +318,7 @@ const Home = () => {
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-brand-900/10 to-transparent" />
-              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+              <div className="hidden sm:block absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
                 <p className="inline-block max-w-[95%] text-brand-50 font-serif italic text-base sm:text-lg leading-relaxed tracking-[0.01em] bg-brand-900/30 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 shadow-lg">
                   {homeContent.giftPackage.note}
                 </p>

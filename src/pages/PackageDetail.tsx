@@ -453,15 +453,15 @@ const PackageDetail = () => {
           {/* Tier Selection */}
           <div className="space-y-6 sm:space-y-8">
             <h3 className="text-xl sm:text-2xl font-serif text-brand-900">Select Your Experience Level</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {pkg.tiers.map((tier) => (
                 <div
                   key={tier.id}
                   onClick={() => setSelectedTierId(tier.id)}
-                  className={`min-w-0 p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border-2 transition-all cursor-pointer relative overflow-hidden group ${
+                  className={`min-w-0 p-6 sm:p-7 rounded-2xl sm:rounded-[28px] border-2 transition-all cursor-pointer relative overflow-hidden group ${
                     selectedTierId === tier.id
                       ? 'border-brand-accent bg-brand-accent/5 shadow-xl shadow-brand-accent/10'
-                      : 'border-brand-100 bg-white hover:border-brand-200'
+                      : 'border-brand-100 bg-white hover:border-brand-200 hover:shadow-md'
                   }`}
                 >
                   {selectedTierId === tier.id && (
@@ -469,10 +469,12 @@ const PackageDetail = () => {
                       <Check className="w-[18px] h-[18px] sm:w-6 sm:h-6" />
                     </div>
                   )}
-                  <div className="pr-8 flex flex-col lg:flex-row lg:items-baseline lg:gap-4 gap-1 mb-2 sm:mb-4 min-w-0">
-                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-400 whitespace-nowrap">{tier.name}</p>
-                    <p className="text-xl sm:text-2xl lg:text-[30px] font-serif text-brand-900 leading-tight whitespace-nowrap">{formatPrice(tier.price)}</p>
-                    <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-brand-400 italic leading-tight whitespace-nowrap">{tier.basis}</p>
+                  <div className="pr-8 min-w-0 space-y-3">
+                    <p className="text-sm sm:text-base font-semibold tracking-wide text-brand-700">{tier.name}</p>
+                    <p className="text-2xl sm:text-3xl font-serif text-brand-900 leading-tight whitespace-nowrap">{formatPrice(tier.price)}</p>
+                    <p className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[10px] uppercase tracking-[0.18em] font-bold text-brand-500">
+                      {tier.basis}
+                    </p>
                   </div>
                 </div>
               ))}

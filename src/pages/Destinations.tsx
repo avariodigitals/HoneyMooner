@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Globe, Compass, Calendar, Heart } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import SEO from '../components/layout/SEO';
 
 const Destinations = () => {
   const { slug } = useParams();
@@ -44,11 +45,16 @@ const Destinations = () => {
         transition={{ duration: 0.5 }}
         className="min-h-screen"
       >
+        <SEO
+          title={`${selectedDestination.name} Honeymoon Destination`}
+          description={selectedDestination.description}
+          keywords={`${selectedDestination.name} honeymoon, ${selectedDestination.country} romantic travel, luxury destination packages`}
+        />
         <div className="absolute top-24 left-0 right-0 z-20">
           <Breadcrumbs />
         </div>
         {/* Destination Hero */}
-        <section className="relative h-[60vh] overflow-hidden">
+        <section className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
           <img 
             src={selectedDestination.image} 
             alt={selectedDestination.name} 
@@ -141,7 +147,13 @@ const Destinations = () => {
                     className="romantic-card group flex flex-col h-full"
                   >
                     <div className="relative h-64 overflow-hidden">
-                      <img src={pkg.featuredImage} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <img
+                        src={pkg.featuredImage}
+                        alt={pkg.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
                       <div className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-full text-brand-accent"><Heart size={16} fill="currentColor" /></div>
                     </div>
                     <div className="p-8 flex flex-col flex-grow">
@@ -180,10 +192,15 @@ const Destinations = () => {
       transition={{ duration: 0.5 }}
       className="pt-24 min-h-screen"
     >
+      <SEO
+        title="Destinations"
+        description="Explore handpicked romantic destinations around the world, from tropical islands to elegant city escapes."
+        keywords="honeymoon destinations, romantic travel locations, luxury honeymoon spots"
+      />
       <Breadcrumbs />
       
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
+      <section className="relative h-[50vh] sm:h-[60vh] flex items-center justify-center overflow-hidden mb-14 sm:mb-20">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hugh-whyte-SBOHLtENzEY-unsplash-scaled.jpg" 

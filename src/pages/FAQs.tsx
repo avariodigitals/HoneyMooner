@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Search, HelpCircle } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import SEO from '../components/layout/SEO';
 
 const FAQs = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,10 +64,15 @@ const FAQs = () => {
 
   return (
     <div className="pt-24 min-h-screen bg-brand-50">
+      <SEO
+        title="Frequently Asked Questions"
+        description="Find answers about honeymoon booking timelines, payment options, cancellations, visa support, and concierge service."
+        keywords="honeymoon FAQ, travel planning questions, honeymoon payment policy"
+      />
       <Breadcrumbs />
 
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
+      <section className="relative h-[50vh] sm:h-[60vh] flex items-center justify-center overflow-hidden mb-14 sm:mb-20">
         <div className="absolute inset-0 z-0">
           <img 
             src="/images/placeholder-travel.svg" 

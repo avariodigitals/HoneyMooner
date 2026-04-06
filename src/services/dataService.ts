@@ -4,6 +4,7 @@ import type {
   Destination, 
   TravelPackage, 
   Lead, 
+  ContactMessage,
   BlogPost, 
   Testimonial,
   PackageReview,
@@ -20,6 +21,7 @@ const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoo
 const WP_SYNC_ENABLED = (import.meta.env.VITE_WP_SYNC_ENABLED ?? 'true') === 'true';
 const WP_PUBLIC_LEAD_ENDPOINT = import.meta.env.VITE_WP_PUBLIC_LEAD_ENDPOINT ?? '/custom/v1/leads';
 const WP_PACKAGE_REVIEWS_ENDPOINT = import.meta.env.VITE_WP_PACKAGE_REVIEWS_ENDPOINT ?? '/custom/v1/package-reviews';
+const WP_CONTACT_MESSAGES_ENDPOINT = import.meta.env.VITE_WP_CONTACT_MESSAGES_ENDPOINT ?? '/custom/v1/contact-messages';
 
 let wpReachable: boolean | null = null;
 let wpCheckPromise: Promise<boolean> | null = null;
@@ -673,6 +675,12 @@ export const dataService = {
         return true;
       }
 
+      const publicError = await publicResponse.text();
+      console.warn('Public lead endpoint failed, trying authenticated fallback:', {
+        status: publicResponse.status,
+        body: publicError
+      });
+
       const token = authService.getToken();
       if (!token) {
         return false;
@@ -690,6 +698,14 @@ export const dataService = {
           acf: lead
         })
       });
+
+      if (!response.ok) {
+        const fallbackError = await response.text();
+        console.error('Authenticated lead creation failed:', {
+          status: response.status,
+          body: fallbackError
+        });
+      }
 
       return response.ok;
     } catch (error) {
@@ -759,6 +775,14 @@ export const dataService = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(review)
       });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Package review endpoint rejected request:', {
+          status: response.status,
+          body: errorBody
+        });
+      }
 
       return response.ok;
     } catch (error) {
@@ -1093,6 +1117,32 @@ export const dataService = {
     } catch (error) {
       console.error('Error fetching wishlist:', error);
       return [];
+    }
+  },
+
+  async createContactMessage(message: Omit<ContactMessage, 'id' | 'createdAt' | 'status'>): Promise<boolean> {
+    try {
+      const ok = await checkWP();
+      if (!ok) return false;
+
+      const response = await fetch(`${WP_BASE_URL}${WP_CONTACT_MESSAGES_ENDPOINT}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(message)
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Contact message endpoint rejected request:', {
+          status: response.status,
+          body: errorBody
+        });
+      }
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error creating contact message:', error);
+      return false;
     }
   },
 

@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
+import SEO from '../components/layout/SEO';
 
 const STYLE_ALIASES: Record<string, string[]> = {
   'beach bliss': ['Beach Bliss', 'Beach Romance'],
@@ -68,6 +69,11 @@ const Packages = () => {
       navigate('/account', { state: { from: '/packages' } });
       return;
     }
+          <SEO
+            title="Honeymoon Packages"
+            description="Browse curated honeymoon and romantic travel packages with flexible tiers, handpicked experiences, and expert planning support."
+            keywords="honeymoon packages, luxury romantic trips, curated travel experiences"
+          />
     const current = wishlistItems;
     const next = current.includes(pkgId) ? current.filter(id => id !== pkgId) : [...current, pkgId];
     const ok = await dataService.updateWishlist(next);
@@ -205,7 +211,7 @@ const Packages = () => {
       <Breadcrumbs />
 
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
+      <section className="relative h-[50vh] sm:h-[60vh] flex items-center justify-center overflow-hidden mb-14 sm:mb-20">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/ibrahim-mushan-B5fzqOl7BdE-unsplash-scaled.jpg" 

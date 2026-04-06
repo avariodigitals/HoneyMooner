@@ -25,6 +25,7 @@ import {
   Loader2
 } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import SEO from '../components/layout/SEO';
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
 const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
@@ -718,15 +719,22 @@ export default function Booking() {
 
   // Use a key to reset the form when initial data changes significantly (like a new package selected from another page)
   return (
-    <BookingForm 
-      key={`${initialData.packageId}-${initialData.tierId}-${initialData.message}`}
-      initialData={initialData} 
-      packages={packages} 
-      packageOptions={packageOptions}
-      isPackagesLoading={isLoading && packages.length === 0}
-      bookingContent={bookingContent}
-      addLead={addLead} 
-      formatPrice={formatPrice} 
-    />
+    <>
+      <SEO
+        title="Booking"
+        description="Share your travel preferences and let The Honeymoonner design a personalized luxury itinerary for your romantic getaway."
+        keywords="honeymoon booking, luxury itinerary planning, romantic travel consultation"
+      />
+      <BookingForm 
+        key={`${initialData.packageId}-${initialData.tierId}-${initialData.message}`}
+        initialData={initialData} 
+        packages={packages} 
+        packageOptions={packageOptions}
+        isPackagesLoading={isLoading && packages.length === 0}
+        bookingContent={bookingContent}
+        addLead={addLead} 
+        formatPrice={formatPrice} 
+      />
+    </>
   );
 }

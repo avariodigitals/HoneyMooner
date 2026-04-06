@@ -89,6 +89,16 @@ export interface Lead {
   createdAt: string;
 }
 
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'new' | 'read' | 'responded';
+  createdAt: string;
+}
+
 export type Currency = {
   code: string;
   symbol: string;

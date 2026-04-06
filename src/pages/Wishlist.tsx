@@ -6,6 +6,7 @@ import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { dataService } from '../services/dataService';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import SEO from '../components/layout/SEO';
 import { 
   Heart, 
   MapPin, 
@@ -21,12 +22,18 @@ const Wishlist = () => {
   const { formatPrice } = useCurrency();
   const [wishlistItems, setWishlistItems] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchWishlist = async () => {
-      const items = await dataService.getWishlist();
-      setWishlistItems(items);
-      setIsLoading(false);
+      try {
+        const items = await dataService.getWishlist();
+        setWishlistItems(items);
+      } catch {
+        setError('Unable to load your wishlist right now. Please try again shortly.');
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchWishlist();
   }, []);
@@ -34,7 +41,11 @@ const Wishlist = () => {
   const removeFromWishlist = async (id: string) => {
     const newWishlist = wishlistItems.filter(item => item !== id);
     setWishlistItems(newWishlist);
-    await dataService.updateWishlist(newWishlist);
+    const updated = await dataService.updateWishlist(newWishlist);
+    if (!updated) {
+      setWishlistItems(wishlistItems);
+      setError('Could not update your wishlist. Please try again.');
+    }
   };
 
   const wishlistedPackages = packages.filter(pkg => wishlistItems.includes(pkg.id));
@@ -49,10 +60,23 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="Wishlist"
+        description="View and manage your saved honeymoon packages and quickly continue planning your next romantic escape."
+        keywords="wishlist honeymoon packages, saved romantic trips, travel shortlist"
+      />
       {/* Breadcrumbs Overlay - Fixed positioning */}
       <div className="pt-24 lg:pt-28 pb-4">
         <Breadcrumbs />
       </div>
+
+      {error && (
+        <div className="section-container pb-4">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        </div>
+      )}
 
       {/* Romantic Hero Section - Responsive height */}
       <section className="relative min-h-[40vh] lg:h-[50vh] flex items-center justify-center overflow-hidden py-12 lg:py-0">
@@ -119,6 +143,8 @@ const Wishlist = () => {
                       <img 
                         src={pkg.featuredImage} 
                         alt={pkg.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-brand-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />

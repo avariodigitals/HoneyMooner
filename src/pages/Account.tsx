@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../hooks/useUser';
 import { authService } from '../services/authService';
+import SEO from '../components/layout/SEO';
 import { 
   Heart, 
   Mail, 
@@ -10,7 +11,9 @@ import {
   User as UserIcon, 
   ArrowRight, 
   Loader2, 
-  ChevronRight
+  ChevronRight,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 const Account = () => {
@@ -22,8 +25,16 @@ const Account = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    username?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [registrationAvailable, setRegistrationAvailable] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const { login } = useUser();
   const navigate = useNavigate();
@@ -54,9 +65,50 @@ const Account = () => {
     }
   }, [registrationAvailable, isLogin]);
 
+  const validateForm = () => {
+    const nextErrors: {
+      username?: string;
+      email?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
+
+    if (!formData.username.trim()) {
+      nextErrors.username = 'Username is required.';
+    } else if (formData.username.trim().length < 3) {
+      nextErrors.username = 'Username must be at least 3 characters.';
+    }
+
+    if (!formData.password) {
+      nextErrors.password = 'Password is required.';
+    } else if (!isLogin && formData.password.length < 8) {
+      nextErrors.password = 'Password must be at least 8 characters.';
+    }
+
+    if (!isLogin) {
+      if (!formData.email.trim()) {
+        nextErrors.email = 'Email is required.';
+      } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+        nextErrors.email = 'Enter a valid email address.';
+      }
+
+      if (!formData.confirmPassword) {
+        nextErrors.confirmPassword = 'Please confirm your password.';
+      } else if (formData.password !== formData.confirmPassword) {
+        nextErrors.confirmPassword = 'Passwords do not match.';
+      }
+    }
+
+    setFieldErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!validateForm()) {
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -64,12 +116,11 @@ const Account = () => {
         await login(formData.username, formData.password);
         navigate(from, { replace: true });
       } else {
-        if (formData.password !== formData.confirmPassword) {
-          throw new Error("Passwords do not match");
-        }
         await authService.register(formData.username, formData.email, formData.password);
         setIsLogin(true);
         setError('Account created. Please login.');
+        setFormData({ username: formData.username, email: '', password: '', confirmPassword: '' });
+        setFieldErrors({});
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
@@ -81,6 +132,11 @@ const Account = () => {
 
   return (
     <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden bg-brand-900">
+      <SEO
+        title="Account"
+        description="Sign in to manage your saved honeymoon destinations, bookings, and personalized romantic travel plans."
+        keywords="honeymoon account, travel login, manage bookings"
+      />
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -121,7 +177,13 @@ const Account = () => {
               <div className="flex -space-x-3">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="w-12 h-12 rounded-full border-2 border-brand-900 bg-brand-100 overflow-hidden shadow-xl">
-                    <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={`https://i.pravatar.cc/150?u=${i + 10}`}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -155,7 +217,7 @@ const Account = () => {
                   <h2 className="text-2xl font-serif text-brand-900 mb-1">
                     {isLogin ? "Welcome Back" : "Start Your Journey"}
                   </h2>
-                  <p className="text-brand-50 text-xs italic opacity-80">
+                  <p className="text-brand-500 text-xs italic opacity-80">
                     {isLogin ? "Access your saved plans and preferences." : "Create an account to manage your travel plans."}
                   </p>
                 </div>
@@ -179,9 +241,17 @@ const Account = () => {
                             className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
                             placeholder="email@example.com"
                             value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            onChange={(e) => {
+                              setFormData({ ...formData, email: e.target.value });
+                              if (fieldErrors.email) {
+                                setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                              }
+                            }}
                           />
                         </div>
+                        {fieldErrors.email && (
+                          <p className="text-red-500 text-[10px] ml-4">{fieldErrors.email}</p>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -197,9 +267,17 @@ const Account = () => {
                         className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
                         placeholder="Your unique name"
                         value={formData.username}
-                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, username: e.target.value });
+                          if (fieldErrors.username) {
+                            setFieldErrors((prev) => ({ ...prev, username: undefined }));
+                          }
+                        }}
                       />
                     </div>
+                    {fieldErrors.username && (
+                      <p className="text-red-500 text-[10px] ml-4">{fieldErrors.username}</p>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -207,15 +285,31 @@ const Account = () => {
                     <div className="relative">
                       <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         required
                         autoComplete={isLogin ? "current-password" : "new-password"}
-                        className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
+                        className="w-full pl-12 pr-12 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
                         placeholder="••••••••"
                         value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, password: e.target.value });
+                          if (fieldErrors.password) {
+                            setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                          }
+                        }}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-700"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
                     </div>
+                    {fieldErrors.password && (
+                      <p className="text-red-500 text-[10px] ml-4">{fieldErrors.password}</p>
+                    )}
                   </div>
 
                   <AnimatePresence mode="wait">
@@ -230,15 +324,31 @@ const Account = () => {
                         <div className="relative">
                           <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
                           <input
-                            type="password"
+                            type={showConfirmPassword ? 'text' : 'password'}
                             required
                             autoComplete="new-password"
-                            className="w-full pl-12 pr-5 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
+                            className="w-full pl-12 pr-12 py-3.5 bg-brand-50 border-none rounded-xl text-brand-900 focus:ring-2 focus:ring-brand-accent/20 transition-all text-sm"
                             placeholder="••••••••"
                             value={formData.confirmPassword}
-                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                            onChange={(e) => {
+                              setFormData({ ...formData, confirmPassword: e.target.value });
+                              if (fieldErrors.confirmPassword) {
+                                setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                              }
+                            }}
                           />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-700"
+                            aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                          >
+                            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
                         </div>
+                        {fieldErrors.confirmPassword && (
+                          <p className="text-red-500 text-[10px] ml-4">{fieldErrors.confirmPassword}</p>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>

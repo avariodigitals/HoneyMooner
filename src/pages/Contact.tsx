@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Instagram, Facebook, Twitter, AlertCircle } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import { dataService } from '../services/dataService';
+import SEO from '../components/layout/SEO';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -12,27 +14,99 @@ const Contact = () => {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Email validation regex
+  const validateEmail = (email: string): boolean => {
+    return /^\S+@\S+\.\S+$/.test(email);
+  };
+
+  // Validate form
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      errors.name = 'Full name is required';
+    } else if (formData.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!validateEmail(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.subject.trim()) {
+      errors.subject = 'Subject is required';
+    } else if (formData.subject.trim().length < 5) {
+      errors.subject = 'Subject must be at least 5 characters';
+    }
+
+    if (!formData.message.trim()) {
+      errors.message = 'Message is required';
+    } else if (formData.message.trim().length < 10) {
+      errors.message = 'Message must be at least 10 characters';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setError('');
+    
+    // Validate before submission
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const success = await dataService.createContactMessage({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message
+      });
+
+      if (success) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+        setValidationErrors({});
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        setError('Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again later.');
+      console.error('Contact form error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const contactInfo = [
-    { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'info@thehoneymoonner.com' },
-    { icon: <Phone className="w-5 h-5" />, label: 'Phone', value: '+2348131760694' },
+    { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'info@thehoneymoonner.com', href: 'mailto:info@thehoneymoonner.com' },
+    { icon: <Phone className="w-5 h-5" />, label: 'Phone', value: '+2348131760694', href: 'tel:+2348131760694' },
     { icon: <MapPin className="w-5 h-5" />, label: 'Office', value: 'Lagos, United Kingdom' },
   ];
 
   return (
     <div className="pt-24 min-h-screen bg-brand-50">
+      <SEO
+        title="Contact Us"
+        description="Speak with The Honeymoonner travel experts and start planning a personalized honeymoon, anniversary, or romantic getaway."
+        keywords="honeymoon travel consultation, contact honeymoon planner, romantic getaway experts"
+      />
       <Breadcrumbs />
 
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden mb-20">
+      <section className="relative h-[50vh] sm:h-[60vh] flex items-center justify-center overflow-hidden mb-14 sm:mb-20">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/natalya-zaritskaya-SIOdjcYotms-unsplash-scaled.jpg" 
@@ -83,7 +157,13 @@ const Contact = () => {
                     </div>
                     <div>
                       <p className="text-sm text-brand-600 font-medium uppercase tracking-wider">{info.label}</p>
-                      <p className="text-brand-900">{info.value}</p>
+                      {info.href ? (
+                        <a href={info.href} className="text-brand-900 hover:text-brand-accent transition-colors">
+                          {info.value}
+                        </a>
+                      ) : (
+                        <p className="text-brand-900">{info.value}</p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -120,28 +200,62 @@ const Contact = () => {
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Error Message */}
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3"
+                    >
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-red-700 text-sm">{error}</p>
+                    </motion.div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-brand-900 mb-2">Full Name</label>
                       <input 
                         type="text" 
                         required
-                        className="w-full px-4 py-3 rounded-xl border border-brand-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all"
+                        className={`w-full px-4 py-3 rounded-xl border focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all ${
+                          validationErrors.name ? 'border-red-500 bg-red-50' : 'border-brand-200'
+                        }`}
                         placeholder="John Doe"
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, name: e.target.value });
+                          if (validationErrors.name) {
+                            setValidationErrors({ ...validationErrors, name: '' });
+                          }
+                        }}
+                        disabled={isLoading}
                       />
+                      {validationErrors.name && (
+                        <p className="text-red-600 text-sm mt-1">{validationErrors.name}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-brand-900 mb-2">Email Address</label>
                       <input 
                         type="email" 
                         required
-                        className="w-full px-4 py-3 rounded-xl border border-brand-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all"
+                        className={`w-full px-4 py-3 rounded-xl border focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all ${
+                          validationErrors.email ? 'border-red-500 bg-red-50' : 'border-brand-200'
+                        }`}
                         placeholder="john@example.com"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, email: e.target.value });
+                          if (validationErrors.email) {
+                            setValidationErrors({ ...validationErrors, email: '' });
+                          }
+                        }}
+                        disabled={isLoading}
                       />
+                      {validationErrors.email && (
+                        <p className="text-red-600 text-sm mt-1">{validationErrors.email}</p>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -149,25 +263,51 @@ const Contact = () => {
                     <input 
                       type="text" 
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-brand-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all"
+                      className={`w-full px-4 py-3 rounded-xl border focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all ${
+                        validationErrors.subject ? 'border-red-500 bg-red-50' : 'border-brand-200'
+                      }`}
                       placeholder="Planning my honeymoon"
                       value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, subject: e.target.value });
+                        if (validationErrors.subject) {
+                          setValidationErrors({ ...validationErrors, subject: '' });
+                        }
+                      }}
+                      disabled={isLoading}
                     />
+                    {validationErrors.subject && (
+                      <p className="text-red-600 text-sm mt-1">{validationErrors.subject}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-brand-900 mb-2">Message</label>
                     <textarea 
                       required
                       rows={6}
-                      className="w-full px-4 py-3 rounded-xl border border-brand-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all resize-none"
+                      className={`w-full px-4 py-3 rounded-xl border focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all resize-none ${
+                        validationErrors.message ? 'border-red-500 bg-red-50' : 'border-brand-200'
+                      }`}
                       placeholder="Tell us about your dream trip..."
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, message: e.target.value });
+                        if (validationErrors.message) {
+                          setValidationErrors({ ...validationErrors, message: '' });
+                        }
+                      }}
+                      disabled={isLoading}
                     ></textarea>
+                    {validationErrors.message && (
+                      <p className="text-red-600 text-sm mt-1">{validationErrors.message}</p>
+                    )}
                   </div>
-                  <button type="submit" className="w-full btn-primary py-4 text-lg">
-                    Send Message
+                  <button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="w-full btn-primary py-4 text-lg disabled:opacity-75 disabled:cursor-not-allowed transition-opacity"
+                  >
+                    {isLoading ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
               )}

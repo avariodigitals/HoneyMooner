@@ -4,6 +4,7 @@ import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
+import type { PackageReview } from '../types';
 import { motion } from 'framer-motion';
 import PayPalButton from '../components/ui/PayPalButton';
 import PaystackButton from '../components/ui/PaystackButton';
@@ -56,10 +57,18 @@ const PackageDetail = () => {
   const navigate = useNavigate();
   const pkg = packages.find(p => p.slug === slug);
   const destination = destinations.find(d => d.id === pkg?.destinationId);
+  const packageSlug = pkg?.slug;
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
   const [selectedDate, setSelectedDate] = useState('');
   const [wishlistItems, setWishlistItems] = useState<string[] | null>(null);
+  const [packageReviews, setPackageReviews] = useState<PackageReview[]>([]);
+  const [reviewerName, setReviewerName] = useState('');
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewMessage, setReviewMessage] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
+  const [isReviewSubmitting, setIsReviewSubmitting] = useState(false);
+  const [reviewFeedback, setReviewFeedback] = useState('');
 
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -83,12 +92,74 @@ const PackageDetail = () => {
     return () => { cancelled = true; };
   }, [isAuthenticated, pkg]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!packageSlug) return;
+
+    dataService.getPackageReviews(packageSlug)
+      .then((reviews) => {
+        if (!cancelled) {
+          setPackageReviews(reviews);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPackageReviews([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [packageSlug]);
+
   const reviewsCount = useMemo(() => {
     if (!pkg) return 0;
-    // Generate a consistent pseudo-random number based on the package ID
+    if (packageReviews.length > 0) return packageReviews.length;
     const hash = pkg.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return 15 + (hash % 40); // Between 15 and 55 reviews
-  }, [pkg]);
+    return 15 + (hash % 40);
+  }, [pkg, packageReviews.length]);
+
+  const submitReview = async () => {
+    if (!pkg) return;
+    if (!reviewerName.trim() || !reviewTitle.trim() || !reviewMessage.trim()) {
+      setReviewFeedback('Please complete your review before submitting.');
+      return;
+    }
+
+    setIsReviewSubmitting(true);
+    setReviewFeedback('');
+
+    const payload = {
+      packageId: pkg.id,
+      packageSlug: pkg.slug,
+      packageTitle: pkg.title,
+      reviewerName: reviewerName.trim(),
+      rating: reviewRating,
+      title: reviewTitle.trim(),
+      message: reviewMessage.trim()
+    };
+
+    const saved = await dataService.createPackageReview(payload);
+    if (saved) {
+      setPackageReviews((current) => [
+        {
+          id: `local-${Date.now()}`,
+          ...payload,
+          createdAt: new Date().toISOString()
+        },
+        ...current
+      ]);
+      setReviewerName('');
+      setReviewTitle('');
+      setReviewMessage('');
+      setReviewRating(5);
+      setReviewFeedback('Thank you. Your review has been sent.');
+    } else {
+      setReviewFeedback('The WordPress review endpoint is not ready yet. See backend steps below.');
+    }
+    setIsReviewSubmitting(false);
+  };
 
   if (isLoading) {
     return (
@@ -392,9 +463,11 @@ const PackageDetail = () => {
                       <Check className="w-[18px] h-[18px] sm:w-6 sm:h-6" />
                     </div>
                   )}
-                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-400 mb-1 sm:mb-2">{tier.name}</p>
-                  <p className="pr-8 text-xl sm:text-2xl lg:text-[30px] font-serif text-brand-900 mb-2 sm:mb-4 leading-tight break-words">{formatPrice(tier.price)}</p>
-                  <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-brand-400 italic leading-tight">{tier.basis}</p>
+                  <div className="pr-8 flex flex-col lg:flex-row lg:items-baseline lg:gap-4 gap-1 mb-2 sm:mb-4 min-w-0">
+                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand-400 whitespace-nowrap">{tier.name}</p>
+                    <p className="text-xl sm:text-2xl lg:text-[30px] font-serif text-brand-900 leading-tight whitespace-nowrap">{formatPrice(tier.price)}</p>
+                    <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-brand-400 italic leading-tight whitespace-nowrap">{tier.basis}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -456,25 +529,41 @@ const PackageDetail = () => {
             </div>
           </div>
 
-          {/* Departure Selection */}
+          {/* Reviews */}
           <div className="space-y-6 sm:space-y-8 pb-12">
-            <h3 className="text-xl sm:text-2xl font-serif text-brand-900 px-2">Select Your Intended Travel Date</h3>
-            <div className="max-w-md mx-auto sm:mx-0 px-2">
-              <div className="relative">
-                <div className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 text-brand-accent pointer-events-none">
-                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full min-h-[52px] pl-14 sm:pl-16 pr-6 sm:pr-8 py-4 sm:py-5 bg-white border border-brand-100 rounded-xl sm:rounded-2xl text-base sm:text-base text-brand-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all shadow-sm"
-                />
-              </div>
-              <p className="mt-4 text-[10px] sm:text-sm text-brand-500 italic leading-relaxed">
-                Choose any date that works for you. Our experts will verify availability and tailor the itinerary to your timeline.
+            <div className="px-2 space-y-3">
+              <p className="script-font text-brand-accent italic text-xl sm:text-2xl">Romantic Reviews</p>
+              <h3 className="text-xl sm:text-2xl font-serif text-brand-900">Love Notes From Couples</h3>
+              <p className="text-brand-600 text-sm sm:text-base leading-relaxed max-w-2xl">
+                Read what other couples said about this package, then share your own experience when you are ready.
               </p>
+            </div>
+
+            <div className="space-y-3 sm:space-y-4">
+                {packageReviews.slice(0, 4).map((review) => (
+                  <div key={review.id} className="bg-white rounded-2xl border border-brand-100 p-4 sm:p-5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                      <div className="min-w-0">
+                        <p className="font-serif text-brand-900 text-base leading-tight">{review.title}</p>
+                        <p className="text-[10px] uppercase tracking-widest text-brand-400 font-bold mt-1">{review.reviewerName}</p>
+                      </div>
+                      <div className="flex items-center gap-1 text-brand-accent shrink-0">
+                        {[...Array(review.rating)].map((_, index) => (
+                          <Star key={index} size={14} fill="currentColor" />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-brand-700 text-sm leading-relaxed italic">
+                      “{review.message}”
+                    </p>
+                  </div>
+                ))}
+
+                {packageReviews.length === 0 && (
+                  <div className="bg-brand-50 rounded-2xl border border-brand-100 p-4 sm:p-5 text-brand-600 text-sm">
+                    No reviews yet. Be the first couple to leave a romantic note for this package.
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -506,7 +595,7 @@ const PackageDetail = () => {
                   <span className="w-full border-t border-brand-100"></span>
                 </div>
                 <div className="relative flex justify-center text-[9px] sm:text-[10px] uppercase tracking-widest font-bold">
-                  <span className="bg-white px-4 text-brand-300">or secure your date with a deposit</span>
+                  <span className="bg-white px-4 text-brand-300">or pay securely online now</span>
                 </div>
               </div>
 
@@ -514,23 +603,117 @@ const PackageDetail = () => {
                 <PayPalButton 
                   packageId={pkg.id}
                   tierId={selectedTier.id}
-                  description={`${pkg.title} deposit (${selectedTier.name})`}
+                  description={`${pkg.title} full payment (${selectedTier.name})`}
                   customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}`}
-                  onSuccess={(details) => console.log('PayPal deposit paid', details)} 
+                  onSuccess={(details) => console.log('PayPal payment successful', details)} 
                 />
 
                 <PaystackButton
                   packageId={pkg.id}
                   tierId={selectedTier.id}
-                  description={`${pkg.title} deposit (${selectedTier.name})`}
+                  description={`${pkg.title} full payment (${selectedTier.name})`}
                   customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}:paystack`}
-                  onSuccess={(details) => console.log('Paystack deposit paid', details)}
+                  onSuccess={(details) => console.log('Paystack payment successful', details)}
                 />
               </div>
 
               <p className="text-[9px] sm:text-[10px] text-center text-brand-400 italic">
                 Secure your romantic escape with PayPal or Paystack.
               </p>
+
+              <div className="pt-2 sm:pt-4 border-t border-brand-50 space-y-4 sm:space-y-5">
+                <h3 className="text-lg sm:text-xl font-serif text-brand-900">Select Your Intended Travel Date</h3>
+                <div className="relative">
+                  <div className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 text-brand-accent pointer-events-none">
+                    <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full min-h-[52px] pl-14 sm:pl-16 pr-6 sm:pr-8 py-4 sm:py-5 bg-white border border-brand-100 rounded-xl sm:rounded-2xl text-base sm:text-base text-brand-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all shadow-sm"
+                  />
+                </div>
+                <p className="text-[10px] sm:text-sm text-brand-500 italic leading-relaxed">
+                  Choose any date that works for you. Our experts will verify availability and tailor the itinerary to your timeline.
+                </p>
+              </div>
+
+              <div className="pt-8 sm:pt-10 lg:pt-20 mt-6 sm:mt-8 lg:mt-20 border-t border-brand-50">
+                <div className="bg-brand-900 text-white rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-accent mb-1">Share Yours</p>
+                      <h4 className="text-xl sm:text-2xl font-serif leading-tight">Write a Review</h4>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-1 text-brand-accent pt-1">
+                      {[1, 2, 3, 4, 5].map((score) => (
+                        <button
+                          key={score}
+                          type="button"
+                          onClick={() => setReviewRating(score)}
+                          className={`transition-transform hover:scale-110 ${score <= reviewRating ? 'text-brand-accent' : 'text-white/30'}`}
+                        >
+                          <Star size={18} fill="currentColor" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input
+                      value={reviewerName}
+                      onChange={(e) => setReviewerName(e.target.value)}
+                      className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30"
+                      placeholder="Your name"
+                    />
+                    <input
+                      value={reviewTitle}
+                      onChange={(e) => setReviewTitle(e.target.value)}
+                      className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30"
+                      placeholder="Short headline"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 sm:hidden">
+                    {[1, 2, 3, 4, 5].map((score) => (
+                      <button
+                        key={score}
+                        type="button"
+                        onClick={() => setReviewRating(score)}
+                        className={`transition-transform hover:scale-110 ${score <= reviewRating ? 'text-brand-accent' : 'text-white/30'}`}
+                      >
+                        <Star size={18} fill="currentColor" />
+                      </button>
+                    ))}
+                  </div>
+
+                  <textarea
+                    rows={3}
+                    value={reviewMessage}
+                    onChange={(e) => setReviewMessage(e.target.value)}
+                    className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30 resize-none"
+                    placeholder="Write about the romance, the service, and the moments you loved..."
+                  />
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={submitReview}
+                      disabled={isReviewSubmitting}
+                      className="btn-primary w-full sm:w-auto px-5 py-3 text-sm shadow-xl shadow-brand-accent/20 disabled:opacity-50"
+                    >
+                      {isReviewSubmitting ? 'Submitting...' : 'Send Review'}
+                    </button>
+                    {reviewFeedback ? (
+                      <p className="text-[10px] sm:text-xs text-brand-300 leading-relaxed italic">
+                        {reviewFeedback}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="pt-4 sm:pt-6 border-t border-brand-50 space-y-4 sm:space-y-6">

@@ -39,19 +39,20 @@ const Hero = () => {
             {homeContent.hero.subtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mt-8 w-full sm:w-auto px-6">
+          <div className="mt-8 w-full max-w-5xl px-6 flex flex-col items-center gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 w-full">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.8 }}
-              className="relative group w-full sm:w-auto"
+              className="relative group w-full"
             >
-              <div className="absolute -inset-1 bg-brand-accent/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+              <div className="absolute -inset-1 bg-brand-accent/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-1000" />
               <Link 
                 to="/booking" 
-                className="relative bg-brand-accent text-white py-3 sm:py-4 px-8 sm:px-10 rounded-full text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] shadow-[0_15px_40px_rgba(196,154,108,0.2)] flex items-center justify-center gap-3 overflow-hidden border border-brand-accent hover:bg-brand-700 transition-all duration-500 group"
+                className="relative w-full min-h-[56px] bg-brand-accent text-white py-3 sm:py-4 px-8 rounded-full text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] shadow-[0_15px_40px_rgba(196,154,108,0.2)] flex items-center justify-center gap-3 overflow-hidden border border-brand-accent hover:bg-brand-700 transition-all duration-500 group"
               >
                 <span className="relative z-10">{homeContent.hero.cta}</span>
                 <ArrowRight size={18} className="relative z-10 group-hover:translate-x-2 transition-transform duration-500" />
@@ -67,16 +68,18 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.8 }}
-              className="w-full sm:w-auto"
+              className="w-full"
             >
               <Link 
                 to="/packages" 
-                className="relative px-8 py-3 sm:py-4 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-[0.3em] hover:bg-white/10 hover:border-brand-accent/50 transition-all duration-500 flex items-center justify-center gap-2 group"
+                className="relative w-full min-h-[56px] px-8 py-3 sm:py-4 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-[0.3em] hover:bg-white/10 hover:border-brand-accent/50 transition-all duration-500 flex items-center justify-center gap-2 group"
               >
                 <div className="absolute inset-0 rounded-full border border-white/0 group-hover:border-brand-accent/30 transition-all duration-700 scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100" />
                 <span className="relative z-10">View Packages</span>
               </Link>
             </motion.div>
+            </div>
+
           </div>
         </motion.div>
       </div>

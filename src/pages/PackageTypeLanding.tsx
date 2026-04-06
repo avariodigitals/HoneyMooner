@@ -201,6 +201,7 @@ const PackageTypeLanding = () => {
                   </svg>
                 </Link>
               </motion.div>
+
             </div>
           </motion.div>
         </div>

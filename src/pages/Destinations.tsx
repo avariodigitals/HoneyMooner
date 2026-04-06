@@ -15,9 +15,25 @@ const Destinations = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const selectedDestination = destinations.find(d => d.slug === slug);
-  const filteredPackages = packages.filter(p => 
-    !slug || destinations.find(d => d.id === p.destinationId)?.slug === slug
-  );
+  const filteredPackages = packages.filter((pkg) => {
+    if (!slug) return true;
+
+    const directDestinationMatch = destinations.find((d) => d.id === pkg.destinationId)?.slug === slug;
+    if (directDestinationMatch) return true;
+
+    if (!selectedDestination) return false;
+
+    const normalizedPackageSlug = pkg.slug.toLowerCase();
+    const normalizedTitle = pkg.title.toLowerCase();
+    const normalizedDestinationName = selectedDestination.name.toLowerCase();
+
+    // Fallback matching handles WP data where destination_id may be missing or stored differently.
+    return (
+      String(pkg.destinationId) === String(selectedDestination.id) ||
+      normalizedPackageSlug.includes(selectedDestination.slug.toLowerCase()) ||
+      normalizedTitle.includes(normalizedDestinationName)
+    );
+  });
   
   if (selectedDestination) {
     return (
@@ -254,7 +270,8 @@ const Destinations = () => {
                     alt={destination.name}
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-black/15" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/30 to-transparent opacity-85 group-hover:opacity-100 transition-opacity" />
                   
                   <div className="absolute inset-0 p-12 flex flex-col justify-end text-white">
                     <div className="flex items-center gap-3 mb-4 opacity-80 text-xs font-bold uppercase tracking-[0.3em]">

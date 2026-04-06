@@ -35,7 +35,6 @@ export interface PayPalQuoteResponse {
   base_amount: number;
   amount: number;
   currency: string;
-  deposit_type: 'fixed' | 'percentage';
 }
 
 export interface CapturePayPalOrderResponse {
@@ -57,7 +56,6 @@ export interface PaystackQuoteResponse {
   base_amount: number;
   amount: number;
   currency: string;
-  deposit_type: 'fixed' | 'percentage';
 }
 
 export interface InitializePaystackInput {

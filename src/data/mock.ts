@@ -1,4 +1,4 @@
-import type { Destination, TravelPackage, PricingTier, Lead, PricingBasis, PackageInclusion, PackageCategory, Testimonial, BlogPost } from '../types';
+import type { Destination, TravelPackage, PricingTier, Lead, PricingBasis, PackageInclusion, Testimonial, BlogPost } from '../types';
 
 export const DATA_VERSION = '1.0.2';
 
@@ -103,42 +103,75 @@ interface PackageDataItem {
   basis: PricingBasis;
 }
 
-// Data mapping for mass generation
-const packageData: Record<string, PackageDataItem[]> = {
-  honeymoon: [
-    { destId: 'd1', p: 10500, l: 14800, u: 25200, basis: 'per couple' },
-    { destId: 'd2', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
-    { destId: 'd3', p: 9200, l: 12800, u: 28500, basis: 'per couple' },
-    { destId: 'd4', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
-    { destId: 'd5', p: 8500, l: 10200, u: 18000, basis: 'per couple' },
-    { destId: 'd6', p: 5500, l: 10800, u: 15200, basis: 'per couple' },
-    { destId: 'd7', p: 4800, l: 8700, u: 13500, basis: 'per couple' },
-    { destId: 'd8', p: 5800, l: 9200, u: 17600, basis: 'per couple' },
-    { destId: 'd10', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
-    { destId: 'd18', p: 6500, l: 10800, u: 15200, basis: 'per couple' },
-    { destId: 'd19', p: 7500, l: 11800, u: 23600, basis: 'per couple' },
-    { destId: 'd20', p: 9200, l: 12800, u: 28500, basis: 'per couple' },
-    { destId: 'd44', p: 25000, l: 32800, u: 45000, basis: 'per couple' },
-    { destId: 'd46', p: 6500, l: 10800, u: 15200, basis: 'per couple' },
-  ],
-  family: [
-    { destId: 'd1', p: 25000, l: 34000, u: 43000, basis: 'per family of 4' },
-    { destId: 'd2', p: 18000, l: 25000, u: 32000, basis: 'per family of 4' },
-    { destId: 'd6', p: 12000, l: 14000, u: 33000, basis: 'per family of 4' },
-    { destId: 'd18', p: 18000, l: 26000, u: 34000, basis: 'per family of 4' },
-    { destId: 'd46', p: 10500, l: 15800, u: 25200, basis: 'per family of 4' },
-  ],
-  group: [
-    { destId: 'd1', p: 4500, l: 8700, u: 12200, basis: 'per person' },
-    { destId: 'd6', p: 4200, l: 7300, u: 14500, basis: 'per person' },
-    { destId: 'd18', p: 9000, l: 13000, u: 26000, basis: 'per person' },
-    { destId: 'd22', p: 4000, l: 8000, u: 12000, basis: 'per person' },
-    { destId: 'd46', p: 5000, l: 9000, u: 15000, basis: 'per person' },
-  ]
-};
+// Honeymoon-only pricing matrix (per couple)
+const honeymoonPackageData: PackageDataItem[] = [
+  // Indian Ocean
+  { destId: 'd1', p: 10500, l: 14800, u: 25200, basis: 'per couple' },
+  { destId: 'd2', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+  { destId: 'd3', p: 9200, l: 12800, u: 28500, basis: 'per couple' },
+  { destId: 'd4', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd5', p: 8500, l: 10200, u: 18000, basis: 'per couple' },
 
-Object.keys(packageData).forEach(category => {
-  packageData[category].forEach((item) => {
+  // Europe
+  { destId: 'd6', p: 5500, l: 10800, u: 15200, basis: 'per couple' },
+  { destId: 'd7', p: 4800, l: 8700, u: 13500, basis: 'per couple' },
+  { destId: 'd8', p: 5800, l: 9200, u: 17600, basis: 'per couple' },
+  { destId: 'd9', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd10', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd11', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd12', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd13', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd14', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd15', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd16', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd17', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+
+  // Asia
+  { destId: 'd18', p: 6500, l: 10800, u: 15200, basis: 'per couple' },
+  { destId: 'd19', p: 7500, l: 11800, u: 23600, basis: 'per couple' },
+  { destId: 'd20', p: 9200, l: 12800, u: 28500, basis: 'per couple' },
+  { destId: 'd21', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+
+  // Africa
+  { destId: 'd22', p: 5100, l: 9400, u: 12200, basis: 'per couple' },
+  { destId: 'd23', p: 7200, l: 10700, u: 15300, basis: 'per couple' },
+  { destId: 'd24', p: 5300, l: 7900, u: 10300, basis: 'per couple' },
+  { destId: 'd25', p: 4800, l: 6800, u: 10200, basis: 'per couple' },
+  { destId: 'd26', p: 5600, l: 7500, u: 10900, basis: 'per couple' },
+  { destId: 'd27', p: 4800, l: 6500, u: 9400, basis: 'per couple' },
+
+  // Americas & Caribbean
+  { destId: 'd28', p: 10500, l: 14800, u: 15200, basis: 'per couple' },
+  { destId: 'd29', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+  { destId: 'd30', p: 5500, l: 12800, u: 28500, basis: 'per couple' },
+  { destId: 'd31', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd32', p: 5800, l: 10600, u: 16900, basis: 'per couple' },
+  { destId: 'd33', p: 6800, l: 13200, u: 27900, basis: 'per couple' },
+  { destId: 'd34', p: 4500, l: 5800, u: 12500, basis: 'per couple' },
+  { destId: 'd35', p: 5500, l: 12800, u: 28500, basis: 'per couple' },
+  { destId: 'd36', p: 6800, l: 13200, u: 27900, basis: 'per couple' },
+  { destId: 'd37', p: 5500, l: 12800, u: 28500, basis: 'per couple' },
+  { destId: 'd38', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+  { destId: 'd39', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+  { destId: 'd40', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+  { destId: 'd41', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+  { destId: 'd42', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+  { destId: 'd43', p: 8500, l: 10800, u: 25600, basis: 'per couple' },
+
+  // Oceania
+  { destId: 'd44', p: 25000, l: 32800, u: 45000, basis: 'per couple' },
+  { destId: 'd45', p: 15500, l: 25800, u: 33600, basis: 'per couple' },
+
+  // Middle East
+  { destId: 'd46', p: 6500, l: 10800, u: 15200, basis: 'per couple' },
+  { destId: 'd47', p: 7500, l: 11800, u: 23600, basis: 'per couple' },
+  { destId: 'd48', p: 9200, l: 12800, u: 28500, basis: 'per couple' },
+  { destId: 'd49', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+  { destId: 'd50', p: 7500, l: 9800, u: 15200, basis: 'per couple' },
+];
+
+honeymoonPackageData.forEach((item) => {
+  const category = 'honeymoon';
     const dest = initialDestinations.find(d => d.id === item.destId);
     if (dest) {
       const styleTags = [];
@@ -169,7 +202,7 @@ Object.keys(packageData).forEach(category => {
 
       initialPackages.push({
         id: `${category}-${item.destId}`,
-        category: category as PackageCategory,
+        category,
         title: `${dest.name} ${category.charAt(0).toUpperCase() + category.slice(1)} Experience`,
         slug: `${dest.slug}-${category}`,
         summary: getEmotionalSummary(category, dest.name),
@@ -190,7 +223,6 @@ Object.keys(packageData).forEach(category => {
         seo: { title: `${dest.name} ${category} | The Honeymoonner`, description: `Book your ${category} trip to ${dest.name}.`, keywords: [dest.name, category, 'luxury travel'] }
       });
     }
-  });
 });
 
 export const initialLeads: Lead[] = [];

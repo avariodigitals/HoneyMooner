@@ -48,9 +48,16 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Destinations', path: '/destinations' },
     { name: 'Packages', path: '/packages' },
+    { name: 'Booking', path: '/booking' },
     { name: 'Journal', path: '/journal' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
+  ];
+
+  const packageExperienceLinks = [
+    { name: 'Experience', path: '/experiences' },
+    { name: 'Gift Card', path: '/gift-cards' },
+    { name: 'Popular Route Ideas', path: '/popular-route-ideas' },
   ];
 
   const isTransparent = !isScrolled && (location.pathname === '/' || location.pathname === '/account') && !isOpen;
@@ -85,20 +92,59 @@ const Navbar = () => {
 
         {/* Desktop Links - Show on Large Screens */}
         <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                'text-[10px] xl:text-xs font-bold transition-all duration-300 uppercase tracking-[0.2em]',
-                location.pathname === link.path 
-                  ? 'text-brand-accent' 
-                  : (isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent')
-              )}
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            if (link.name === 'Packages') {
+              const isPackagesActive = location.pathname.startsWith('/packages') || location.pathname.startsWith('/gift-cards');
+
+              return (
+                <div key={link.path} className="relative group">
+                  <Link
+                    to={link.path}
+                    className={cn(
+                      'text-[10px] xl:text-xs font-bold transition-all duration-300 uppercase tracking-[0.2em] inline-flex items-center gap-2',
+                      isPackagesActive
+                        ? 'text-brand-accent'
+                        : (isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent')
+                    )}
+                  >
+                    {link.name}
+                    <span className="text-[9px] opacity-70">+</span>
+                  </Link>
+
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-[140]">
+                    <div className="rounded-2xl border border-brand-100 bg-white shadow-2xl p-4">
+                    <div className="space-y-1">
+                      {packageExperienceLinks.map((item) => (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          className="block rounded-lg px-3 py-2 text-xs font-semibold text-brand-700 hover:text-brand-accent hover:bg-brand-50 transition-colors"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={cn(
+                  'text-[10px] xl:text-xs font-bold transition-all duration-300 uppercase tracking-[0.2em]',
+                  location.pathname === link.path
+                    ? 'text-brand-accent'
+                    : (isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent')
+                )}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
           
           {/* Currency Switcher */}
           <div className="relative">

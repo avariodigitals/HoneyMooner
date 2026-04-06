@@ -248,6 +248,27 @@ function hasCoreContent(snapshot: DataSnapshot): boolean {
   return snapshot.destinations.length > 0 || snapshot.packages.length > 0;
 }
 
+function mergeByIdentity<T extends { id: string; slug?: string }>(existing: T[], incoming: T[]): T[] {
+  const merged = [...existing];
+
+  incoming.forEach((item) => {
+    const index = merged.findIndex((current) => {
+      if (current.id === item.id) return true;
+      if (item.slug && current.slug) return current.slug === item.slug;
+      return false;
+    });
+
+    if (index >= 0) {
+      merged[index] = item;
+      return;
+    }
+
+    merged.push(item);
+  });
+
+  return merged;
+}
+
 async function ensureCoreSnapshot(): Promise<DataSnapshot> {
   if (coreResolved && cachedSnapshot) return cachedSnapshot;
   if (inflightCorePromise) return inflightCorePromise;
@@ -263,8 +284,14 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
       ]);
 
       const current = getCurrentSnapshot();
-      const nextDestinations = wpDestinations.length > 0 ? wpDestinations : current.destinations;
-      const nextPackages = wpPackages.length > 0 ? wpPackages : current.packages;
+      const baselineDestinations = mergeByIdentity(initialSnapshot.destinations, current.destinations);
+      const baselinePackages = mergeByIdentity(initialSnapshot.packages, current.packages);
+      const nextDestinations = wpDestinations.length > 0
+        ? mergeByIdentity(baselineDestinations, wpDestinations)
+        : baselineDestinations;
+      const nextPackages = wpPackages.length > 0
+        ? mergeByIdentity(baselinePackages, wpPackages)
+        : baselinePackages;
       const nextHomeContent = wpHomeContent || current.homeContent || defaultHomeContent;
       const nextBookingContent = wpBookingContent || current.bookingContent || defaultBookingContent;
 

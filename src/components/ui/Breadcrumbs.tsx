@@ -14,6 +14,8 @@ const BREADCRUMB_ROUTE_PATTERNS = [
   '/about',
   '/contact',
   '/booking',
+  '/gift-cards',
+  '/gift-cards/checkout',
   '/faqs',
   '/account',
   '/account/wishlist'

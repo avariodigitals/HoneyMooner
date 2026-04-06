@@ -4,12 +4,13 @@ import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import SEO from '../components/layout/SEO';
 import { motion } from 'framer-motion';
-import { Heart, MapPin, Calendar, Star, ArrowRight, Sun, Anchor, Mountain, Coffee } from 'lucide-react';
+import { Heart, MapPin, Calendar, Star, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { ASSETS } from '../config/images';
 import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
+import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
 
 const Home = () => {
   const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
@@ -21,25 +22,15 @@ const Home = () => {
   const [loadedDestinationImages, setLoadedDestinationImages] = useState<Record<string, boolean>>({});
   const [featuredStartIndex, setFeaturedStartIndex] = useState(0);
   
-  // Featured packages for the home page (first 2 honeymoons)
-  const featuredPackages = packages.filter(p => p.category === 'honeymoon').slice(0, 2);
+  // Featured packages for the home page (first 3 honeymoons)
+  const featuredPackages = packages.filter(p => p.category === 'honeymoon').slice(0, 3);
   const featuredDestinations = destinations.length <= 3
     ? destinations
     : Array.from({ length: 3 }, (_, idx) => destinations[(featuredStartIndex + idx) % destinations.length]);
-  const giftEyebrow = 'For Families of Newlyweds';
-  const giftTitle = 'Honeymoon Gift Package';
-  const giftPrimaryUrl = homeContent.giftPackage.primaryCtaUrl?.startsWith('/')
-    ? homeContent.giftPackage.primaryCtaUrl
-    : '/packages';
-  const giftSecondaryUrl = homeContent.giftPackage.secondaryCtaUrl?.startsWith('/')
-    ? homeContent.giftPackage.secondaryCtaUrl
-    : '/booking';
-  const styleImages = homeContent.styleImages || {
-    beach: ASSETS.HOME_EXPERIENCES.BEACH,
-    island: ASSETS.HOME_EXPERIENCES.ISLAND,
-    adventure: ASSETS.HOME_EXPERIENCES.ADVENTURE,
-    city: ASSETS.HOME_EXPERIENCES.CITY
-  };
+  const featuredThemeCollections = PACKAGE_COLLECTIONS
+    .filter((collection) => collection.kind === 'theme' && collection.slug !== 'signature-experience')
+    .map((collection) => findPackageCollection(collection.slug) || collection)
+    .slice(0, 4);
 
   useEffect(() => {
     let ignore = false;
@@ -188,7 +179,7 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-12">
             {featuredPackages.map((pkg) => (
               <motion.div
                 key={pkg.id}
@@ -243,8 +234,8 @@ const Home = () => {
                     {pkg.summary}
                   </p>
 
-                  <div className="pt-6 sm:pt-8 border-t border-brand-100 flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <div className="text-center sm:text-left">
+                  <div className="pt-6 sm:pt-8 border-t border-brand-100 flex flex-col items-center gap-6 text-center">
+                    <div>
                       <p className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold text-brand-400 mb-1">
                         Starting from
                       </p>
@@ -253,8 +244,9 @@ const Home = () => {
                         <span className="text-[10px] sm:text-xs font-sans text-brand-400 ml-1 font-normal lowercase italic">/{pkg.tiers[0].basis.split(' ')[1]}</span>
                       </p>
                     </div>
-                    <Link to={`/packages/${pkg.slug}`} className="btn-primary w-full sm:w-auto py-3 px-8 text-xs sm:text-sm group-hover:bg-brand-accent transition-all text-center">
-                      View Itinerary
+                    <Link to={`/packages/${pkg.slug}`} className="btn-primary inline-flex w-full sm:w-auto sm:min-w-[180px] min-h-[48px] px-8 py-3 text-xs sm:text-sm items-center justify-center gap-2 whitespace-nowrap text-center leading-none shadow-lg shadow-brand-accent/15 transition-all hover:-translate-y-0.5 self-center">
+                      <span>View Itinerary</span>
+                      <ArrowRight size={16} className="shrink-0" />
                     </Link>
                   </div>
                 </div>
@@ -264,75 +256,116 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Browse by Style */}
+      {/* Honeymoon Gift Package */}
+      <section className="bg-brand-50/60 py-12 sm:py-16 px-4">
+        <div className="section-container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 items-center bg-white rounded-3xl sm:rounded-[42px] border border-brand-100 p-6 sm:p-10 lg:p-12 shadow-sm">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-5 sm:space-y-6 text-center lg:text-left"
+            >
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] font-bold text-brand-accent">
+                {homeContent.giftPackage.eyebrow}
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 leading-tight">
+                {homeContent.giftPackage.title}
+              </h2>
+              <p className="text-brand-700 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
+                {homeContent.giftPackage.description}
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
+                {[
+                  'Stress-free from start to finish',
+                  'Curated for newlyweds',
+                  'Expert support included'
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-brand-100 bg-brand-50/70 px-4 py-4 text-left shadow-sm">
+                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] text-brand-400 mb-2">Gift-ready</p>
+                    <p className="text-sm sm:text-base font-medium text-brand-900 leading-snug">{item}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 sm:gap-5 pt-2">
+                <Link
+                  to="/gift-cards"
+                  className="btn-primary w-full sm:w-auto px-8 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold text-center shadow-xl shadow-brand-accent/20 inline-flex items-center justify-center gap-3"
+                >
+                  <Heart size={16} className="shrink-0" fill="currentColor" />
+                  Gift a Honeymoon
+                </Link>
+                <Link to="/packages" className="btn-outline w-full sm:w-auto px-8 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
+                  Explore Packages
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative h-64 sm:h-80 lg:h-[380px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl"
+            >
+              <img
+                src={homeContent.giftPackage.image || ASSETS.ROMANTIC_MOMENT_HOME}
+                alt={homeContent.giftPackage.imageAlt}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = homeContent.fallbackImages.general || ASSETS.ROMANTIC_MOMENT_HOME;
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-brand-900/10 to-transparent" />
+              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                <p className="inline-block max-w-[95%] text-brand-50 font-serif italic text-base sm:text-lg leading-relaxed tracking-[0.01em] bg-brand-900/30 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 shadow-lg">
+                  {homeContent.giftPackage.note}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Curated Honeymoon Themes */}
       <section className="py-12 sm:py-16 bg-white overflow-hidden">
         <div className="section-container">
           <div className="text-center mb-10 sm:mb-12">
-            <p className="script-font mb-4 text-brand-accent italic">Your Perfect Match</p>
-            <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">Browse by Style</h2>
-            <p className="text-brand-600/90 max-w-2xl mx-auto text-lg">Every couple is unique. Find the experience that fits yours.</p>
+            <p className="script-font mb-4 text-brand-accent italic">Our Collections</p>
+            <h2 className="text-4xl md:text-5xl font-serif text-brand-900 mb-6">Curated Honeymoon Themes</h2>
+            <p className="text-brand-600/90 max-w-2xl mx-auto text-lg">Thoughtfully designed experiences for different travel styles, budgets, and personalities.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { 
-                label: 'Beach Bliss', 
-                icon: <Sun size={32} />, 
-                color: 'from-orange-500/20 to-brand-accent/20',
-                image: styleImages.beach,
-                count: 12
-              },
-              { 
-                label: 'Island Escape', 
-                icon: <Anchor size={32} />, 
-                color: 'from-blue-500/20 to-cyan-500/20',
-                image: styleImages.island,
-                count: 8
-              },
-              { 
-                label: 'Romantic Adventure', 
-                icon: <Mountain size={32} />, 
-                color: 'from-emerald-500/20 to-teal-500/20',
-                image: styleImages.adventure,
-                count: 5
-              },
-              { 
-                label: 'City Romance', 
-                icon: <Coffee size={32} />, 
-                color: 'from-purple-500/20 to-pink-500/20',
-                image: styleImages.city,
-                count: 15
-              },
-            ].map((style, idx) => (
+            {featuredThemeCollections.map((theme) => (
               <Link
-                key={idx}
-                to="/packages"
-                state={{ style: style.label }}
+                key={theme.slug}
+                to={`/packages/type/${theme.slug}`}
                 className="group relative aspect-[4/5] rounded-[40px] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
               >
                 <img 
-                  src={style.image} 
-                  alt={style.label} 
+                  src={theme.heroImage} 
+                  alt={theme.title} 
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = homeContent.fallbackImages.general || ASSETS.FALLBACK_DESTINATION;
                   }}
                 />
-                <div className={`absolute inset-0 bg-gradient-to-b ${style.color} mix-blend-multiply opacity-60 group-hover:opacity-40 transition-opacity`} />
+                <div className="absolute inset-0 bg-gradient-to-b from-brand-accent/20 to-brand-900/30 mix-blend-multiply opacity-60 group-hover:opacity-40 transition-opacity" />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/20 to-transparent" />
                 
                 <div className="absolute inset-0 p-8 flex flex-col justify-end">
                   <div className="mb-4 transform group-hover:-translate-y-2 transition-transform duration-500">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white mb-4 shadow-inner">
-                      {style.icon}
-                    </div>
-                    <h3 className="text-2xl font-serif text-white mb-1">{style.label}</h3>
-                    <p className="text-white/70 text-xs font-bold uppercase tracking-widest">{style.count} Experiences</p>
+                    <p className="text-white/75 text-[10px] font-bold uppercase tracking-widest mb-3">Perfect for</p>
+                    <p className="text-brand-50 text-xs leading-relaxed mb-4 line-clamp-2">{theme.audience}</p>
+                    <h3 className="text-xl font-serif text-white leading-tight">{theme.title}</h3>
                   </div>
                   
                   <div className="overflow-hidden h-0 group-hover:h-10 transition-all duration-500 flex items-center gap-2 text-brand-accent font-bold text-xs uppercase tracking-widest">
-                    <span>Explore Collection</span>
+                    <span>Open Collection</span>
                     <ArrowRight size={14} />
                   </div>
                 </div>
@@ -414,51 +447,6 @@ const Home = () => {
                 <Link to="/about" className="btn-primary w-full sm:w-auto px-10 py-4 inline-flex items-center justify-center gap-3 text-sm sm:text-base uppercase tracking-widest font-bold">
                   Our Philosophy <ArrowRight size={18} />
                 </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Honeymoon Gift Package */}
-      <section className="bg-brand-50/60 py-12 sm:py-16 px-4">
-        <div className="section-container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 items-center bg-white rounded-3xl sm:rounded-[42px] border border-brand-100 p-6 sm:p-10 lg:p-12 shadow-sm">
-            <div className="space-y-5 sm:space-y-6 text-center lg:text-left">
-              <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] font-bold text-brand-accent">
-                {giftEyebrow}
-              </p>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 leading-tight">
-                {giftTitle}
-              </h2>
-              <p className="text-brand-700 text-base sm:text-lg leading-relaxed">
-                {homeContent.giftPackage.description}
-              </p>
-              <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 sm:gap-5 pt-2">
-                <Link to={giftPrimaryUrl} className="btn-primary w-full sm:w-auto px-8 py-3 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
-                  {homeContent.giftPackage.primaryCtaLabel}
-                </Link>
-                <Link to={giftSecondaryUrl} className="btn-outline w-full sm:w-auto px-8 py-3 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
-                  {homeContent.giftPackage.secondaryCtaLabel}
-                </Link>
-              </div>
-            </div>
-
-            <div className="relative h-64 sm:h-80 lg:h-[360px] rounded-2xl sm:rounded-3xl overflow-hidden">
-              <img
-                src={homeContent.giftPackage.image || ASSETS.ROMANTIC_MOMENT_HOME}
-                alt={homeContent.giftPackage.imageAlt}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = homeContent.fallbackImages.general || ASSETS.ROMANTIC_MOMENT_HOME;
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-brand-900/10 to-transparent" />
-              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
-                <p className="inline-block max-w-[95%] text-brand-50 font-serif italic text-base sm:text-lg leading-relaxed tracking-[0.01em] bg-brand-900/30 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 shadow-lg">
-                  {homeContent.giftPackage.note}
-                </p>
               </div>
             </div>
           </div>

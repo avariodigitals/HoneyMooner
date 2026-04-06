@@ -10,9 +10,11 @@ import ScrollToTopButton from './components/ui/ScrollToTopButton';
 import Home from './pages/Home';
 import Destinations from './pages/Destinations';
 import Packages from './pages/Packages';
+import Experiences from './pages/Experiences';
 import PackageTypeLanding from './pages/PackageTypeLanding';
 import PackageDetail from './pages/PackageDetail';
 import Booking from './pages/Booking';
+import PopularRouteIdeas from './pages/PopularRouteIdeas';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import FAQs from './pages/FAQs';
@@ -20,6 +22,8 @@ import Journal from './pages/Journal';
 import JournalDetail from './pages/JournalDetail';
 import Account from './pages/Account';
 import Wishlist from './pages/Wishlist';
+import GiftCards from './pages/GiftCards';
+import GiftCardCheckout from './pages/GiftCardCheckout';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -31,6 +35,8 @@ const AnimatedRoutes = () => {
         <Route path="/destinations" element={<Destinations />} />
         <Route path="/destinations/:slug" element={<Destinations />} />
         <Route path="/packages" element={<Packages />} />
+        <Route path="/experiences" element={<Experiences />} />
+        <Route path="/popular-route-ideas" element={<PopularRouteIdeas />} />
         <Route path="/packages/type/:slug" element={<PackageTypeLanding />} />
         <Route path="/packages/:slug" element={<PackageDetail />} />
         <Route path="/journal" element={<Journal />} />
@@ -38,6 +44,8 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking" element={<Booking />} />
+        <Route path="/gift-cards" element={<GiftCards />} />
+        <Route path="/gift-cards/checkout" element={<GiftCardCheckout />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/wishlist" element={<Wishlist />} />

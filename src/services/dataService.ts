@@ -6,6 +6,7 @@ import type {
   Lead, 
   BlogPost, 
   Testimonial,
+  PackageReview,
   HomeContent,
   BookingContent,
   Continent, 
@@ -18,6 +19,7 @@ import type {
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
 const WP_SYNC_ENABLED = (import.meta.env.VITE_WP_SYNC_ENABLED ?? 'true') === 'true';
 const WP_PUBLIC_LEAD_ENDPOINT = import.meta.env.VITE_WP_PUBLIC_LEAD_ENDPOINT ?? '/custom/v1/leads';
+const WP_PACKAGE_REVIEWS_ENDPOINT = import.meta.env.VITE_WP_PACKAGE_REVIEWS_ENDPOINT ?? '/custom/v1/package-reviews';
 
 let wpReachable: boolean | null = null;
 let wpCheckPromise: Promise<boolean> | null = null;
@@ -72,6 +74,42 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     image: '/images/placeholder-travel.svg',
     rating: 5,
     date: 'June 2023'
+  }
+];
+
+const FALLBACK_PACKAGE_REVIEWS: PackageReview[] = [
+  {
+    id: 'pr1',
+    packageId: 'fallback-maldives',
+    packageSlug: 'maldives-honeymoon',
+    packageTitle: 'Maldives Honeymoon Experience',
+    reviewerName: 'The Okafors',
+    rating: 5,
+    title: 'The most romantic trip we have ever taken',
+    message: 'Every detail felt thoughtful, soft, and deeply personal. We still talk about the sunset dinner every week.',
+    createdAt: '2026-02-10T00:00:00.000Z'
+  },
+  {
+    id: 'pr2',
+    packageId: 'fallback-santorini',
+    packageSlug: 'santorini-honeymoon',
+    packageTitle: 'Santorini Honeymoon Experience',
+    reviewerName: 'Nana & Tunde',
+    rating: 5,
+    title: 'Elegant, seamless, unforgettable',
+    message: 'The whole flow was beautifully paced. We never felt rushed, and every moment looked like a postcard.',
+    createdAt: '2026-01-21T00:00:00.000Z'
+  },
+  {
+    id: 'pr3',
+    packageId: 'fallback-bali',
+    packageSlug: 'bali-honeymoon',
+    packageTitle: 'Bali Honeymoon Experience',
+    reviewerName: 'Alicia & Mark',
+    rating: 5,
+    title: 'Soft luxury done right',
+    message: 'We loved how calm and curated everything felt. It was romantic without being overwhelming.',
+    createdAt: '2025-12-18T00:00:00.000Z'
   }
 ];
 
@@ -140,6 +178,21 @@ interface WPResponseItem {
     'wp:featuredmedia'?: Array<{ source_url: string }>;
     'wp:term'?: Array<Array<{ name: string }>>;
     'author'?: Array<{ name: string }>;
+  };
+}
+
+interface WPReviewItem {
+  id: number;
+  title?: { rendered?: string; raw?: string };
+  slug: string;
+  content?: { rendered?: string };
+  date: string;
+  acf?: {
+    package_id?: string;
+    package_slug?: string;
+    package_title?: string;
+    reviewer_name?: string;
+    rating?: number;
   };
 }
 
@@ -640,6 +693,67 @@ export const dataService = {
       return response.ok;
     } catch (error) {
       console.error('Error creating lead:', error);
+      return false;
+    }
+  },
+
+  async getPackageReviews(packageSlug?: string): Promise<PackageReview[]> {
+    try {
+      const ok = await checkWP();
+      if (!ok) {
+        return packageSlug
+          ? FALLBACK_PACKAGE_REVIEWS.filter((review) => review.packageSlug === packageSlug)
+          : FALLBACK_PACKAGE_REVIEWS;
+      }
+
+      const query = packageSlug ? `?per_page=50&package_slug=${encodeURIComponent(packageSlug)}` : '?per_page=50';
+      const response = await fetch(`${WP_BASE_URL}${WP_PACKAGE_REVIEWS_ENDPOINT}${query}`);
+      if (!response.ok) {
+        return packageSlug
+          ? FALLBACK_PACKAGE_REVIEWS.filter((review) => review.packageSlug === packageSlug)
+          : FALLBACK_PACKAGE_REVIEWS;
+      }
+
+      const data = await response.json() as WPReviewItem[];
+      if (!Array.isArray(data) || data.length === 0) {
+        return packageSlug
+          ? FALLBACK_PACKAGE_REVIEWS.filter((review) => review.packageSlug === packageSlug)
+          : FALLBACK_PACKAGE_REVIEWS;
+      }
+
+      return data.map((item) => ({
+        id: String(item.id),
+        packageId: String(item.acf?.package_id || ''),
+        packageSlug: item.acf?.package_slug || '',
+        packageTitle: item.acf?.package_title || '',
+        reviewerName: item.acf?.reviewer_name || cleanText(item.title?.rendered || 'Guest'),
+        rating: Number(item.acf?.rating || 5),
+        title: cleanText(item.title?.rendered || 'Wonderful experience'),
+        message: cleanText(item.content?.rendered || ''),
+        createdAt: item.date
+      })).filter((review) => !packageSlug || review.packageSlug === packageSlug || review.packageId === packageSlug);
+    } catch (error) {
+      console.error('Error fetching package reviews:', error);
+      return packageSlug
+        ? FALLBACK_PACKAGE_REVIEWS.filter((review) => review.packageSlug === packageSlug)
+        : FALLBACK_PACKAGE_REVIEWS;
+    }
+  },
+
+  async createPackageReview(review: Omit<PackageReview, 'id' | 'createdAt'>): Promise<boolean> {
+    try {
+      const ok = await checkWP();
+      if (!ok) return false;
+
+      const response = await fetch(`${WP_BASE_URL}${WP_PACKAGE_REVIEWS_ENDPOINT}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error creating package review:', error);
       return false;
     }
   },

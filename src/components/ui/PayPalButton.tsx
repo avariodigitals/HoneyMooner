@@ -29,8 +29,6 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
   const [errorMessage, setErrorMessage] = useState('');
   const [quoteAmount, setQuoteAmount] = useState<number | null>(null);
   const [quoteCurrency, setQuoteCurrency] = useState<string>('USD');
-  const [quoteBaseAmount, setQuoteBaseAmount] = useState<number | null>(null);
-  const [quoteDepositType, setQuoteDepositType] = useState<'fixed' | 'percentage'>('fixed');
   const [isQuoteLoading, setIsQuoteLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PayPalPaymentDetails | null>(null);
   const { currency, formatPrice } = useCurrency();
@@ -51,7 +49,6 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
       if (!paymentService.isEnabled()) {
         if (!ignore) {
           setQuoteAmount(null);
-          setQuoteBaseAmount(null);
           setIsQuoteLoading(false);
           setErrorMessage('PayPal payments are unavailable in this environment.');
         }
@@ -66,14 +63,11 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
         if (ignore) return;
         setQuoteAmount(quote.amount);
         setQuoteCurrency(quote.currency);
-        setQuoteBaseAmount(quote.base_amount);
-        setQuoteDepositType(quote.deposit_type);
       } catch (error) {
         if (ignore) return;
         const message = error instanceof Error ? error.message : 'Unable to load payment amount.';
         setErrorMessage(message);
         setQuoteAmount(null);
-        setQuoteBaseAmount(null);
       } finally {
         if (!ignore) {
           setIsQuoteLoading(false);
@@ -152,8 +146,8 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
       const order = await paymentService.createPayPalOrder({
         packageId,
         tierId,
-        description: description || 'The Honeymoonner Deposit',
-        customId: customId || `deposit-${Date.now()}`,
+        description: description || 'The Honeymoonner Travel Package Payment',
+        customId: customId || `payment-${Date.now()}`,
         returnUrl: returnUrl.toString(),
         cancelUrl: cancelUrl.toString()
       });
@@ -171,9 +165,6 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
   };
 
   const isUnavailable = disabled || isProcessing || isQuoteLoading || quoteAmount === null;
-  const percentageValue = quoteBaseAmount && quoteBaseAmount > 0
-    ? Math.round((quoteAmount ?? 0) / quoteBaseAmount * 100)
-    : null;
   const hasCurrencyConversion = quoteAmount !== null && quoteCurrency !== currency.code;
   const selectedCurrencyAmount = quoteAmount !== null ? formatPrice(quoteAmount, quoteCurrency) : null;
   const chargeAmount = quoteAmount !== null ? `${quoteCurrency} ${quoteAmount.toFixed(2)}` : null;
@@ -218,9 +209,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
       {quoteAmount !== null && !errorMessage && (
         <div className="mt-3 space-y-1 text-center">
           <p className="text-[11px] text-brand-500">
-            {quoteDepositType === 'percentage' && percentageValue !== null
-              ? `${percentageValue}% deposit due now.`
-              : 'Deposit due now.'}
+            Amount due now.
             {hasCurrencyConversion && chargeAmount ? ` Charged as ${chargeAmount}.` : ''}
           </p>
         </div>
@@ -230,7 +219,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ packageId, tierId, onSucces
         isOpen={showSuccess}
         onClose={() => setShowSuccess(false)}
         title="Payment Successful!"
-        message="Your deposit has been secured. Our team will contact you shortly to finalize your romantic escape."
+        message="Your full payment has been confirmed. Our team will contact you shortly with your next travel steps."
         transactionId={paymentDetails?.id}
         amount={paymentDetails ? `${paymentDetails.currency} ${paymentDetails.amount.toFixed(2)}` : undefined}
         actionLabel="Celebrate This Love"

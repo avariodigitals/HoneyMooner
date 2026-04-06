@@ -210,3 +210,15 @@ export interface Testimonial {
   rating: number;
   date: string;
 }
+
+export interface PackageReview {
+  id: string;
+  packageId: string;
+  packageSlug: string;
+  packageTitle: string;
+  reviewerName: string;
+  rating: number;
+  title: string;
+  message: string;
+  createdAt: string;
+}

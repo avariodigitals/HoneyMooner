@@ -30,11 +30,11 @@ const FAQs = () => {
       questions: [
         {
           q: 'What payment methods do you accept?',
-          a: 'We accept major credit cards, bank transfers, and PayPal. For larger bookings, we offer flexible payment plans with an initial deposit to secure your dates.'
+          a: 'We accept major credit cards, bank transfers, PayPal, and Paystack based on availability for your selected package.'
         },
         {
           q: 'What is your cancellation policy?',
-          a: 'Cancellation policies vary by destination and resort. Generally, deposits are non-refundable, but we offer flexibility for rescheduling. We highly recommend purchasing travel insurance at the time of booking.'
+          a: 'Cancellation policies vary by destination and resort. We provide clear terms before payment and can assist with rescheduling where permitted. We highly recommend purchasing travel insurance at the time of booking.'
         }
       ]
     },

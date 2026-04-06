@@ -50,6 +50,7 @@ interface DropdownOption {
   name?: string;
   summary?: string;
   price?: number;
+  isHeader?: boolean;
 }
 
 const CustomDropdown = ({ 
@@ -116,34 +117,47 @@ const CustomDropdown = ({
             transition={{ duration: 0.2 }}
             className="absolute z-50 left-0 right-0 top-full mt-2 bg-white border border-brand-100 rounded-2xl shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto custom-scrollbar"
           >
-            {options.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => {
-                  onChange(opt.id);
-                  setIsOpen(false);
-                }}
-                className={`w-full text-left px-6 py-4 flex items-center justify-between transition-colors hover:bg-brand-50 group ${value === opt.id ? 'bg-brand-50' : ''}`}
-              >
-                <div className="flex flex-col">
-                  <span className={`text-sm sm:text-base transition-colors ${value === opt.id ? 'text-brand-accent font-semibold' : 'text-brand-900 group-hover:text-brand-accent'}`}>
-                    {opt.title || opt.name}
-                  </span>
-                  {opt.summary && (
-                    <span className="text-[10px] sm:text-xs text-brand-400 mt-1 line-clamp-1 italic">
-                      {opt.summary}
+            {options.map((opt) => {
+              if (opt.isHeader) {
+                return (
+                  <div
+                    key={opt.id}
+                    className="px-6 py-3 bg-brand-50 text-[10px] font-bold text-brand-500 uppercase tracking-widest border-y border-brand-100"
+                  >
+                    {opt.name}
+                  </div>
+                );
+              }
+
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.id);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-6 py-4 flex items-center justify-between transition-colors hover:bg-brand-50 group ${value === opt.id ? 'bg-brand-50' : ''}`}
+                >
+                  <div className="flex flex-col">
+                    <span className={`text-sm sm:text-base transition-colors ${value === opt.id ? 'text-brand-accent font-semibold' : 'text-brand-900 group-hover:text-brand-accent'}`}>
+                      {opt.title || opt.name}
                     </span>
-                  )}
-                  {opt.price && formatPrice && (
-                    <span className="text-xs text-brand-500 mt-1 font-serif">
-                      Starting from {formatPrice(opt.price)}
-                    </span>
-                  )}
-                </div>
-                {value === opt.id && <CheckCircle2 size={16} className="text-brand-accent" />}
-              </button>
-            ))}
+                    {opt.summary && (
+                      <span className="text-[10px] sm:text-xs text-brand-400 mt-1 line-clamp-1 italic">
+                        {opt.summary}
+                      </span>
+                    )}
+                    {opt.price && formatPrice && (
+                      <span className="text-xs text-brand-500 mt-1 font-serif">
+                        Starting from {formatPrice(opt.price)}
+                      </span>
+                    )}
+                  </div>
+                  {value === opt.id && <CheckCircle2 size={16} className="text-brand-accent" />}
+                </button>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
@@ -166,13 +180,14 @@ interface BookingFormProps {
     message: string;
   };
   packages: TravelPackage[];
+  packageOptions: DropdownOption[];
   isPackagesLoading: boolean;
   bookingContent: BookingContent;
   addLead: (lead: Lead) => Promise<boolean>;
   formatPrice: (price: number) => string;
 }
 
-const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent, addLead, formatPrice }: BookingFormProps) => {
+const BookingForm = ({ initialData, packages, packageOptions, isPackagesLoading, bookingContent, addLead, formatPrice }: BookingFormProps) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(initialData);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -311,10 +326,7 @@ const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent,
                   icon={PackageIcon}
                   isLoading={isPackagesLoading}
                   value={formData.packageId}
-                  options={packages.map(p => ({
-                    ...p,
-                    price: Math.min(...p.tiers.map(t => t.price))
-                  }))}
+                  options={packageOptions}
                   onChange={(pkgId) => {
                     const pkg = packages.find(p => p.id === pkgId);
                     setFormData({
@@ -603,11 +615,57 @@ const BookingForm = ({ initialData, packages, isPackagesLoading, bookingContent,
   );
 };
 
-const Booking = () => {
+export default function Booking() {
   const location = useLocation();
-  const { packages, bookingContent, addLead, isLoading } = useData();
+  const { packages: allPackages, destinations, bookingContent, addLead, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const [allowFallbackRender, setAllowFallbackRender] = useState(false);
+
+  // Filter to only honeymoon packages
+  const packages = useMemo(() => allPackages.filter(p => p.category === 'honeymoon'), [allPackages]);
+
+  const packageOptions = useMemo(() => {
+    const grouped = new Map<string, DropdownOption[]>();
+    const regionOrder = ['Indian Ocean', 'Europe', 'Asia', 'Africa', 'Americas & Caribbean', 'Oceania', 'Middle East'];
+
+    const toRegion = (continent: string): string => {
+      if (continent === 'Caribbean' || continent === 'Americas') return 'Americas & Caribbean';
+      return continent;
+    };
+
+    packages.forEach((pkg) => {
+      const destination = destinations.find((d) => d.id === pkg.destinationId);
+      const continent = destination?.continent || 'Other';
+      const region = ['Maldives', 'Mauritius', 'Seychelles'].includes(destination?.name || '')
+        ? 'Indian Ocean'
+        : toRegion(continent);
+
+      const list = grouped.get(region) ?? [];
+      list.push({
+        ...pkg,
+        price: Math.min(...pkg.tiers.map((t) => t.price))
+      });
+      grouped.set(region, list);
+    });
+
+    const options: DropdownOption[] = [];
+    regionOrder.forEach((region) => {
+      const items = grouped.get(region);
+      if (!items || items.length === 0) return;
+
+      options.push({
+        id: `header-${region}`,
+        name: `HONEYMOON (${region.toUpperCase()}) - PER COUPLE`,
+        isHeader: true
+      });
+
+      items
+        .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+        .forEach((item) => options.push(item));
+    });
+
+    return options;
+  }, [packages, destinations]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -618,8 +676,19 @@ const Booking = () => {
   }, []);
 
   const initialData = useMemo(() => {
-    const pkgId = location.state?.packageId || '';
-    const pkg = packages.find(p => p.id === pkgId);
+    const isGiftFlow = Boolean(location.state?.giftFlow);
+    const fallbackGiftPackage = packages.find((p) => p.category === 'honeymoon') || packages[0];
+    const pkgId = location.state?.packageId || (isGiftFlow ? fallbackGiftPackage?.id || '' : '');
+    const pkg = packages.find((p) => p.id === pkgId) || fallbackGiftPackage;
+    const giftAmount = typeof location.state?.giftAmount === 'number'
+      ? location.state.giftAmount
+      : null;
+    const giftTierLabel = typeof location.state?.giftTierLabel === 'string'
+      ? location.state.giftTierLabel
+      : '';
+    const giftPrefillMessage = isGiftFlow
+      ? `I would like to purchase a honeymoon gift card${giftAmount ? ` worth NGN ${giftAmount.toLocaleString('en-NG')}` : ''}${giftTierLabel ? ` (${giftTierLabel})` : ''}. Please guide me through the next steps.`
+      : '';
     
     return {
       packageId: pkgId,
@@ -631,8 +700,8 @@ const Booking = () => {
       email: '',
       phone: '',
       countryOfResidence: '',
-      occasion: 'honeymoon' as Lead['occasion'],
-      message: ''
+      occasion: (isGiftFlow ? 'other' : 'honeymoon') as Lead['occasion'],
+      message: giftPrefillMessage
     };
   }, [packages, location.state]);
 
@@ -650,15 +719,14 @@ const Booking = () => {
   // Use a key to reset the form when initial data changes significantly (like a new package selected from another page)
   return (
     <BookingForm 
-      key={initialData.packageId}
+      key={`${initialData.packageId}-${initialData.tierId}-${initialData.message}`}
       initialData={initialData} 
       packages={packages} 
+      packageOptions={packageOptions}
       isPackagesLoading={isLoading && packages.length === 0}
       bookingContent={bookingContent}
       addLead={addLead} 
       formatPrice={formatPrice} 
     />
   );
-};
-
-export default Booking;
+}

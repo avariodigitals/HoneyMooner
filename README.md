@@ -2,6 +2,26 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## WooCommerce Gift Product Sync
+
+This project includes a script to sync honeymoon package tiers into WooCommerce products for gift-card checkout.
+
+1. Copy `.env.example` values into your local environment.
+2. Set `WOO_BASE_URL`, `WOO_CONSUMER_KEY`, and `WOO_CONSUMER_SECRET`.
+3. Run a dry run first:
+
+```bash
+DRY_RUN=true npm run sync:woo:gifts
+```
+
+4. Run actual sync:
+
+```bash
+DRY_RUN=false npm run sync:woo:gifts
+```
+
+The script creates or updates products by stable SKU (`hm-gift-<destination>-<tier>`), and tags them for honeymoon gift-card flows.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)

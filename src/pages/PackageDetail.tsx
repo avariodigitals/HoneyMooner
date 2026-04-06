@@ -49,6 +49,14 @@ function hasUsableImage(image?: string): image is string {
   return Boolean(image && image.trim().length > 0 && !image.includes('/images/placeholder-travel.svg'));
 }
 
+function sanitizeExperienceHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/javascript:/gi, '');
+}
+
 const PackageDetail = () => {
   const { slug } = useParams();
   const { packages, destinations, posts, isLoading } = useData();
@@ -188,6 +196,8 @@ const PackageDetail = () => {
         : PACKAGE_HERO_FALLBACK;
 
   const selectedTier = pkg.tiers.find(t => t.id === selectedTierId) || pkg.tiers[0];
+  const experienceHtml = (pkg.experienceContent || '').trim();
+  const hasExperienceHtml = experienceHtml.length > 0;
 
   const toggleWishlist = async () => {
     if (!isAuthenticated) {
@@ -319,9 +329,16 @@ const PackageDetail = () => {
           <div className="space-y-6 sm:space-y-8">
             <p className="script-font text-brand-accent italic text-xl sm:text-2xl">The Experience</p>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-brand-900 leading-tight">Experience {destination?.name}</h2>
-            <p className="text-brand-700 text-base sm:text-lg leading-relaxed first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-3 first-letter:text-brand-accent">
-              {pkg.description}
-            </p>
+            {hasExperienceHtml ? (
+              <div
+                className="prose prose-sm sm:prose-base max-w-none text-brand-700 prose-p:text-brand-700 prose-headings:text-brand-900 prose-strong:text-brand-900"
+                dangerouslySetInnerHTML={{ __html: sanitizeExperienceHtml(experienceHtml) }}
+              />
+            ) : (
+              <p className="text-brand-700 text-base sm:text-lg leading-relaxed first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-3 first-letter:text-brand-accent">
+                {pkg.description}
+              </p>
+            )}
           </div>
 
           {/* Interactive Journey Map (Stylized) */}
@@ -471,7 +488,7 @@ const PackageDetail = () => {
                   )}
                   <div className="pr-8 min-w-0 space-y-3">
                     <p className="text-sm sm:text-base font-semibold tracking-wide text-brand-700">{tier.name}</p>
-                    <p className="text-2xl sm:text-3xl font-serif text-brand-900 leading-tight whitespace-nowrap">{formatPrice(tier.price)}</p>
+                    <p className="text-2xl sm:text-[1.7rem] lg:text-[1.85rem] font-serif text-brand-900 leading-tight whitespace-nowrap">{formatPrice(tier.price)}</p>
                     <p className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[10px] uppercase tracking-[0.18em] font-bold text-brand-500">
                       {tier.basis}
                     </p>

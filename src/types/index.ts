@@ -50,6 +50,7 @@ export interface TravelPackage {
   slug: string;
   summary: string;
   description: string;
+  experienceContent?: string;
   featuredImage: string;
   gallery: string[];
   destinationId: string;

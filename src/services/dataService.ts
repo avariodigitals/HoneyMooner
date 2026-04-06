@@ -175,6 +175,9 @@ interface WPResponseItem {
     tags?: string[] | string;
     departures?: Departure[] | string;
     seo?: { title: string; description: string; keywords: string[] } | string;
+    experience_content?: string;
+    experience_seo_content?: string;
+    package_experience_content?: string;
   };
   _embedded?: {
     'wp:featuredmedia'?: Array<{ source_url: string }>;
@@ -300,6 +303,11 @@ function parseStringList(value: unknown): string[] {
 
 function parseGallery(value: unknown): string[] {
   return parseStringList(value);
+}
+
+function parseExperienceContent(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  return value.trim();
 }
 
 function parseDuration(value: unknown): { days: number; nights: number } {
@@ -584,6 +592,10 @@ export const dataService = {
           category: item.acf?.category || 'honeymoon',
           summary: cleanText(item.acf?.summary || ''),
           description: cleanText(item?.content?.rendered || ''),
+          experienceContent:
+            parseExperienceContent(item.acf?.experience_content) ||
+            parseExperienceContent(item.acf?.experience_seo_content) ||
+            parseExperienceContent(item.acf?.package_experience_content),
           featuredImage,
           gallery: gallery.length > 0 ? gallery : [featuredImage],
           destinationId: parseDestinationId(item.acf?.destination_id),
@@ -620,6 +632,7 @@ export const dataService = {
           acf: {
             category: pkg.category,
             summary: pkg.summary,
+            experience_content: pkg.experienceContent || '',
             featured_image: pkg.featuredImage,
             gallery: pkg.gallery,
             destination_id: pkg.destinationId,

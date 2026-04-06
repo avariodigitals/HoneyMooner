@@ -64,7 +64,7 @@ const PackageDetail = () => {
   const [wishlistItems, setWishlistItems] = useState<string[] | null>(null);
   const [packageReviews, setPackageReviews] = useState<PackageReview[]>([]);
   const [reviewerName, setReviewerName] = useState('');
-  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewerEmail, setReviewerEmail] = useState('');
   const [reviewMessage, setReviewMessage] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
   const [isReviewSubmitting, setIsReviewSubmitting] = useState(false);
@@ -122,8 +122,14 @@ const PackageDetail = () => {
 
   const submitReview = async () => {
     if (!pkg) return;
-    if (!reviewerName.trim() || !reviewTitle.trim() || !reviewMessage.trim()) {
+    if (!reviewerName.trim() || !reviewerEmail.trim() || !reviewMessage.trim()) {
       setReviewFeedback('Please complete your review before submitting.');
+      return;
+    }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(reviewerEmail.trim())) {
+      setReviewFeedback('Please enter a valid email address.');
       return;
     }
 
@@ -135,8 +141,8 @@ const PackageDetail = () => {
       packageSlug: pkg.slug,
       packageTitle: pkg.title,
       reviewerName: reviewerName.trim(),
+      reviewerEmail: reviewerEmail.trim(),
       rating: reviewRating,
-      title: reviewTitle.trim(),
       message: reviewMessage.trim()
     };
 
@@ -151,7 +157,7 @@ const PackageDetail = () => {
         ...current
       ]);
       setReviewerName('');
-      setReviewTitle('');
+      setReviewerEmail('');
       setReviewMessage('');
       setReviewRating(5);
       setReviewFeedback('Thank you. Your review has been sent.');
@@ -544,8 +550,10 @@ const PackageDetail = () => {
                   <div key={review.id} className="bg-white rounded-2xl border border-brand-100 p-4 sm:p-5 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                       <div className="min-w-0">
-                        <p className="font-serif text-brand-900 text-base leading-tight">{review.title}</p>
-                        <p className="text-[10px] uppercase tracking-widest text-brand-400 font-bold mt-1">{review.reviewerName}</p>
+                        <p className="font-serif text-brand-900 text-base leading-tight">{review.reviewerName}</p>
+                        {review.reviewerEmail ? (
+                          <p className="text-[10px] tracking-wide text-brand-400 font-medium mt-1">{review.reviewerEmail}</p>
+                        ) : null}
                       </div>
                       <div className="flex items-center gap-1 text-brand-accent shrink-0">
                         {[...Array(review.rating)].map((_, index) => (
@@ -669,10 +677,11 @@ const PackageDetail = () => {
                       placeholder="Your name"
                     />
                     <input
-                      value={reviewTitle}
-                      onChange={(e) => setReviewTitle(e.target.value)}
+                      type="email"
+                      value={reviewerEmail}
+                      onChange={(e) => setReviewerEmail(e.target.value)}
                       className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30"
-                      placeholder="Short headline"
+                      placeholder="Your email"
                     />
                   </div>
 

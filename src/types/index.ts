@@ -217,8 +217,8 @@ export interface PackageReview {
   packageSlug: string;
   packageTitle: string;
   reviewerName: string;
+  reviewerEmail: string;
   rating: number;
-  title: string;
   message: string;
   createdAt: string;
 }

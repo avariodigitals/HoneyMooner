@@ -84,8 +84,8 @@ const FALLBACK_PACKAGE_REVIEWS: PackageReview[] = [
     packageSlug: 'maldives-honeymoon',
     packageTitle: 'Maldives Honeymoon Experience',
     reviewerName: 'The Okafors',
+    reviewerEmail: 'okafors@example.com',
     rating: 5,
-    title: 'The most romantic trip we have ever taken',
     message: 'Every detail felt thoughtful, soft, and deeply personal. We still talk about the sunset dinner every week.',
     createdAt: '2026-02-10T00:00:00.000Z'
   },
@@ -95,8 +95,8 @@ const FALLBACK_PACKAGE_REVIEWS: PackageReview[] = [
     packageSlug: 'santorini-honeymoon',
     packageTitle: 'Santorini Honeymoon Experience',
     reviewerName: 'Nana & Tunde',
+    reviewerEmail: 'nana.tunde@example.com',
     rating: 5,
-    title: 'Elegant, seamless, unforgettable',
     message: 'The whole flow was beautifully paced. We never felt rushed, and every moment looked like a postcard.',
     createdAt: '2026-01-21T00:00:00.000Z'
   },
@@ -106,8 +106,8 @@ const FALLBACK_PACKAGE_REVIEWS: PackageReview[] = [
     packageSlug: 'bali-honeymoon',
     packageTitle: 'Bali Honeymoon Experience',
     reviewerName: 'Alicia & Mark',
+    reviewerEmail: 'alicia.mark@example.com',
     rating: 5,
-    title: 'Soft luxury done right',
     message: 'We loved how calm and curated everything felt. It was romantic without being overwhelming.',
     createdAt: '2025-12-18T00:00:00.000Z'
   }
@@ -192,6 +192,7 @@ interface WPReviewItem {
     package_slug?: string;
     package_title?: string;
     reviewer_name?: string;
+    reviewer_email?: string;
     rating?: number;
   };
 }
@@ -727,8 +728,8 @@ export const dataService = {
         packageSlug: item.acf?.package_slug || '',
         packageTitle: item.acf?.package_title || '',
         reviewerName: item.acf?.reviewer_name || cleanText(item.title?.rendered || 'Guest'),
+        reviewerEmail: item.acf?.reviewer_email || '',
         rating: Number(item.acf?.rating || 5),
-        title: cleanText(item.title?.rendered || 'Wonderful experience'),
         message: cleanText(item.content?.rendered || ''),
         createdAt: item.date
       })).filter((review) => !packageSlug || review.packageSlug === packageSlug || review.packageId === packageSlug);
@@ -740,7 +741,15 @@ export const dataService = {
     }
   },
 
-  async createPackageReview(review: Omit<PackageReview, 'id' | 'createdAt'>): Promise<boolean> {
+  async createPackageReview(review: {
+    packageId: string;
+    packageSlug: string;
+    packageTitle: string;
+    reviewerName: string;
+    reviewerEmail: string;
+    rating: number;
+    message: string;
+  }): Promise<boolean> {
     try {
       const ok = await checkWP();
       if (!ok) return false;

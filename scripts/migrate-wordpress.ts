@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { initialDestinations, initialPackages, initialPosts, initialTestimonials } from '../src/data/mock';
 
 type WPEntity = {
@@ -12,17 +11,12 @@ type WPCategory = {
   slug: string;
 };
 
-type WPMedia = {
-  id: number;
-  source_url?: string;
-  title?: { rendered: string };
-};
-
 const WP_BASE_URL = process.env.WP_BASE_URL || 'https://cms.thehoneymoonner.com/wp-json';
 const WP_USERNAME = process.env.WP_USERNAME;
 const WP_PASSWORD = process.env.WP_PASSWORD;
 const WP_TOKEN = process.env.WP_TOKEN;
 const DRY_RUN = process.env.DRY_RUN === 'true';
+const RESET_WORDPRESS = process.env.RESET_WORDPRESS === 'true';
 const IMPORT_SCOPE = (process.env.IMPORT_SCOPE || 'all')
   .split(',')
   .map((item) => item.trim().toLowerCase())
@@ -70,14 +64,6 @@ function authHeaders(token: string) {
   };
 }
 
-function mediaHeaders(token: string, fileName: string, mimeType: string) {
-  return {
-    Authorization: `Bearer ${token}`,
-    'Content-Disposition': `attachment; filename="${fileName}"`,
-    'Content-Type': mimeType
-  };
-}
-
 async function findBySlug(type: 'destinations' | 'packages' | 'posts', slug: string): Promise<WPEntity | null> {
   const response = await fetch(`${WP_BASE_URL}/wp/v2/${type}?slug=${encodeURIComponent(slug)}&per_page=1`);
   if (!response.ok) return null;
@@ -118,47 +104,62 @@ async function ensureCategory(token: string, name: string, slug: string): Promis
   return data.id;
 }
 
-function fileNameFromUrl(url: string, fallback: string) {
-  try {
-    const parsed = new URL(url);
-    const lastPart = parsed.pathname.split('/').filter(Boolean).pop();
-    if (!lastPart) return fallback;
-    return lastPart.includes('.') ? lastPart : `${lastPart}.jpg`;
-  } catch {
-    return fallback;
-  }
-}
+async function listAllEntities(token: string, type: 'destinations' | 'packages'): Promise<WPEntity[]> {
+  const results: WPEntity[] = [];
+  let page = 1;
 
-async function uploadMedia(token: string, sourceUrl: string, fallbackName: string): Promise<number | null> {
-  try {
-    const imageResponse = await fetch(sourceUrl);
-    if (!imageResponse.ok) {
-      console.error(`Failed to download media from ${sourceUrl}: ${imageResponse.status}`);
-      return null;
-    }
-
-    const arrayBuffer = await imageResponse.arrayBuffer();
-    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
-    const fileName = fileNameFromUrl(sourceUrl, fallbackName);
-
-    const response = await fetch(`${WP_BASE_URL}/wp/v2/media`, {
-      method: 'POST',
-      headers: mediaHeaders(token, fileName, contentType),
-      body: Buffer.from(arrayBuffer)
+  while (true) {
+    const response = await fetch(`${WP_BASE_URL}/wp/v2/${type}?per_page=100&page=${page}` , {
+      headers: authHeaders(token)
     });
 
     if (!response.ok) {
       const text = await response.text();
-      console.error(`Failed media upload for ${sourceUrl}: ${response.status} ${text}`);
-      return null;
+      throw new Error(`Failed to list ${type}: ${response.status} ${text}`);
     }
 
-    const data = await response.json() as WPMedia;
-    console.log(`Uploaded media: ${fileName} (#${data.id})`);
-    return data.id;
-  } catch (error) {
-    console.error(`Media upload error for ${sourceUrl}:`, error);
-    return null;
+    const data = await response.json() as WPEntity[];
+    results.push(...data);
+
+    const totalPages = Number(response.headers.get('X-WP-TotalPages') || '1');
+    if (page >= totalPages || data.length === 0) break;
+    page += 1;
+  }
+
+  return results;
+}
+
+async function deleteEntity(token: string, type: 'destinations' | 'packages', id: number): Promise<boolean> {
+  if (DRY_RUN) {
+    console.log(`[DRY_RUN] DELETE ${type} #${id}`);
+    return true;
+  }
+
+  const response = await fetch(`${WP_BASE_URL}/wp/v2/${type}/${id}?force=true`, {
+    method: 'DELETE',
+    headers: authHeaders(token)
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    console.error(`Failed to delete ${type} #${id}: ${response.status} ${text}`);
+    return false;
+  }
+
+  return true;
+}
+
+async function resetEntities(token: string, type: 'destinations' | 'packages'): Promise<void> {
+  const entities = await listAllEntities(token, type);
+
+  if (entities.length === 0) {
+    console.log(`No existing ${type} to delete.`);
+    return;
+  }
+
+  console.log(`Deleting ${entities.length} existing ${type}...`);
+  for (const entity of entities) {
+    await deleteEntity(token, type, entity.id);
   }
 }
 
@@ -169,12 +170,12 @@ async function upsert(
   payload: Record<string, unknown>
 ): Promise<number | null> {
   const existing = await findBySlug(type, slug);
-  const method = 'POST';
+  const method = existing ? 'PUT' : 'POST';
   const url = existing
     ? `${WP_BASE_URL}/wp/v2/${type}/${existing.id}`
     : `${WP_BASE_URL}/wp/v2/${type}`;
 
-  const finalPayload = {
+  const finalPayload: Record<string, unknown> = {
     ...payload,
     slug,
     status: 'publish'
@@ -183,6 +184,10 @@ async function upsert(
   if (DRY_RUN) {
     console.log(`[DRY_RUN] ${existing ? 'UPDATE' : 'CREATE'} ${type}: ${slug}`);
     return existing?.id || null;
+  }
+
+  if (type === 'packages' && payload.title) {
+    console.log(`Setting ${slug} title to: "${payload.title}"`);
   }
 
   const response = await fetch(url, {
@@ -205,51 +210,39 @@ async function upsert(
 function normalizePricingTiersForFreeAcf(
   tiers: Array<{ id: string; name: string; price: number; basis: string }>
 ) {
-  const premium = tiers.find((t) => t.name === 'Premium');
-  const luxuria = tiers.find((t) => t.name === 'Luxuria');
-  const ultra = tiers.find((t) => t.name === 'Ultra Luxuria');
-
-  return {
-    premium: premium
-      ? { id: premium.id, name: premium.name, price: premium.price, basis: premium.basis }
-      : { id: 'premium', name: 'Premium', price: 0, basis: 'per couple' },
-    luxuria: luxuria
-      ? { id: luxuria.id, name: luxuria.name, price: luxuria.price, basis: luxuria.basis }
-      : { id: 'luxuria', name: 'Luxuria', price: 0, basis: 'per couple' },
-    ultra_luxuria: ultra
-      ? { id: ultra.id, name: ultra.name, price: ultra.price, basis: ultra.basis }
-      : { id: 'ultra-luxuria', name: 'Ultra Luxuria', price: 0, basis: 'per couple' }
-  };
+  return tiers
+    .filter((tier) => Number(tier.price) > 0)
+    .map((tier) => ({
+      tier_id: tier.id,
+      tier_name: tier.name,
+      tier_price: Number(tier.price),
+      tier_basis: tier.basis,
+      tier_label: '',
+      tier_description: ''
+    }));
 }
 
 async function run() {
   console.log(`Using WordPress API: ${WP_BASE_URL}`);
   console.log(`Import scope: ${IMPORT_SCOPE.join(', ') || 'all'}`);
+  console.log(`Reset mode: ${RESET_WORDPRESS ? 'enabled' : 'disabled'}`);
   const token = await login();
+  const destinationStartingPriceById = new Map<string, number>();
+  for (const pkg of initialPackages) {
+    const packageMinTier = Math.min(...pkg.tiers.map((tier) => Number(tier.price || 0)).filter((price) => price > 0));
+    if (!Number.isFinite(packageMinTier) || packageMinTier <= 0) continue;
+    const existing = destinationStartingPriceById.get(pkg.destinationId);
+    if (!existing || packageMinTier < existing) {
+      destinationStartingPriceById.set(pkg.destinationId, packageMinTier);
+    }
+  }
+
   const destinationIdMap = new Map<string, number>();
-  const mediaIdCache = new Map<string, number>();
   const categoryIdCache = new Map<string, number>();
-  let fallbackMediaId: number | null = null;
 
-  async function getMediaId(sourceUrl: string, fallbackName: string): Promise<number | null> {
-    const cached = mediaIdCache.get(sourceUrl);
-    if (cached) return cached;
-    if (DRY_RUN) {
-      console.log(`[DRY_RUN] upload media: ${sourceUrl}`);
-      return null;
-    }
-    const mediaId = await uploadMedia(token, sourceUrl, fallbackName);
-    if (mediaId) {
-      mediaIdCache.set(sourceUrl, mediaId);
-      return mediaId;
-    }
-
-    if (fallbackMediaId === null) {
-      const fallbackUrl = 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80';
-      fallbackMediaId = await uploadMedia(token, fallbackUrl, 'fallback-media.jpg');
-    }
-
-    return fallbackMediaId;
+  async function getMediaId(): Promise<number | null> {
+    // Skip media uploads - images are already attached in WordPress
+    return null;
   }
 
   async function getCategoryId(name: string, slug: string): Promise<number | null> {
@@ -260,19 +253,43 @@ async function run() {
     return categoryId;
   }
 
+  if (RESET_WORDPRESS) {
+    if (shouldImport('packages')) {
+      await resetEntities(token, 'packages');
+    }
+
+    if (shouldImport('destinations')) {
+      await resetEntities(token, 'destinations');
+    }
+  }
+
   if (shouldImport('destinations')) {
     console.log('\nImporting destinations...');
     for (const dest of initialDestinations) {
-      const destinationImageId = await getMediaId(dest.image, `${dest.slug}-destination.jpg`);
+      const destinationImageId = await getMediaId();
+      const computedDestinationStart = Number(dest.startingPrice || 0) > 0
+        ? Number(dest.startingPrice)
+        : Number(destinationStartingPriceById.get(dest.id) || 0);
       const id = await upsert(token, 'destinations', dest.slug, {
         title: dest.name,
         content: dest.description,
         excerpt: dest.description,
+        meta: {
+          country: dest.country,
+          continent: dest.continent,
+          image: dest.image,
+          starting_price: computedDestinationStart,
+          intro_content: dest.description,
+          best_time_to_visit: dest.bestTimeToVisit ?? '',
+          highlights: (dest.popularFor ?? []).map((value) => ({ title: value, description: '' })),
+          seo_title: `${dest.name} Honeymoon Destination`,
+          meta_description: dest.description ?? ''
+        },
         acf: {
           country: dest.country,
           continent: dest.continent,
           image: destinationImageId,
-          starting_price: dest.startingPrice ?? 0,
+          starting_price: computedDestinationStart,
           best_time_to_visit: dest.bestTimeToVisit ?? '',
           popular_for: JSON.stringify(dest.popularFor ?? [])
         }
@@ -302,12 +319,32 @@ async function run() {
         continue;
       }
 
-      const packageFeaturedImageId = await getMediaId(pkg.featuredImage, `${pkg.slug}-featured.jpg`);
+      const packageFeaturedImageId = await getMediaId();
 
       await upsert(token, 'packages', pkg.slug, {
         title: pkg.title,
         content: pkg.description,
         excerpt: pkg.summary,
+        meta: {
+          package_id: pkg.id,
+          destination_id: wpDestinationId,
+          category: pkg.category,
+          summary: pkg.summary,
+          intro_content: pkg.description,
+          experience_content: pkg.description,
+          days: pkg.duration.days,
+          nights: pkg.duration.nights,
+          starting_price: pkg.tiers[0]?.price ?? 0,
+          currency: 'USD',
+          pricing_basis: pkg.tiers[0]?.basis ?? 'per couple',
+          pricing_tiers: normalizePricingTiersForFreeAcf(pkg.tiers),
+          inclusions: pkg.inclusions,
+          exclusions: pkg.exclusions,
+          departures: pkg.departures,
+          itinerary: pkg.itinerary ?? [],
+          seo_title: pkg.seo.title,
+          meta_description: pkg.seo.description
+        },
         acf: {
           category: pkg.category,
           summary: pkg.summary,
@@ -344,7 +381,7 @@ async function run() {
         ? undefined
         : new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 12, 0, 0)).toISOString();
 
-      const postFeaturedImageId = await getMediaId(post.image, `${post.slug}-post.jpg`);
+      const postFeaturedImageId = await getMediaId();
       const postCategorySlug = post.category.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
       const postCategoryId = await getCategoryId(post.category, postCategorySlug);
 
@@ -367,7 +404,7 @@ async function run() {
 
     for (const testimonial of initialTestimonials) {
       const slug = `testimonial-${testimonial.coupleName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-      const testimonialImageId = await getMediaId(testimonial.image, `${slug}.jpg`);
+      const testimonialImageId = await getMediaId();
       const meta = {
         location: testimonial.location,
         destination: testimonial.destination,

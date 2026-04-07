@@ -10,7 +10,7 @@ import SEO from '../components/layout/SEO';
 
 const Destinations = () => {
   const { slug } = useParams();
-  const { destinations, packages } = useData();
+  const { destinations, packages, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const [selectedContinent, setSelectedContinent] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -183,6 +183,18 @@ const Destinations = () => {
                          d.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesContinent && matchesSearch;
   });
+
+  if (isLoading && destinations.length === 0) {
+    return (
+      <div className="pt-32 min-h-screen section-container flex flex-col items-center justify-center">
+        <div className="relative w-14 h-14 mb-4">
+          <div className="absolute inset-0 rounded-full border-4 border-brand-accent/20" />
+          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-brand-accent animate-spin" />
+        </div>
+        <p className="text-brand-600 font-serif text-xl italic">Loading destinations...</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div 

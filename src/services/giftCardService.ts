@@ -24,6 +24,9 @@ export interface GiftCardPackage {
   tiers: GiftCardTier[];
 }
 
+let giftPackagesCache: GiftCardPackage[] | null = null;
+let giftPackagesInflight: Promise<GiftCardPackage[]> | null = null;
+
 interface StoreApiProduct {
   id: number;
   name: string;
@@ -44,6 +47,7 @@ interface StoreApiProduct {
 interface CustomGiftProduct {
   product_id: number;
   product_slug: string;
+  product_name?: string;
   destination_name: string;
   tier_name: string;
   amount: number;
@@ -135,7 +139,8 @@ function buildPackagesFromCustomProducts(products: CustomGiftProduct[]): GiftCar
   const grouped = new Map<string, GiftCardPackage>();
 
   products.forEach((product) => {
-    const destinationName = product.destination_name?.trim() || 'Honeymoon Gift';
+    const parsed = parseDestinationAndTier(product.product_name || '');
+    const destinationName = product.destination_name?.trim() || parsed.destination || 'Honeymoon Gift';
     const packageId = slugify(destinationName);
     const existing = grouped.get(packageId);
 
@@ -226,6 +231,10 @@ function buildPackagesFromStoreProducts(products: StoreApiProduct[]): GiftCardPa
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 
+function hasVisiblePrices(packages: GiftCardPackage[]): boolean {
+  return packages.some((pkg) => pkg.tiers.some((tier) => Number(tier.price) > 0));
+}
+
 async function fetchStoreProducts(): Promise<StoreApiProduct[]> {
   const pageSize = 100;
   const allProducts: StoreApiProduct[] = [];
@@ -246,14 +255,25 @@ async function fetchStoreProducts(): Promise<StoreApiProduct[]> {
   return allProducts;
 }
 
-export async function getGiftCardPackages(): Promise<GiftCardPackage[]> {
+export async function getGiftCardPackages(forceRefresh = false): Promise<GiftCardPackage[]> {
+  if (!forceRefresh && giftPackagesCache) {
+    return giftPackagesCache;
+  }
+
+  if (!forceRefresh && giftPackagesInflight) {
+    return giftPackagesInflight;
+  }
+
+  giftPackagesInflight = (async () => {
   if (GIFT_PRODUCTS_ENDPOINT) {
     try {
       const customResponse = await fetch(`${WP_BASE_URL}${GIFT_PRODUCTS_ENDPOINT}`);
       if (customResponse.ok) {
         const customData = await customResponse.json() as CustomGiftProduct[];
         if (Array.isArray(customData) && customData.length > 0) {
-          return buildPackagesFromCustomProducts(customData);
+          const packages = buildPackagesFromCustomProducts(customData);
+          giftPackagesCache = packages;
+          return packages;
         }
       }
     } catch {
@@ -263,17 +283,31 @@ export async function getGiftCardPackages(): Promise<GiftCardPackage[]> {
 
   const wpPackages = await dataService.getPackages();
   if (wpPackages.length > 0) {
-    return buildPackagesFromWpPackages(wpPackages);
+    const packages = buildPackagesFromWpPackages(wpPackages);
+    if (hasVisiblePrices(packages)) {
+      giftPackagesCache = packages;
+      return packages;
+    }
   }
 
-  if (ENABLE_WC_STORE_FALLBACK) {
+  if (ENABLE_WC_STORE_FALLBACK || wpPackages.length > 0) {
     try {
       const storeProducts = await fetchStoreProducts();
-      return buildPackagesFromStoreProducts(storeProducts);
+      const packages = buildPackagesFromStoreProducts(storeProducts);
+      giftPackagesCache = packages;
+      return packages;
     } catch {
       // Ignore Woo Store fallback failures.
     }
   }
 
-  return [];
+    giftPackagesCache = [];
+    return [];
+  })();
+
+  try {
+    return await giftPackagesInflight;
+  } finally {
+    giftPackagesInflight = null;
+  }
 }

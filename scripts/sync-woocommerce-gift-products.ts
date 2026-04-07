@@ -7,6 +7,7 @@ type WooProduct = {
   id: number;
   sku?: string;
   name?: string;
+  meta_data?: Array<{ key?: string; value?: unknown }>;
 };
 
 type WooCategory = {
@@ -61,6 +62,60 @@ async function findProductBySku(sku: string): Promise<WooProduct | null> {
   return products[0] || null;
 }
 
+async function listProductsByCategory(categoryId: number): Promise<WooProduct[]> {
+  const all: WooProduct[] = [];
+  for (let page = 1; page < 20; page += 1) {
+    const products = await wooRequest<WooProduct[]>(`/wc/v3/products?category=${categoryId}&per_page=100&page=${page}`);
+    if (!Array.isArray(products) || products.length === 0) break;
+    all.push(...products);
+    if (products.length < 100) break;
+  }
+  return all;
+}
+
+function getMetaValue(product: WooProduct, key: string): string {
+  const found = product.meta_data?.find((item) => item?.key === key)?.value;
+  return typeof found === 'string' ? found.trim() : '';
+}
+
+function resolveDestinationNameFromMeta(product: WooProduct): string {
+  const destinationName = getMetaValue(product, '_hm_destination_name');
+  if (destinationName) return destinationName;
+
+  const destinationId = getMetaValue(product, '_hm_destination_id');
+  if (!destinationId) return '';
+
+  const fallbackDestination = initialDestinations.find((item) => String(item.id) === destinationId);
+  return fallbackDestination?.name || '';
+}
+
+async function repairGiftProductTitles(giftCardsCategoryId: number | null): Promise<number> {
+  if (!giftCardsCategoryId) return 0;
+
+  const products = await listProductsByCategory(giftCardsCategoryId);
+  let repaired = 0;
+
+  for (const product of products) {
+    const currentName = (product.name || '').trim();
+    if (currentName !== '') continue;
+
+    const destinationName = resolveDestinationNameFromMeta(product) || 'Honeymoon';
+    const tierName = getMetaValue(product, '_hm_tier_name') || 'Premium';
+    const repairedTitle = `${destinationName} Honeymoon Gift Card - ${tierName}`;
+
+    if (DRY_RUN) {
+      console.log(`[DRY_RUN] REPAIR title for product #${product.id} => ${repairedTitle}`);
+    } else {
+      await wooRequest<WooProduct>(`/wc/v3/products/${product.id}`, 'PUT', { name: repairedTitle });
+      console.log(`Repaired title for product #${product.id}`);
+    }
+
+    repaired += 1;
+  }
+
+  return repaired;
+}
+
 async function ensureCategory(name: string, slug: string): Promise<number | null> {
   const existing = await wooRequest<WooCategory[]>(`/wc/v3/products/categories?slug=${encodeURIComponent(slug)}&per_page=1`);
   if (existing[0]?.id) return existing[0].id;
@@ -80,6 +135,11 @@ async function run(): Promise<void> {
 
   const giftCardsCategoryId = await ensureCategory('Gift Cards', 'gift-cards');
   const honeymoonCategoryId = await ensureCategory('Honeymoon', 'honeymoon');
+
+  const repairedCount = await repairGiftProductTitles(giftCardsCategoryId);
+  if (repairedCount > 0) {
+    console.log(`Repaired empty gift product titles: ${repairedCount}`);
+  }
 
   const honeymoonPackages = initialPackages.filter((pkg) => pkg.category === 'honeymoon');
 
@@ -146,7 +206,7 @@ async function run(): Promise<void> {
     }
   }
 
-  console.log(`Done. Created: ${created}, Updated: ${updated}`);
+  console.log(`Done. Created: ${created}, Updated: ${updated}, Repaired titles: ${repairedCount}`);
 }
 
 run().catch((error) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Destination, TravelPackage, Lead, Testimonial, BlogPost, HomeContent, BookingContent } from '../types';
 import { dataService } from '../services/dataService';
-import { initialDestinations, initialPackages, initialPosts, initialTestimonials } from '../data/mock';
+import { initialPosts, initialTestimonials } from '../data/mock';
 import { ASSETS } from '../config/images';
 
 const PLACEHOLDER_IMAGE_PATH = '/images/placeholder-travel.svg';
@@ -122,6 +122,8 @@ type DataSnapshot = {
 };
 
 const SNAPSHOT_STORAGE_KEY = 'honeymoonner:data-snapshot:v1';
+const CORE_REFRESH_INTERVAL_MS = 60 * 1000;
+const SECONDARY_REFRESH_INTERVAL_MS = 2 * 60 * 1000;
 
 function isPlaceholderImage(url?: string): boolean {
   return !url || url.trim().length === 0 || url.includes(PLACEHOLDER_IMAGE_PATH);
@@ -190,29 +192,6 @@ function sanitizeSnapshot(snapshot: DataSnapshot): DataSnapshot {
   };
 }
 
-function loadPersistedSnapshot(): DataSnapshot | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem(SNAPSHOT_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<DataSnapshot>;
-    if (!parsed || typeof parsed !== 'object') return null;
-
-    const snapshot: DataSnapshot = {
-      packages: Array.isArray(parsed.packages) ? parsed.packages as TravelPackage[] : [],
-      destinations: Array.isArray(parsed.destinations) ? parsed.destinations as Destination[] : [],
-      leads: Array.isArray(parsed.leads) ? parsed.leads as Lead[] : [],
-      testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials as Testimonial[] : [],
-      homeContent: parsed.homeContent as HomeContent || defaultHomeContent,
-      bookingContent: parsed.bookingContent as BookingContent || defaultBookingContent,
-      posts: Array.isArray(parsed.posts) ? parsed.posts as BlogPost[] : []
-    };
-    return sanitizeSnapshot(snapshot);
-  } catch {
-    return null;
-  }
-}
-
 function persistSnapshot(snapshot: DataSnapshot): void {
   if (typeof window === 'undefined') return;
   try {
@@ -222,9 +201,33 @@ function persistSnapshot(snapshot: DataSnapshot): void {
   }
 }
 
+function loadPersistedSnapshot(): DataSnapshot | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<DataSnapshot>;
+    if (!parsed || typeof parsed !== 'object') return null;
+
+    return sanitizeSnapshot({
+      ...initialSnapshot,
+      ...parsed,
+      packages: Array.isArray(parsed.packages) ? parsed.packages : initialSnapshot.packages,
+      destinations: Array.isArray(parsed.destinations) ? parsed.destinations : initialSnapshot.destinations,
+      leads: Array.isArray(parsed.leads) ? parsed.leads : initialSnapshot.leads,
+      testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials : initialSnapshot.testimonials,
+      posts: Array.isArray(parsed.posts) ? parsed.posts : initialSnapshot.posts,
+      homeContent: parsed.homeContent || initialSnapshot.homeContent,
+      bookingContent: parsed.bookingContent || initialSnapshot.bookingContent
+    });
+  } catch {
+    return null;
+  }
+}
+
 const initialSnapshot: DataSnapshot = {
-  packages: initialPackages,
-  destinations: initialDestinations,
+  packages: [],
+  destinations: [],
   leads: [],
   testimonials: initialTestimonials,
   homeContent: defaultHomeContent,
@@ -233,12 +236,15 @@ const initialSnapshot: DataSnapshot = {
 };
 
 const emptySnapshot: DataSnapshot = initialSnapshot;
+const persistedSnapshot = loadPersistedSnapshot();
 
-let cachedSnapshot: DataSnapshot | null = loadPersistedSnapshot() || sanitizeSnapshot(initialSnapshot);
+let cachedSnapshot: DataSnapshot | null = persistedSnapshot || sanitizeSnapshot(initialSnapshot);
 let coreResolved = false;
 let secondaryResolved = false;
 let inflightCorePromise: Promise<DataSnapshot> | null = null;
 let inflightSecondaryPromise: Promise<DataSnapshot> | null = null;
+let lastCoreSyncAt = 0;
+let lastSecondarySyncAt = 0;
 
 function getCurrentSnapshot(): DataSnapshot {
   return cachedSnapshot || sanitizeSnapshot(emptySnapshot);
@@ -248,29 +254,10 @@ function hasCoreContent(snapshot: DataSnapshot): boolean {
   return snapshot.destinations.length > 0 || snapshot.packages.length > 0;
 }
 
-function mergeByIdentity<T extends { id: string; slug?: string }>(existing: T[], incoming: T[]): T[] {
-  const merged = [...existing];
-
-  incoming.forEach((item) => {
-    const index = merged.findIndex((current) => {
-      if (current.id === item.id) return true;
-      if (item.slug && current.slug) return current.slug === item.slug;
-      return false;
-    });
-
-    if (index >= 0) {
-      merged[index] = item;
-      return;
-    }
-
-    merged.push(item);
-  });
-
-  return merged;
-}
-
-async function ensureCoreSnapshot(): Promise<DataSnapshot> {
-  if (coreResolved && cachedSnapshot) return cachedSnapshot;
+async function ensureCoreSnapshot(options?: { force?: boolean }): Promise<DataSnapshot> {
+  const force = options?.force === true;
+  const isFresh = Date.now() - lastCoreSyncAt < CORE_REFRESH_INTERVAL_MS;
+  if (!force && coreResolved && cachedSnapshot && isFresh) return cachedSnapshot;
   if (inflightCorePromise) return inflightCorePromise;
 
   inflightCorePromise = (async () => {
@@ -284,14 +271,8 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
       ]);
 
       const current = getCurrentSnapshot();
-      const baselineDestinations = mergeByIdentity(initialSnapshot.destinations, current.destinations);
-      const baselinePackages = mergeByIdentity(initialSnapshot.packages, current.packages);
-      const nextDestinations = wpDestinations.length > 0
-        ? mergeByIdentity(baselineDestinations, wpDestinations)
-        : baselineDestinations;
-      const nextPackages = wpPackages.length > 0
-        ? mergeByIdentity(baselinePackages, wpPackages)
-        : baselinePackages;
+      const nextDestinations = wpDestinations;
+      const nextPackages = wpPackages;
       const nextHomeContent = wpHomeContent || current.homeContent || defaultHomeContent;
       const nextBookingContent = wpBookingContent || current.bookingContent || defaultBookingContent;
 
@@ -310,6 +291,7 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
       }
 
       cachedSnapshot = sanitizedSnapshot;
+      lastCoreSyncAt = Date.now();
       persistSnapshot(sanitizedSnapshot);
       return sanitizedSnapshot;
     } catch (error) {
@@ -329,6 +311,7 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
         shouldResolveCore = false;
       }
       cachedSnapshot = sanitizedSnapshot;
+      lastCoreSyncAt = Date.now();
       persistSnapshot(sanitizedSnapshot);
       return sanitizedSnapshot;
     } finally {
@@ -340,8 +323,10 @@ async function ensureCoreSnapshot(): Promise<DataSnapshot> {
   return inflightCorePromise;
 }
 
-async function ensureSecondarySnapshot(): Promise<DataSnapshot> {
-  if (secondaryResolved && cachedSnapshot) return cachedSnapshot;
+async function ensureSecondarySnapshot(options?: { force?: boolean }): Promise<DataSnapshot> {
+  const force = options?.force === true;
+  const isFresh = Date.now() - lastSecondarySyncAt < SECONDARY_REFRESH_INTERVAL_MS;
+  if (!force && secondaryResolved && cachedSnapshot && isFresh) return cachedSnapshot;
   if (inflightSecondaryPromise) return inflightSecondaryPromise;
 
   inflightSecondaryPromise = (async () => {
@@ -363,6 +348,7 @@ async function ensureSecondarySnapshot(): Promise<DataSnapshot> {
       };
       const sanitizedSnapshot = sanitizeSnapshot(snapshot);
       cachedSnapshot = sanitizedSnapshot;
+      lastSecondarySyncAt = Date.now();
       persistSnapshot(sanitizedSnapshot);
       return sanitizedSnapshot;
     } catch (error) {
@@ -372,6 +358,7 @@ async function ensureSecondarySnapshot(): Promise<DataSnapshot> {
         shouldResolveSecondary = false;
       }
       cachedSnapshot = snapshot;
+      lastSecondarySyncAt = Date.now();
       persistSnapshot(snapshot);
       return snapshot;
     } finally {
@@ -391,12 +378,18 @@ export const useData = () => {
   const [homeContent, setHomeContent] = useState<HomeContent>(getCurrentSnapshot().homeContent);
   const [bookingContent, setBookingContent] = useState<BookingContent>(getCurrentSnapshot().bookingContent);
   const [posts, setPosts] = useState<BlogPost[]>(getCurrentSnapshot().posts);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(!hasCoreContent(getCurrentSnapshot()));
   const [isSecondaryLoading, setIsSecondaryLoading] = useState(!secondaryResolved);
 
   useEffect(() => {
     let cancelled = false;
+    let coreTimer: ReturnType<typeof setInterval> | null = null;
+    let secondaryTimer: ReturnType<typeof setInterval> | null = null;
+
     const fetchCore = async () => {
+      if (!hasCoreContent(getCurrentSnapshot())) {
+        setIsLoading(true);
+      }
       const snapshot = await ensureCoreSnapshot();
       if (cancelled) return;
       setDestinations(snapshot.destinations);
@@ -404,6 +397,15 @@ export const useData = () => {
       setHomeContent(snapshot.homeContent);
       setBookingContent(snapshot.bookingContent);
       setIsLoading(false);
+    };
+
+    const refreshCore = async () => {
+      const snapshot = await ensureCoreSnapshot({ force: true });
+      if (cancelled) return;
+      setDestinations(snapshot.destinations);
+      setPackages(snapshot.packages);
+      setHomeContent(snapshot.homeContent);
+      setBookingContent(snapshot.bookingContent);
     };
 
     const fetchSecondary = async () => {
@@ -416,11 +418,24 @@ export const useData = () => {
       setIsSecondaryLoading(false);
     };
 
+    const refreshSecondary = async () => {
+      const snapshot = await ensureSecondarySnapshot({ force: true });
+      if (cancelled) return;
+      setPosts(snapshot.posts);
+      setLeads(snapshot.leads);
+      setTestimonials(snapshot.testimonials);
+    };
+
     fetchCore();
     fetchSecondary();
 
+    coreTimer = setInterval(refreshCore, CORE_REFRESH_INTERVAL_MS);
+    secondaryTimer = setInterval(refreshSecondary, SECONDARY_REFRESH_INTERVAL_MS);
+
     return () => {
       cancelled = true;
+      if (coreTimer) clearInterval(coreTimer);
+      if (secondaryTimer) clearInterval(secondaryTimer);
     };
   }, []);
 

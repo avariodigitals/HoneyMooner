@@ -20,12 +20,16 @@ import type {
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
 const WP_SYNC_ENABLED = (import.meta.env.VITE_WP_SYNC_ENABLED ?? 'true') === 'true';
 const WP_PUBLIC_LEAD_ENDPOINT = import.meta.env.VITE_WP_PUBLIC_LEAD_ENDPOINT ?? '/custom/v1/leads';
+const WP_PUBLIC_LEAD_ENDPOINTS = import.meta.env.VITE_WP_PUBLIC_LEAD_ENDPOINTS ?? '';
 const WP_PACKAGE_REVIEWS_ENDPOINT = import.meta.env.VITE_WP_PACKAGE_REVIEWS_ENDPOINT ?? '/custom/v1/package-reviews';
 const WP_CONTACT_MESSAGES_ENDPOINT = import.meta.env.VITE_WP_CONTACT_MESSAGES_ENDPOINT ?? '/custom/v1/contact-messages';
 
 let wpReachable: boolean | null = null;
 let wpCheckPromise: Promise<boolean> | null = null;
+let lastWPCheckAt = 0;
 let siteImageFallbacksPromise: Promise<SiteImageFallbacks> | null = null;
+const WP_CHECK_RETRY_INTERVAL_MS = 10 * 1000;
+const mediaUrlCache = new Map<number, string>();
 
 interface SiteImageFallbacks {
   hero: string;
@@ -125,19 +129,22 @@ async function checkWP(): Promise<boolean> {
   if (!WP_SYNC_ENABLED) {
     return false;
   }
+  const now = Date.now();
   if (wpReachable === true) return true;
-  if (wpReachable === false) return false;
+  if (wpReachable === false && now - lastWPCheckAt < WP_CHECK_RETRY_INTERVAL_MS) return false;
   if (wpCheckPromise) return wpCheckPromise;
 
   wpCheckPromise = (async () => {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 1500);
+      const timeout = setTimeout(() => controller.abort(), 5000);
       const res = await fetch(`${WP_BASE_URL}/wp/v2`, { signal: controller.signal });
       clearTimeout(timeout);
+      lastWPCheckAt = Date.now();
       wpReachable = res.ok;
       return res.ok;
     } catch {
+      lastWPCheckAt = Date.now();
       wpReachable = false;
       return false;
     } finally {
@@ -155,6 +162,67 @@ interface WPResponseItem {
   content?: { rendered?: string };
   excerpt?: { rendered?: string };
   date: string;
+  featured_image_url?: string;
+  meta?: {
+    country?: string;
+    continent?: Continent;
+    image?: string | number | { url?: string; source_url?: string };
+    category?: PackageCategory;
+    summary?: string;
+    featured_image?: string | number | { url?: string; source_url?: string };
+    gallery?: string[] | string;
+    destination_id?: string | number | Array<number | { ID?: number; id?: number }>;
+    duration?: { days: number; nights: number } | string;
+    days?: number;
+    nights?: number;
+    pricing_tiers?: PricingTier[] | {
+      premium?: Partial<PricingTier>;
+      luxuria?: Partial<PricingTier>;
+      ultra_luxuria?: Partial<PricingTier>;
+    };
+    inclusions?: PackageInclusion[] | string;
+    exclusions?: string[] | string;
+    tags?: string[] | string;
+    departures?: Departure[] | string;
+    seo?: { title: string; description: string; keywords: string[] } | string;
+    seo_title?: string;
+    meta_description?: string;
+    experience_content?: string;
+    experience_seo_content?: string;
+    package_experience_content?: string;
+  };
+  hm_package_data?: {
+    package_id?: string;
+    destination_id?: string | number;
+    category?: PackageCategory;
+    subtitle?: string;
+    summary?: string;
+    intro_content?: string;
+    days?: number;
+    nights?: number;
+    starting_price?: number;
+    currency?: string;
+    pricing_basis?: string;
+    rating?: number;
+    review_count?: number;
+    pricing_tiers?: PricingTier[];
+    inclusions?: PackageInclusion[];
+    exclusions?: string[];
+    departures?: Departure[];
+    itinerary?: unknown[];
+    seo_title?: string;
+    meta_description?: string;
+    canonical_url?: string;
+  };
+  hm_destination_data?: {
+    subtitle?: string;
+    intro_content?: string;
+    best_time_to_visit?: string;
+    seo_title?: string;
+    meta_description?: string;
+    canonical_url?: string;
+    highlights?: Array<{ title?: string; description?: string }>;
+  };
   acf?: {
     country?: string;
     continent?: Continent;
@@ -344,7 +412,27 @@ function parseDestinationId(value: unknown): string {
 
 function parsePricingTiers(value: unknown): PricingTier[] {
   if (Array.isArray(value)) {
-    return value as PricingTier[];
+    return value
+      .map((raw, index) => {
+        if (!raw || typeof raw !== 'object') return null;
+        const tier = raw as Record<string, unknown>;
+        const rawName = String(tier.name ?? tier.tier_name ?? '').trim();
+        const normalizedName = rawName.toLowerCase().includes('ultra')
+          ? 'Ultra Luxuria'
+          : rawName.toLowerCase().includes('luxuria')
+            ? 'Luxuria'
+            : 'Premium';
+        const rawPrice = tier.price ?? tier.tier_price;
+        const price = Number(rawPrice ?? 0);
+        if (!Number.isFinite(price) || price <= 0) return null;
+        return {
+          id: String(tier.id ?? tier.tier_id ?? `${normalizedName.toLowerCase().replace(/\s+/g, '-')}-${index + 1}`),
+          name: normalizedName as PricingTier['name'],
+          price,
+          basis: String(tier.basis ?? tier.tier_basis ?? 'per couple') as PricingTier['basis']
+        };
+      })
+      .filter((tier): tier is PricingTier => Boolean(tier));
   }
 
   if (value && typeof value === 'object') {
@@ -458,11 +546,15 @@ async function resolveImageValue(value: unknown): Promise<string> {
     if (record.source_url) return record.source_url;
   }
   if (typeof value === 'number') {
+    const cached = mediaUrlCache.get(value);
+    if (cached) return cached;
     try {
       const response = await fetch(`${WP_BASE_URL}/wp/v2/media/${value}`);
       if (!response.ok) return '';
       const data = await response.json() as { source_url?: string };
-      return data.source_url || '';
+      const resolved = data.source_url || '';
+      if (resolved) mediaUrlCache.set(value, resolved);
+      return resolved;
     } catch {
       return '';
     }
@@ -523,12 +615,18 @@ export const dataService = {
       const raw = await response.json();
       const data = Array.isArray(raw) ? raw as WPResponseItem[] : [];
       return await Promise.all(data.map(async (item) => ({
+        ...item,
+        _resolvedImage:
+          item?.featured_image_url ||
+          item?._embedded?.['wp:featuredmedia']?.[0]?.source_url ||
+          await resolveImageValue(item?.acf?.image || item?.meta?.image)
+      }))).then((items) => items.map((item) => ({
         id: String(item?.id ?? ''),
         name: cleanText(item?.title?.rendered || 'Destination'),
-        country: cleanText(item.acf?.country || ''),
-        continent: item.acf?.continent || 'Africa',
+        country: cleanText(item.acf?.country || item.meta?.country || ''),
+        continent: item.acf?.continent || item.meta?.continent || 'Africa',
         description: cleanText(item?.content?.rendered || ''),
-        image: item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || await resolveImageValue(item?.acf?.image) || siteImageFallbacks.destination,
+        image: (item as WPResponseItem & { _resolvedImage?: string })._resolvedImage || siteImageFallbacks.destination,
         slug: item?.slug || `destination-${item?.id ?? 'unknown'}`
       }))).then((items) => items.filter((item) => Boolean(item.id)));
     } catch (error) {
@@ -577,10 +675,30 @@ export const dataService = {
       const raw = await response.json();
       const data = Array.isArray(raw) ? raw as WPResponseItem[] : [];
       return await Promise.all(data.map(async (item: WPResponseItem) => {
-        const gallery = parseGallery(item?.acf?.gallery);
-        const resolvedFeaturedImage = await resolveImageValue(item?.acf?.featured_image);
-        const featuredImage = item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || resolvedFeaturedImage || gallery[0] || siteImageFallbacks.package;
-        const tiers = parsePricingTiers(item?.acf?.pricing_tiers);
+        const packageData = item.hm_package_data;
+        const gallery = parseGallery(item?.acf?.gallery || item?.meta?.gallery || packageData?.itinerary?.map(() => '').filter(Boolean));
+        let resolvedFeaturedImage = item?.featured_image_url || item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || '';
+        if (!resolvedFeaturedImage) {
+          resolvedFeaturedImage = await resolveImageValue(item?.acf?.featured_image || item?.meta?.featured_image);
+        }
+        const featuredImage = item?.featured_image_url || item?._embedded?.['wp:featuredmedia']?.[0]?.source_url || resolvedFeaturedImage || gallery[0] || siteImageFallbacks.package;
+        const tiers = parsePricingTiers(item?.acf?.pricing_tiers || item?.meta?.pricing_tiers || packageData?.pricing_tiers);
+        const duration = item?.acf?.duration || item?.meta?.duration || packageData?.days || packageData?.nights ? {
+          days: Number(item?.meta?.days ?? packageData?.days ?? 7),
+          nights: Number(item?.meta?.nights ?? packageData?.nights ?? 6)
+        } : { days: 7, nights: 6 };
+        const parsedSeo = parseSeo(item?.acf?.seo || item?.meta?.seo || {
+          title: packageData?.seo_title || '',
+          description: packageData?.meta_description || '',
+          keywords: []
+        });
+        const seo = (parsedSeo.title || parsedSeo.description)
+          ? parsedSeo
+          : {
+              title: packageData?.seo_title || item?.meta?.seo_title || '',
+              description: packageData?.meta_description || item?.meta?.meta_description || '',
+              keywords: []
+            };
         return {
           id: String(item?.id ?? ''),
           title:
@@ -589,23 +707,27 @@ export const dataService = {
             humanizeSlug(item?.slug || '') ||
             'Travel Package',
           slug: item?.slug || `package-${item?.id ?? 'unknown'}`,
-          category: item.acf?.category || 'honeymoon',
-          summary: cleanText(item.acf?.summary || ''),
+          category: item.acf?.category || item.meta?.category || packageData?.category || 'honeymoon',
+          summary: cleanText(item.acf?.summary || item.meta?.summary || packageData?.summary || ''),
           description: cleanText(item?.content?.rendered || ''),
           experienceContent:
-            parseExperienceContent(item.acf?.experience_content) ||
-            parseExperienceContent(item.acf?.experience_seo_content) ||
-            parseExperienceContent(item.acf?.package_experience_content),
+            parseExperienceContent(item.acf?.experience_content || item.meta?.experience_content || packageData?.intro_content) ||
+            parseExperienceContent(item.acf?.experience_seo_content || item.meta?.experience_seo_content) ||
+            parseExperienceContent(item.acf?.package_experience_content || item.meta?.package_experience_content),
           featuredImage,
           gallery: gallery.length > 0 ? gallery : [featuredImage],
-          destinationId: parseDestinationId(item.acf?.destination_id),
-          duration: parseDuration(item.acf?.duration),
-          tiers: tiers.length > 0 ? tiers : [{ id: 'fallback-premium', name: 'Premium' as const, price: 0, basis: 'per couple' as const }],
-          inclusions: parseInclusions(item.acf?.inclusions),
-          exclusions: parseStringList(item.acf?.exclusions),
-          tags: parseStringList(item.acf?.tags),
-          departures: parseDepartures(item.acf?.departures),
-          seo: parseSeo(item.acf?.seo)
+          destinationId: parseDestinationId(item.acf?.destination_id || item.meta?.destination_id || packageData?.destination_id),
+          duration: parseDuration(duration),
+          tiers: tiers.length > 0
+            ? tiers
+            : packageData?.starting_price
+              ? [{ id: 'starter', name: 'Premium' as const, price: Number(packageData.starting_price), basis: (packageData.pricing_basis as any) || 'per couple' as const }]
+              : [{ id: 'fallback-premium', name: 'Premium' as const, price: 0, basis: 'per couple' as const }],
+          inclusions: parseInclusions(item.acf?.inclusions || item.meta?.inclusions),
+          exclusions: parseStringList(item.acf?.exclusions || item.meta?.exclusions),
+          tags: parseStringList(item.acf?.tags || item.meta?.tags),
+          departures: parseDepartures(item.acf?.departures || item.meta?.departures),
+          seo
         };
       })).then((items) => items.filter((item) => Boolean(item.id)));
     } catch (error) {
@@ -677,22 +799,54 @@ export const dataService = {
       const ok = await checkWP();
       if (!ok) return false;
 
-      // Prefer public custom endpoint for anonymous booking submissions.
-      const publicResponse = await fetch(`${WP_BASE_URL}${WP_PUBLIC_LEAD_ENDPOINT}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(lead)
-      });
+      const leadPayload = {
+        ...lead,
+        // Avario endpoint keys
+        packageId: lead.packageId,
+        packageName: lead.packageName,
+        packageTier: lead.tierName ?? '',
+        departureDate: lead.departureDate,
+        travelerName: lead.travelerName,
+        countryOfResidence: lead.countryOfResidence,
+        // Core endpoint keys
+        package_id: lead.packageId,
+        package_name: lead.packageName,
+        package_tier: lead.tierName ?? '',
+        departure_date: lead.departureDate,
+        traveler_name: lead.travelerName,
+        country_of_residence: lead.countryOfResidence,
+        source_url: window.location.href
+      };
 
-      if (publicResponse.ok) {
-        return true;
+      const parsedEndpoints = WP_PUBLIC_LEAD_ENDPOINTS
+        .split(',')
+        .map((value: string) => value.trim())
+        .filter(Boolean);
+      const publicEndpoints = Array.from(new Set([
+        ...parsedEndpoints,
+        WP_PUBLIC_LEAD_ENDPOINT,
+        '/custom/v1/leads',
+        '/honeymooner/v1/leads'
+      ]));
+
+      for (const endpoint of publicEndpoints) {
+        const publicResponse = await fetch(`${WP_BASE_URL}${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(leadPayload)
+        });
+
+        if (publicResponse.ok) {
+          return true;
+        }
+
+        const publicError = await publicResponse.text();
+        console.warn('Public lead endpoint failed, trying next endpoint:', {
+          endpoint,
+          status: publicResponse.status,
+          body: publicError
+        });
       }
-
-      const publicError = await publicResponse.text();
-      console.warn('Public lead endpoint failed, trying authenticated fallback:', {
-        status: publicResponse.status,
-        body: publicError
-      });
 
       const token = authService.getToken();
       if (!token) {

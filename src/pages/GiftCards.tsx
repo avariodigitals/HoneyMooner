@@ -117,27 +117,30 @@ const GiftCards = () => {
               </div>
 
               <div className="space-y-4">
-                <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-brand-400">Choose Honeymoon Package</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                  {honeymoonPackages.slice(0, 6).map((pkg) => {
-                    const active = selectedPackage?.id === pkg.id;
-                    return (
-                      <button
-                        key={pkg.id}
-                        type="button"
-                        onClick={() => handlePackageSelect(pkg.id)}
-                        className={`rounded-2xl border px-4 py-4 text-left transition-all duration-300 ${
-                          active
-                            ? 'border-brand-accent bg-brand-accent/10 shadow-md shadow-brand-accent/10'
-                            : 'border-brand-100 bg-brand-50/50 hover:border-brand-accent/40'
-                        }`}
-                      >
-                        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400 mb-2">Honeymoon</p>
-                          <p className="text-sm sm:text-base font-serif text-brand-900 line-clamp-2 leading-tight mb-2">{pkg.title}</p>
-                        <p className="text-xs text-brand-500">From {formatPrice(Math.min(...pkg.tiers.map((tier) => tier.price)))}</p>
-                      </button>
-                    );
-                  })}
+                <div className="rounded-3xl border border-brand-accent/20 bg-gradient-to-br from-[#fff7ef] via-[#fffdf9] to-[#fdeee1] p-5 sm:p-6 shadow-[0_18px_40px_rgba(130,79,43,0.08)]">
+                  <label htmlFor="gift-package-select" className="block text-[10px] sm:text-xs uppercase tracking-[0.24em] font-bold text-brand-500 mb-3">
+                    Honeymoon Package
+                  </label>
+                  <select
+                    id="gift-package-select"
+                    value={selectedPackage?.id || ''}
+                    onChange={(e) => handlePackageSelect(e.target.value)}
+                    className="w-full rounded-2xl border border-brand-accent/30 bg-white/90 px-4 py-3.5 text-sm sm:text-base font-medium text-brand-900 focus:border-brand-accent focus:outline-none focus:ring-4 focus:ring-brand-accent/10"
+                  >
+                    {honeymoonPackages.map((pkg) => (
+                      <option key={pkg.id} value={pkg.id}>
+                        {pkg.title}
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedPackage && (
+                    <div className="mt-4 rounded-2xl bg-white/90 border border-brand-100 p-4">
+                      <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-brand-400 mb-2">Selected Package</p>
+                      <p className="text-base sm:text-lg font-serif text-brand-900 leading-tight mb-2">{selectedPackage.title}</p>
+                      <p className="text-xs text-brand-500">From {formatPrice(Math.min(...selectedPackage.tiers.map((tier) => tier.price)))}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

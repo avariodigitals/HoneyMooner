@@ -43,6 +43,8 @@ export interface ItineraryDay {
   activity?: string;
 }
 
+export type ExclusionItem = string | { title?: string; description?: string };
+
 export interface TravelPackage {
   id: string;
   category: PackageCategory;
@@ -60,7 +62,7 @@ export interface TravelPackage {
   };
   tiers: PricingTier[];
   inclusions: PackageInclusion[];
-  exclusions: string[];
+  exclusions: ExclusionItem[];
   itinerary?: ItineraryDay[];
   tags: string[];
   departures: Departure[];

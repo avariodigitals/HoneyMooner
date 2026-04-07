@@ -11,7 +11,6 @@ import PaystackButton from '../components/ui/PaystackButton';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
 import { 
-  Calendar, 
   MapPin, 
   Users, 
   Check, 
@@ -68,7 +67,7 @@ const PackageDetail = () => {
   const packageSlug = pkg?.slug;
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate] = useState('');
   const [wishlistItems, setWishlistItems] = useState<string[] | null>(null);
   const [packageReviews, setPackageReviews] = useState<PackageReview[]>([]);
   const [reviewerName, setReviewerName] = useState('');
@@ -543,12 +542,22 @@ const PackageDetail = () => {
                   </h4>
                 </div>
                 <ul className="space-y-3 sm:space-y-4">
-                  {pkg.exclusions.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 sm:gap-3 text-brand-500/70">
-                      <div className="w-1 h-1 rounded-full bg-brand-200 mt-2 shrink-0" />
-                      <span className="text-xs sm:text-sm leading-relaxed">{item}</span>
-                    </li>
-                  ))}
+                  {pkg.exclusions.map((item, idx) => {
+                    let text = '';
+                    if (typeof item === 'string') {
+                      text = item;
+                    } else if (item && typeof item === 'object' && ('title' in item || 'description' in item)) {
+                      text = (item.title as string) || (item.description as string) || JSON.stringify(item);
+                    } else {
+                      text = JSON.stringify(item);
+                    }
+                    return (
+                      <li key={idx} className="flex items-start gap-2.5 sm:gap-3 text-brand-500/70">
+                        <div className="w-1 h-1 rounded-full bg-brand-200 mt-2 shrink-0" />
+                        <span className="text-xs sm:text-sm leading-relaxed">{text}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
@@ -649,30 +658,16 @@ const PackageDetail = () => {
               </p>
 
               <div className="pt-2 sm:pt-4 border-t border-brand-50 space-y-4 sm:space-y-5">
-                <h3 className="text-lg sm:text-xl font-serif text-brand-900">Select Your Intended Travel Date</h3>
-                <div className="relative">
-                  <div className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 text-brand-accent pointer-events-none">
-                    <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full min-h-[52px] pl-14 sm:pl-16 pr-6 sm:pr-8 py-4 sm:py-5 bg-white border border-brand-100 rounded-xl sm:rounded-2xl text-base sm:text-base text-brand-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all shadow-sm"
-                  />
-                </div>
-                <p className="text-[10px] sm:text-sm text-brand-500 italic leading-relaxed">
-                  Choose any date that works for you. Our experts will verify availability and tailor the itinerary to your timeline.
-                </p>
+                {/* Travel date selection removed as requested */}
               </div>
 
               <div className="pt-8 sm:pt-10 lg:pt-20 mt-6 sm:mt-8 lg:mt-20 border-t border-brand-50">
                 <div className="bg-brand-900 text-white rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-accent mb-1">Share Yours</p>
-                      <h4 className="text-xl sm:text-2xl font-serif leading-tight">Write a Review</h4>
+                      <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-accent mb-1">Your Experience Matters</p>
+                      <h4 className="text-xl sm:text-2xl font-serif leading-tight">Share a Memory or Tip for Future Couples</h4>
+                      <p className="text-xs text-white/70 mt-1">Help others plan their dream honeymoon by sharing a highlight, a tip, or a special moment from your trip!</p>
                     </div>
                     <div className="hidden sm:flex items-center gap-1 text-brand-accent pt-1">
                       {[1, 2, 3, 4, 5].map((score) => (
@@ -695,13 +690,7 @@ const PackageDetail = () => {
                       className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30"
                       placeholder="Your name"
                     />
-                    <input
-                      type="email"
-                      value={reviewerEmail}
-                      onChange={(e) => setReviewerEmail(e.target.value)}
-                      className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30"
-                      placeholder="Your email"
-                    />
+                    {/* Email input removed as requested */}
                   </div>
 
                   <div className="flex items-center gap-2 sm:hidden">

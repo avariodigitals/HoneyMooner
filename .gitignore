@@ -38,6 +38,7 @@ coverage/
 .parcel-cache/
 
 # Optional packaged outputs
+the-honeymooner-core-fixed/
 *.zip
 
 # Keep local WP plugin code out of GitHub repo

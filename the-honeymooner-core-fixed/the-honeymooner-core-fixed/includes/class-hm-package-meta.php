@@ -24,6 +24,29 @@ class HM_Package_Meta {
         $exclusions = hm_get_array_meta($post->ID, 'exclusions');
         $departures = hm_get_array_meta($post->ID, 'departures');
         $itinerary = hm_get_array_meta($post->ID, 'itinerary');
+
+        // Normalize inclusions/exclusions for legacy data (array of strings or single string)
+        $normalize_repeater = function($arr, $fields) {
+            if (!is_array($arr)) return [];
+            // If already array of objects with at least one field, return as is
+            if (isset($arr[0]) && is_array($arr[0]) && array_intersect($fields, array_keys($arr[0]))) return $arr;
+            // If array of strings, convert to array of objects
+            $out = [];
+            foreach ($arr as $item) {
+                if (is_array($item)) {
+                    $out[] = $item;
+                } elseif (is_string($item)) {
+                    $row = [];
+                    foreach ($fields as $i => $field) {
+                        $row[$field] = $i === 0 ? $item : '';
+                    }
+                    $out[] = $row;
+                }
+            }
+            return $out;
+        };
+        $inclusions = $normalize_repeater($inclusions, ['category','title','description']);
+        $exclusions = $normalize_repeater($exclusions, ['title','description']);
         ?>
         <div class="hm-section">
             <h2>Basic Information</h2>
@@ -115,11 +138,21 @@ class HM_Package_Meta {
         }
         update_post_meta($post_id, 'canonical_url', esc_url_raw(wp_unslash($data['canonical_url'] ?? '')));
 
-        foreach (['hm_pricing_tiers' => 'pricing_tiers', 'hm_inclusions' => 'inclusions', 'hm_exclusions' => 'exclusions', 'hm_departures' => 'departures', 'hm_itinerary' => 'itinerary'] as $source => $meta_key) {
+        foreach ([
+            'hm_pricing_tiers' => ['pricing_tiers', ['tier_id','tier_name','tier_price','tier_basis','tier_label','tier_description']],
+            'hm_inclusions' => ['inclusions', ['category','title','description']],
+            'hm_exclusions' => ['exclusions', ['title','description']],
+            'hm_departures' => ['departures', ['departure_id','departure_date','availability','note']],
+            'hm_itinerary' => ['itinerary', ['day_number','day_title','day_summary','day_description','day_image','highlight_tag']]
+        ] as $source => [$meta_key, $fields]) {
             $rows = $_POST[$source] ?? [];
             $clean = [];
             if (is_array($rows)) {
                 foreach ($rows as $row) {
+                    // If row is a string (legacy), convert to object
+                    if (is_string($row)) {
+                        $row = [$fields[0] => $row];
+                    }
                     $san = [];
                     $has = false;
                     foreach ((array) $row as $key => $value) {

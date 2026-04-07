@@ -13,6 +13,7 @@ function cn(...inputs: ClassValue[]) {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showPackagesMobile, setShowPackagesMobile] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -320,37 +321,92 @@ const Navbar = () => {
 
                 <div className="relative z-10 flex flex-col flex-grow p-6 sm:p-10 pt-32 pb-12">
                   <div className="flex flex-col gap-6 sm:gap-8 mb-12">
-                    {navLinks.map((link, idx) => (
-                      <motion.div
-                        key={link.path}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.05 + idx * 0.03, ease: "easeOut" }}
-                      >
-                        <Link
-                          to={link.path}
-                          onClick={() => setIsOpen(false)}
-                          className={cn(
-                            "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-300",
-                            location.pathname === link.path ? "text-brand-accent" : "text-white hover:text-brand-accent"
-                          )}
+                    {navLinks.map((link, idx) => {
+                      if (link.name === 'Packages') {
+                        const isPackagesActive = location.pathname.startsWith('/packages') || location.pathname.startsWith('/gift-cards');
+                        return (
+                          <motion.div
+                            key={link.path}
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.05 + idx * 0.03, ease: "easeOut" }}
+                          >
+                            <div className="flex flex-col">
+                              <button
+                                type="button"
+                                className={cn(
+                                  "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-300 w-full text-left",
+                                  isPackagesActive ? "text-brand-accent" : "text-white hover:text-brand-accent"
+                                )}
+                                onClick={() => setShowPackagesMobile((prev) => !prev)}
+                                style={{ outline: 'none' }}
+                              >
+                                <span className="relative">
+                                  {link.name}
+                                  {isPackagesActive && (
+                                    <motion.div 
+                                      layoutId="mobile-nav-indicator"
+                                      className="absolute -bottom-1 left-0 w-8 h-0.5 bg-brand-accent"
+                                    />
+                                  )}
+                                </span>
+                                <ArrowRight className={cn(
+                                  "transition-all duration-300 ml-2",
+                                  isPackagesActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+                                )} size={28} />
+                              </button>
+                              {showPackagesMobile && (
+                                <div className="pl-4 mt-2 space-y-2">
+                                  {packageExperienceLinks.map((item) => (
+                                    <Link
+                                      key={item.path}
+                                      to={item.path}
+                                      onClick={() => setIsOpen(false)}
+                                      className="block text-2xl sm:text-3xl font-serif text-white/80 hover:text-brand-accent transition-colors py-1"
+                                    >
+                                      {item.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      }
+                      return (
+                        <motion.div
+                          key={link.path}
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.05 + idx * 0.03, ease: "easeOut" }}
                         >
-                          <span className="relative">
-                            {link.name}
-                            {location.pathname === link.path && (
-                              <motion.div 
-                                layoutId="mobile-nav-indicator"
-                                className="absolute -bottom-1 left-0 w-8 h-0.5 bg-brand-accent"
-                              />
+                          <Link
+                            to={link.path}
+                            onClick={() => setIsOpen(false)}
+                            className={cn(
+                              "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-300",
+                              location.pathname === link.path ? "text-brand-accent" : "text-white hover:text-brand-accent"
                             )}
-                          </span>
-                          <ArrowRight className={cn(
-                            "transition-all duration-300",
-                            location.pathname === link.path ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
-                          )} size={28} />
-                        </Link>
-                      </motion.div>
-                    ))}
+                          >
+                            <span className="relative">
+                              {link.name}
+                              {location.pathname === link.path && (
+                                <motion.div 
+                                  layoutId="mobile-nav-indicator"
+                                  className="absolute -bottom-1 left-0 w-8 h-0.5 bg-brand-accent"
+                                />
+                              )}
+                            </span>
+                            <ArrowRight className={cn(
+                              "transition-all duration-300",
+                              location.pathname === link.path ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+                            )} size={28} />
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                      // Mobile state for Packages dropdown
+                      const [showPackagesMobile, setShowPackagesMobile] = useState(false);
                     
                     {/* Account Link in Mobile Menu */}
                     <motion.div

@@ -23,6 +23,10 @@ require_once HM_CORE_PATH . 'includes/class-hm-post-types.php';
 require_once HM_CORE_PATH . 'includes/class-hm-destination-meta.php';
 require_once HM_CORE_PATH . 'includes/class-hm-package-meta.php';
 require_once HM_CORE_PATH . 'includes/class-hm-leads-admin.php';
+require_once HM_CORE_PATH . 'includes/class-hm-reviews-admin.php';
+require_once HM_CORE_PATH . 'includes/class-hm-sync-admin.php';
+require_once HM_CORE_PATH . 'includes/class-hm-media-admin.php';
+require_once HM_CORE_PATH . 'includes/class-hm-featured-content-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-rest.php';
 require_once HM_CORE_PATH . 'includes/class-hm-admin-menu.php';
 require_once HM_CORE_PATH . 'includes/class-hm-activator.php';
@@ -35,6 +39,8 @@ add_action('plugins_loaded', function () {
     HM_Destination_Meta::init();
     HM_Package_Meta::init();
     HM_Leads_Admin::init();
+    HM_Reviews_Admin::init();
+    HM_Featured_Content_Admin::init();
     HM_REST::init();
     HM_Admin_Menu::init();
 

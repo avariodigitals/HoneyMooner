@@ -96,7 +96,6 @@ const Navbar = () => {
           {navLinks.map((link) => {
             if (link.name === 'Packages') {
               const isPackagesActive = location.pathname.startsWith('/packages') || location.pathname.startsWith('/gift-cards');
-
               return (
                 <div key={link.path} className="relative group">
                   <Link
@@ -104,27 +103,34 @@ const Navbar = () => {
                     className={cn(
                       'text-[10px] xl:text-xs font-bold transition-all duration-300 uppercase tracking-[0.2em] inline-flex items-center gap-2',
                       isPackagesActive
-                        ? 'text-brand-accent'
+                        ? 'text-brand-accent underline underline-offset-4'
                         : (isTransparent ? 'text-white/90 hover:text-white drop-shadow-sm' : 'text-brand-700 hover:text-brand-accent')
                     )}
+                    style={{ position: 'relative' }}
                   >
                     {link.name}
-                    <span className="text-[9px] opacity-70">+</span>
+                    <span className="ml-1 text-[13px] font-bold rotate-90">›</span>
                   </Link>
-
                   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-[140]">
                     <div className="rounded-2xl border border-brand-100 bg-white shadow-2xl p-4">
-                    <div className="space-y-1">
-                      {packageExperienceLinks.map((item) => (
+                      <div className="space-y-1">
                         <Link
-                          key={item.path}
-                          to={item.path}
+                          to={link.path}
                           className="block rounded-lg px-3 py-2 text-xs font-semibold text-brand-700 hover:text-brand-accent hover:bg-brand-50 transition-colors"
+                          style={{ fontWeight: 700, borderBottom: '1px solid #f3f3f3' }}
                         >
-                          {item.name}
+                          All Packages
                         </Link>
-                      ))}
-                    </div>
+                        {packageExperienceLinks.map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className="block rounded-lg px-3 py-2 text-xs font-semibold text-brand-700 hover:text-brand-accent hover:bg-brand-50 transition-colors"
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -335,7 +341,7 @@ const Navbar = () => {
                               <button
                                 type="button"
                                 className={cn(
-                                  "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-300 w-full text-left",
+                                  "text-4xl sm:text-6xl font-serif flex items-center justify-between group transition-all duration-300 w-full text-left underline underline-offset-4",
                                   isPackagesActive ? "text-brand-accent" : "text-white hover:text-brand-accent"
                                 )}
                                 onClick={() => setShowPackagesMobile((prev) => !prev)}
@@ -350,13 +356,17 @@ const Navbar = () => {
                                     />
                                   )}
                                 </span>
-                                <ArrowRight className={cn(
-                                  "transition-all duration-300 ml-2",
-                                  isPackagesActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
-                                )} size={28} />
+                                <span className="ml-2 text-[30px] font-bold rotate-90">›</span>
                               </button>
                               {showPackagesMobile && (
                                 <div className="pl-4 mt-2 space-y-2">
+                                  <Link
+                                    to={link.path}
+                                    onClick={() => setIsOpen(false)}
+                                    className="block text-2xl sm:text-3xl font-serif text-white/90 font-bold border-b border-white/10 pb-1 mb-1 hover:text-brand-accent transition-colors"
+                                  >
+                                    All Packages
+                                  </Link>
                                   {packageExperienceLinks.map((item) => (
                                     <Link
                                       key={item.path}

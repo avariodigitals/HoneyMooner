@@ -18,10 +18,9 @@ export interface UserProfile {
   avatar_urls?: { [key: string]: string };
 }
 
-const AUTH_TOKEN_ENDPOINTS = (
-  import.meta.env.VITE_WP_AUTH_TOKEN_ENDPOINTS ??
-  '/jwt-auth/v1/token,/api/v1/token'
-).split(',').map((s: string) => s.trim()).filter(Boolean);
+const AUTH_TOKEN_ENDPOINTS = [
+  '/jwt-auth/v1/token'
+];
 
 const AUTH_VALIDATE_ENDPOINTS = (
   import.meta.env.VITE_WP_AUTH_VALIDATE_ENDPOINTS ??
@@ -79,7 +78,7 @@ export const authService = {
   },
 
   async login(username: string, password: string): Promise<AuthResponse> {
-    let lastError: unknown;
+    let lastError: any;
 
     for (const endpoint of AUTH_TOKEN_ENDPOINTS) {
       try {
@@ -94,10 +93,17 @@ export const authService = {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({ message: 'Login failed' }));
+          // Friendly error messages for common auth errors
           if (response.status === 404 || error?.code === 'rest_no_route') {
             lastError = { message: 'Login endpoint not found on WordPress. Install/configure an auth plugin (e.g. JWT) or provide a custom token endpoint.' };
+          } else if (response.status === 403 || error?.code === 'incorrect_password') {
+            lastError = { message: 'The password you entered for the username ' + username + ' is incorrect.' };
+          } else if (response.status === 403 || error?.code === 'invalid_username') {
+            lastError = { message: 'The username ' + username + ' does not exist.' };
+          } else if (error?.message) {
+            lastError = { message: error.message };
           } else {
-            lastError = error;
+            lastError = { message: 'Login failed. Please check your credentials and try again.' };
           }
           continue;
         }
@@ -110,11 +116,11 @@ export const authService = {
         }
         this.setToken(token);
         return { jwt_token: token, token_type: data.token_type, iat: data.iat, expires_in: data.expires_in };
-      } catch (err) {
+      } catch (err: any) {
         lastError = err;
       }
     }
-    const message = (lastError as { message?: string } | undefined)?.message || 'Login failed';
+    const message = (lastError && lastError.message) ? lastError.message : 'Login failed';
     throw new Error(message);
   },
 

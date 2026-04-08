@@ -1,4 +1,7 @@
+
+
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
+
 
 export interface AuthResponse {
   token_type?: string;
@@ -205,5 +208,23 @@ export const authService = {
     } catch {
       return false;
     }
+  }
+  ,
+  /**
+   * Request a password reset email for the user.
+   * Backend must implement /custom/v1/forgot-password (POST { email })
+   */
+  async forgotPassword(email: string): Promise<void> {
+    const endpoint = '/custom/v1/forgot-password';
+    const response = await fetch(resolveEndpoint(endpoint), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to send reset email.' }));
+      throw new Error(error.message || 'Failed to send reset email.');
+    }
+    // Success: do nothing (UI will show toast)
   }
 };

@@ -24,6 +24,7 @@ import Account from './pages/Account';
 import Wishlist from './pages/Wishlist';
 import GiftCards from './pages/GiftCards';
 import GiftCardCheckout from './pages/GiftCardCheckout';
+import ResetPassword from './pages/ResetPassword';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -49,6 +50,7 @@ const AnimatedRoutes = () => {
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/wishlist" element={<Wishlist />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>

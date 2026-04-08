@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../hooks/useUser';
@@ -35,6 +36,10 @@ const Account = () => {
   const [registrationAvailable, setRegistrationAvailable] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   
   const { login } = useUser();
   const navigate = useNavigate();
@@ -103,6 +108,7 @@ const Account = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -110,10 +116,12 @@ const Account = () => {
       return;
     }
     setIsLoading(true);
+    toast.dismiss();
 
     try {
       if (isLogin) {
         await login(formData.username, formData.password);
+        toast.success('Signed in successfully!');
         navigate(from, { replace: true });
       } else {
         await authService.register(formData.username, formData.email, formData.password);
@@ -121,12 +129,32 @@ const Account = () => {
         setError('Account created. Please login.');
         setFormData({ username: formData.username, email: '', password: '', confirmPassword: '' });
         setFieldErrors({});
+        toast.success('Account created! Please login.');
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
       setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Forgot Password logic
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotSent(false);
+    toast.dismiss();
+    try {
+      await authService.forgotPassword(forgotEmail);
+      setForgotSent(true);
+      toast.success('Password reset email sent!');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send reset email.';
+      toast.error(message);
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -380,8 +408,57 @@ const Account = () => {
                       </>
                     )}
                   </button>
+
+                  {isLogin && (
+                    <div className="flex justify-end mt-2">
+                      <button
+                        type="button"
+                        className="text-xs text-brand-500 hover:text-brand-accent underline underline-offset-2"
+                        onClick={() => setShowForgot(true)}
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
                 </form>
               </div>
+
+              {/* Forgot Password Modal */}
+              {showForgot && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                  <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-xs relative">
+                    <button
+                      className="absolute top-2 right-2 text-brand-400 hover:text-brand-900"
+                      onClick={() => { setShowForgot(false); setForgotEmail(''); setForgotSent(false); }}
+                      aria-label="Close"
+                    >
+                      ×
+                    </button>
+                    <h3 className="text-lg font-bold mb-2 text-brand-900">Forgot Password?</h3>
+                    <form onSubmit={handleForgotPassword} className="space-y-3">
+                      <input
+                        type="email"
+                        required
+                        className="w-full px-4 py-2 border rounded-xl bg-brand-50 text-brand-900"
+                        placeholder="Enter your email"
+                        value={forgotEmail}
+                        onChange={e => setForgotEmail(e.target.value)}
+                        disabled={forgotLoading || forgotSent}
+                      />
+                      <button
+                        type="submit"
+                        className="btn-primary w-full py-2"
+                        disabled={forgotLoading || forgotSent}
+                      >
+                        {forgotLoading ? <Loader2 className="animate-spin inline" size={16} /> : 'Send Reset Link'}
+                      </button>
+                    </form>
+                    {forgotSent && (
+                      <p className="text-green-600 text-xs mt-3">If your email exists, a reset link was sent.</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Fixed Footer for a more professional feel */}
               <div className="p-6 bg-brand-50/30 border-t border-brand-50 text-center">

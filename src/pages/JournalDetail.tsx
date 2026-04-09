@@ -1,14 +1,28 @@
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowLeft, Clock, Share2, Facebook, Twitter } from 'lucide-react';
 import SEO from '../components/layout/SEO';
+import RankMathSEO from '../components/SEO';
+import { getRankMathSEO } from '../services/seo';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 
 const JournalDetail = () => {
   const { slug } = useParams();
+  const location = useLocation();
+  const [rankMathSeo, setRankMathSeo] = useState<string | null>(null);
   const { posts, isLoading } = useData();
   const post = posts.find(p => p.slug === slug);
+
+  useEffect(() => {
+    if (!slug || !location.pathname) return;
+
+    const fullUrl = `https://thehoneymoonertravel.com${location.pathname}`;
+    getRankMathSEO(fullUrl).then((data) => {
+      setRankMathSeo(data);
+    });
+  }, [slug, location.pathname]);
 
   if (isLoading) {
     return (
@@ -39,11 +53,17 @@ const JournalDetail = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-white"
     >
-      <SEO 
-        title={`${post.title} | Journal`}
-        description={post.excerpt}
-        image={post.image}
-      />
+      {rankMathSeo ? (
+        <RankMathSEO raw={rankMathSeo} />
+      ) : (
+        <SEO 
+          title={`${post.title} | Journal`}
+          description={post.excerpt}
+          canonical={`https://thehoneymoonertravel.com/journal/${post.slug}`}
+          image={post.image}
+          type="article"
+        />
+      )}
       
       <div className="absolute top-24 left-0 right-0 z-20">
         <Breadcrumbs />

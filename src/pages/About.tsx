@@ -16,6 +16,7 @@ const About = () => {
       <SEO
         title="About Us"
         description="Discover The Honeymoonner story and how our team curates intentional, luxury honeymoon experiences for couples worldwide."
+        canonical="https://thehoneymoonertravel.com/about"
         keywords="about honeymoon planner, luxury honeymoon experts, romantic travel agency"
       />
       <Breadcrumbs />

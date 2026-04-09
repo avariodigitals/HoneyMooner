@@ -43,6 +43,7 @@ const Journal = () => {
       <SEO 
         title="Journal | Romantic Inspiration"
         description="Curated guides, personal stories, and expert advice to help you plan the most important journey of your life."
+        canonical="https://thehoneymoonertravel.com/journal"
         schema={journalSchema}
       />
       <Breadcrumbs />

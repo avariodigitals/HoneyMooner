@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
+import { getRankMathSEO } from '../services/seo';
 import { useWishlist } from '../context/WishlistContext';
 import type { PackageReview } from '../types';
 import { motion } from 'framer-motion';
@@ -11,6 +12,7 @@ import PayPalButton from '../components/ui/PayPalButton';
 import PaystackButton from '../components/ui/PaystackButton';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
+import RankMathSEO from '../components/SEO';
 import { 
   MapPin, 
   Users, 
@@ -71,6 +73,8 @@ function isPublishedPaymentTierId(value: string | undefined): value is string {
 
 const PackageDetail = () => {
   const { slug } = useParams();
+  const location = useLocation();
+  const [rankMathSeo, setRankMathSeo] = useState<string | null>(null);
   const { packages, destinations, posts, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
@@ -83,6 +87,15 @@ const PackageDetail = () => {
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
   const [selectedDate] = useState('');
   const [packageReviews, setPackageReviews] = useState<PackageReview[]>([]);
+
+  useEffect(() => {
+    if (!location.pathname) return;
+
+    const fullUrl = `https://thehoneymoonertravel.com${location.pathname}`;
+    getRankMathSEO(fullUrl).then((data) => {
+      setRankMathSeo(data);
+    });
+  }, [location.pathname]);
   const [reviewerName, setReviewerName] = useState('');
   const [reviewerEmail, setReviewerEmail] = useState('');
   const [reviewMessage, setReviewMessage] = useState('');
@@ -242,14 +255,19 @@ const PackageDetail = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen"
     >
-      <SEO 
-        title={pkg.seo?.title || pkg.title}
-        description={pkg.seo?.description || pkg.summary}
-        keywords={pkg.seo?.keywords?.join(', ')}
-        image={heroImage}
-        type="product"
-        schema={packageSchema}
-      />
+      {rankMathSeo ? (
+        <RankMathSEO raw={rankMathSeo} />
+      ) : (
+        <SEO 
+          title={pkg.seo?.title || pkg.title}
+          description={pkg.seo?.description || pkg.summary}
+          canonical={`https://thehoneymoonertravel.com/packages/${pkg.slug}`}
+          keywords={pkg.seo?.keywords?.join(', ')}
+          image={heroImage}
+          type="product"
+          schema={packageSchema}
+        />
+      )}
       <div className="absolute top-24 left-0 right-0 z-20">
         <Breadcrumbs />
       </div>

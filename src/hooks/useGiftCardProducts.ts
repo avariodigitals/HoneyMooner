@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getGiftCardPackages, type GiftCardPackage } from '../services/giftCardService';
 
-const GIFT_PACKAGES_CACHE_KEY = 'honeymoonner:gift-packages:v1';
+const GIFT_PACKAGES_CACHE_KEY = 'honeymoonner:gift-packages:v2';
 
 function loadGiftPackagesCache(): GiftCardPackage[] {
   if (typeof window === 'undefined') return [];

@@ -4,6 +4,7 @@ import type { TravelPackage } from '../types';
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
 const GIFT_PRODUCTS_ENDPOINT = import.meta.env.VITE_WP_GIFT_PRODUCTS_ENDPOINT;
 const ENABLE_WC_STORE_FALLBACK = (import.meta.env.VITE_WP_ENABLE_WC_STORE_FALLBACK ?? 'false') === 'true';
+const REQUIRE_CUSTOM_GIFT_PRODUCTS = (import.meta.env.VITE_WP_REQUIRE_CUSTOM_GIFT_PRODUCTS ?? 'true') === 'true';
 
 export interface GiftCardTier {
   id: string;
@@ -71,9 +72,7 @@ function buildPackagesFromWpPackages(packages: TravelPackage[]): GiftCardPackage
         currency: 'USD',
         // Deterministic numeric id for UI state; payment mapping uses the explicit IDs below.
         productId: (packageIndex + 1) * 100 + (tierIndex + 1),
-        productSlug: `${pkg.slug}-${slugify(tier.name)}`,
-        paymentPackageId: pkg.id,
-        paymentTierId: tier.id
+        productSlug: `${pkg.slug}-${slugify(tier.name)}`
       }));
 
     return {
@@ -177,6 +176,17 @@ function buildPackagesFromCustomProducts(products: CustomGiftProduct[]): GiftCar
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 
+function hasValidPaymentMapping(packages: GiftCardPackage[]): boolean {
+  return packages.every((pkg) =>
+    pkg.tiers.every((tier) =>
+      typeof tier.paymentPackageId === 'string' &&
+      tier.paymentPackageId.trim().length > 0 &&
+      typeof tier.paymentTierId === 'string' &&
+      tier.paymentTierId.trim().length > 0
+    )
+  );
+}
+
 function buildPackagesFromStoreProducts(products: StoreApiProduct[]): GiftCardPackage[] {
   const eligible = products.filter((product) => {
     const categories = product.categories || [];
@@ -265,41 +275,53 @@ export async function getGiftCardPackages(forceRefresh = false): Promise<GiftCar
   }
 
   giftPackagesInflight = (async () => {
-  if (GIFT_PRODUCTS_ENDPOINT) {
-    try {
+    if (GIFT_PRODUCTS_ENDPOINT) {
       const customResponse = await fetch(`${WP_BASE_URL}${GIFT_PRODUCTS_ENDPOINT}`);
-      if (customResponse.ok) {
-        const customData = await customResponse.json() as CustomGiftProduct[];
-        if (Array.isArray(customData) && customData.length > 0) {
-          const packages = buildPackagesFromCustomProducts(customData);
-          giftPackagesCache = packages;
-          return packages;
-        }
+      if (!customResponse.ok) {
+        throw new Error('Unable to load published gift card products from WordPress.');
       }
-    } catch {
-      // Ignore custom endpoint failures and continue with WP package source.
-    }
-  }
 
-  const wpPackages = await dataService.getPackages();
-  if (wpPackages.length > 0) {
-    const packages = buildPackagesFromWpPackages(wpPackages);
-    if (hasVisiblePrices(packages)) {
+      const customData = await customResponse.json() as CustomGiftProduct[];
+      if (!Array.isArray(customData) || customData.length === 0) {
+        throw new Error('No published gift card products were returned from WordPress.');
+      }
+
+      const packages = buildPackagesFromCustomProducts(customData);
+      if (packages.length === 0) {
+        throw new Error('Gift card products were returned, but could not be grouped into packages.');
+      }
+
+      if (REQUIRE_CUSTOM_GIFT_PRODUCTS && !hasValidPaymentMapping(packages)) {
+        throw new Error('Some gift card products are missing payment mappings in WordPress.');
+      }
+
       giftPackagesCache = packages;
       return packages;
     }
-  }
 
-  if (ENABLE_WC_STORE_FALLBACK || wpPackages.length > 0) {
-    try {
-      const storeProducts = await fetchStoreProducts();
-      const packages = buildPackagesFromStoreProducts(storeProducts);
-      giftPackagesCache = packages;
-      return packages;
-    } catch {
-      // Ignore Woo Store fallback failures.
+    if (REQUIRE_CUSTOM_GIFT_PRODUCTS) {
+      throw new Error('Gift card products endpoint is not configured.');
     }
-  }
+
+    const wpPackages = await dataService.getPackages();
+    if (wpPackages.length > 0) {
+      const packages = buildPackagesFromWpPackages(wpPackages);
+      if (hasVisiblePrices(packages)) {
+        giftPackagesCache = packages;
+        return packages;
+      }
+    }
+
+    if (ENABLE_WC_STORE_FALLBACK || wpPackages.length > 0) {
+      try {
+        const storeProducts = await fetchStoreProducts();
+        const packages = buildPackagesFromStoreProducts(storeProducts);
+        giftPackagesCache = packages;
+        return packages;
+      } catch {
+        // Ignore Woo Store fallback failures.
+      }
+    }
 
     giftPackagesCache = [];
     return [];

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
+import { useUser } from '../hooks/useUser';
+import { useWishlist } from '../context/WishlistContext';
 import type { Destination } from '../types';
 import { motion } from 'framer-motion';
 import { ArrowRight, Globe, Compass, Calendar, Heart } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
 
@@ -12,6 +14,9 @@ const Destinations = () => {
   const { slug } = useParams();
   const { destinations, packages, isLoading } = useData();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useUser();
+  const { wishlist: wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
+  const navigate = useNavigate();
   const [selectedContinent, setSelectedContinent] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -35,6 +40,19 @@ const Destinations = () => {
       normalizedTitle.includes(normalizedDestinationName)
     );
   });
+
+  const toggleWishlist = async (pkgId: string) => {
+    if (!isAuthenticated) {
+      navigate('/account', { state: { from: slug ? `/destinations/${slug}` : '/destinations' } });
+      return;
+    }
+
+    if (wishlistItems.includes(pkgId)) {
+      await removeFromWishlist(pkgId);
+    } else {
+      await addToWishlist(pkgId);
+    }
+  };
   
   if (selectedDestination) {
     return (
@@ -154,7 +172,18 @@ const Destinations = () => {
                         decoding="async"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
-                      <div className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-full text-brand-accent"><Heart size={16} fill="currentColor" /></div>
+                      <button
+                        type="button"
+                        aria-label={wishlistItems.includes(pkg.id) ? 'Saved to wishlist' : 'Save to wishlist'}
+                        onClick={() => void toggleWishlist(pkg.id)}
+                        className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-brand-accent hover:scale-105 transition"
+                      >
+                        <Heart
+                          size={16}
+                          className={wishlistItems.includes(pkg.id) ? 'text-brand-accent' : 'text-brand-400'}
+                          fill={wishlistItems.includes(pkg.id) ? 'currentColor' : 'none'}
+                        />
+                      </button>
                     </div>
                     <div className="p-8 flex flex-col flex-grow">
                       <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors">{pkg.title}</h3>

@@ -4,6 +4,7 @@ import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUser } from '../hooks/useUser';
 import { dataService } from '../services/dataService';
+import { useWishlist } from '../context/WishlistContext';
 import type { PackageReview } from '../types';
 import { motion } from 'framer-motion';
 import PayPalButton from '../components/ui/PayPalButton';
@@ -73,6 +74,7 @@ const PackageDetail = () => {
   const { packages, destinations, posts, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
+  const { wishlist: wishlistItems, addToWishlist, removeFromWishlist, error: wishlistError } = useWishlist();
   const navigate = useNavigate();
   const pkg = packages.find(p => p.slug === slug);
   const destination = destinations.find(d => d.id === pkg?.destinationId);
@@ -80,7 +82,6 @@ const PackageDetail = () => {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(pkg?.tiers?.[0]?.id);
   const [selectedDate] = useState('');
-  const [wishlistItems, setWishlistItems] = useState<string[] | null>(null);
   const [packageReviews, setPackageReviews] = useState<PackageReview[]>([]);
   const [reviewerName, setReviewerName] = useState('');
   const [reviewerEmail, setReviewerEmail] = useState('');
@@ -89,27 +90,7 @@ const PackageDetail = () => {
   const [isReviewSubmitting, setIsReviewSubmitting] = useState(false);
   const [reviewFeedback, setReviewFeedback] = useState('');
 
-  const [isInWishlist, setIsInWishlist] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [wishlistError, setWishlistError] = useState('');
-
-  useEffect(() => {
-    let cancelled = false;
-    if (pkg) {
-      dataService.getWishlist()
-        .then(items => {
-          if (cancelled) return;
-          setWishlistItems(items);
-          setIsInWishlist(items.includes(pkg.id));
-        })
-        .catch(() => {
-          if (cancelled) return;
-          setWishlistItems([]);
-          setIsInWishlist(false);
-        });
-    }
-    return () => { cancelled = true; };
-  }, [isAuthenticated, pkg]);
 
   useEffect(() => {
     let cancelled = false;
@@ -197,6 +178,8 @@ const PackageDetail = () => {
 
   if (!pkg) return <div className="pt-32 min-h-screen section-container">Package not found</div>;
 
+  const isInWishlist = wishlistItems.includes(pkg.id);
+
   const selectedGalleryImage = pkg.gallery[currentImgIndex];
   const heroImage = hasUsableImage(selectedGalleryImage)
     ? selectedGalleryImage
@@ -219,16 +202,11 @@ const PackageDetail = () => {
       return;
     }
     if (!pkg) return;
-    setWishlistError('');
     setIsSaving(true);
-    const current = wishlistItems ?? [];
-    const next = isInWishlist ? current.filter(id => id !== pkg.id) : [...current, pkg.id];
-    const ok = await dataService.updateWishlist(next);
-    if (ok) {
-      setWishlistItems(next);
-      setIsInWishlist(!isInWishlist);
+    if (isInWishlist) {
+      await removeFromWishlist(pkg.id);
     } else {
-      setWishlistError('Unable to save wishlist. Please try again later.');
+      await addToWishlist(pkg.id);
     }
     setIsSaving(false);
   };

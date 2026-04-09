@@ -126,6 +126,33 @@ function bearerHeaders(token: string) {
   };
 }
 
+function normalizeWishlistItems(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (typeof item === 'string' || typeof item === 'number') {
+        const normalized = String(item).trim();
+        return normalized || null;
+      }
+
+      if (item && typeof item === 'object') {
+        const candidate =
+          'id' in item ? (item as { id?: unknown }).id
+            : 'ID' in item ? (item as { ID?: unknown }).ID
+              : null;
+
+        if (typeof candidate === 'string' || typeof candidate === 'number') {
+          const normalized = String(candidate).trim();
+          return normalized || null;
+        }
+      }
+
+      return null;
+    })
+    .filter((item): item is string => Boolean(item));
+}
+
 async function checkWP(): Promise<boolean> {
   if (!WP_SYNC_ENABLED) {
     return false;
@@ -1286,7 +1313,7 @@ export const dataService = {
       });
       if (!response.ok) return [];
       const data = await response.json();
-      return data.acf?.hm_wishlist || [];
+      return normalizeWishlistItems(data.acf?.hm_wishlist);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
       return [];
@@ -1320,7 +1347,6 @@ export const dataService = {
   },
 
   async updateWishlist(items: string[]): Promise<boolean> {
-    console.log('[dataService] updateWishlist called with:', items);
     const token = authService.getToken();
     if (!token) return false;
 
@@ -1334,7 +1360,7 @@ export const dataService = {
           ...bearerHeaders(token)
         },
         body: JSON.stringify({
-          acf: { hm_wishlist: items }
+          acf: { hm_wishlist: normalizeWishlistItems(items) }
         })
       });
       return response.ok;

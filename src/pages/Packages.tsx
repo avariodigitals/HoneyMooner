@@ -7,7 +7,7 @@ import { Calendar, MapPin, Heart, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { useUser } from '../hooks/useUser';
-import { dataService } from '../services/dataService';
+import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/layout/SEO';
 
 const STYLE_ALIASES: Record<string, string[]> = {
@@ -26,22 +26,15 @@ function matchesStyleFilter(pkgTags: string[], selectedStyle: string): boolean {
 }
 
 const Packages = () => {
-  const HANDPICKED_ROTATION_KEY = 'honeymoonner:handpicked-rotation-index';
   const location = useLocation();
   const { packages, destinations, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
+  const { wishlist: wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDestination, setSelectedDestination] = useState('all');
   const [selectedStyle, setSelectedCategoryStyle] = useState(() => location.state?.style || 'all');
-  const [wishlistItems, setWishlistItems] = useState<string[]>([]);
-  const [handpickedStartIndex, setHandpickedStartIndex] = useState(() => {
-    if (typeof window === 'undefined') return 0;
-    const stored = window.localStorage.getItem(HANDPICKED_ROTATION_KEY);
-    const parsed = stored ? Number.parseInt(stored, 10) : Number.NaN;
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-  });
 
   // Adjust style filter when navigation state changes (e.g. user clicks a style on Home page)
   useEffect(() => {
@@ -54,30 +47,16 @@ const Packages = () => {
     }
   }, [location.state?.style]);
 
-  useEffect(() => {
-    let ignore = false;
-    dataService.getWishlist().then(items => {
-      if (!ignore) setWishlistItems(items);
-    }).catch(() => {
-      if (!ignore) setWishlistItems([]);
-    });
-    return () => { ignore = true; };
-  }, [isAuthenticated]);
-
   const toggleWishlist = async (pkgId: string) => {
     if (!isAuthenticated) {
       navigate('/account', { state: { from: '/packages' } });
       return;
     }
-          <SEO
-            title="Honeymoon Packages"
-            description="Browse curated honeymoon and romantic travel packages with flexible tiers, handpicked experiences, and expert planning support."
-            keywords="honeymoon packages, luxury romantic trips, curated travel experiences"
-          />
-    const current = wishlistItems;
-    const next = current.includes(pkgId) ? current.filter(id => id !== pkgId) : [...current, pkgId];
-    const ok = await dataService.updateWishlist(next);
-    if (ok) setWishlistItems(next);
+    if (wishlistItems.includes(pkgId)) {
+      await removeFromWishlist(pkgId);
+    } else {
+      await addToWishlist(pkgId);
+    }
   };
 
   const filteredPackages = packages.filter(pkg => {
@@ -90,37 +69,6 @@ const Packages = () => {
     
     return matchesSearch && matchesDestination && matchesStyle;
   });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const listLength = filteredPackages.length;
-    if (listLength === 0) {
-      setHandpickedStartIndex(0);
-      return;
-    }
-
-    const rawStored = window.localStorage.getItem(HANDPICKED_ROTATION_KEY);
-    const storedIndex = rawStored ? Number.parseInt(rawStored, 10) : 0;
-    const safeStoredIndex = Number.isFinite(storedIndex) && storedIndex >= 0 ? storedIndex : 0;
-
-    let nextIndex = listLength <= 3 ? 0 : safeStoredIndex % listLength;
-
-    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    const isReload = navEntry?.type === 'reload';
-
-    // Advance only on browser reload, not while user stays on the page.
-    if (isReload && listLength > 3) {
-      nextIndex = (nextIndex + 1) % listLength;
-    }
-
-    setHandpickedStartIndex(nextIndex);
-    window.localStorage.setItem(HANDPICKED_ROTATION_KEY, String(nextIndex));
-  }, [filteredPackages.length]);
-
-  const handpickedPackages = filteredPackages.length <= 3
-    ? filteredPackages
-    : Array.from({ length: 3 }, (_, idx) => filteredPackages[(handpickedStartIndex + idx) % filteredPackages.length]);
 
   const renderPackageCard = (pkg: typeof filteredPackages[number]) => (
     <motion.div
@@ -208,6 +156,11 @@ const Packages = () => {
       transition={{ duration: 0.4 }}
       className="pt-24 min-h-screen"
     >
+      <SEO
+        title="Honeymoon Packages"
+        description="Browse curated honeymoon and romantic travel packages with flexible tiers, handpicked experiences, and expert planning support."
+        keywords="honeymoon packages, luxury romantic trips, curated travel experiences"
+      />
       <Breadcrumbs />
 
       {/* Hero Section */}
@@ -304,7 +257,8 @@ const Packages = () => {
           )}
         </div>
 
-        {/* Handpicked */}
+        {/*
+        // Handpicked
         {searchTerm.trim() === '' && selectedDestination === 'all' && selectedStyle === 'all' && (
           <section className="mb-12 sm:mb-14 rounded-3xl border border-brand-accent/20 bg-gradient-to-b from-brand-accent/10 to-white px-4 sm:px-6 py-8 sm:py-10 shadow-sm">
             <div className="text-center mb-10 sm:mb-12">
@@ -317,6 +271,7 @@ const Packages = () => {
             </div>
           </section>
         )}
+        */}
 
         {/* All Packages */}
         <section className="mb-8 sm:mb-10">

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useWishlist } from '../context/WishlistContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -12,20 +13,24 @@ import {
   MapPin, 
   ArrowRight, 
   Trash2, 
-  Clock,
   ChevronRight
 } from 'lucide-react';
 
 
 const Wishlist = () => {
   const { user } = useUser();
-  const { packages, destinations } = useData();
+  const { packages, destinations, isLoading: isDataLoading } = useData();
   const { formatPrice } = useCurrency();
   const { wishlist: wishlistItems, isLoading, error, removeFromWishlist } = useWishlist();
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const wishlistedPackages = packages.filter(pkg => wishlistItems.includes(pkg.id));
+  const isWaitingForPackageMatches =
+    wishlistItems.length > 0 &&
+    wishlistedPackages.length === 0 &&
+    (isDataLoading || packages.length === 0);
 
-  if (isLoading) {
+  if (isLoading || isWaitingForPackageMatches) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="w-16 h-16 border-4 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin" />
@@ -131,7 +136,16 @@ const Wishlist = () => {
                       </div>
 
                       <button 
-                        onClick={() => removeFromWishlist(pkg.id)}
+                        type="button"
+                        disabled={removingId === pkg.id}
+                        onClick={async () => {
+                          setRemovingId(pkg.id);
+                          try {
+                            await removeFromWishlist(pkg.id);
+                          } finally {
+                            setRemovingId((current) => (current === pkg.id ? null : current));
+                          }
+                        }}
                         className="absolute top-4 sm:top-6 right-4 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 hover:bg-red-500 hover:border-red-500 transition-all duration-300 transform group-hover:rotate-12"
                       >
                         <Trash2 size={18} className="sm:w-5 sm:h-5" />
@@ -152,11 +166,6 @@ const Wishlist = () => {
                     <div className="p-6 sm:p-8 flex flex-col flex-grow bg-white">
                       <div className="flex items-center justify-between mb-6 sm:mb-8">
                         <div className="flex items-center gap-3 sm:gap-4 text-brand-400">
-                          <div className="flex items-center gap-1.5 sm:gap-2">
-                            <Clock size={14} className="sm:w-4 sm:h-4" />
-                            <span className="text-[10px] sm:text-xs font-medium">{pkg.duration.days} Days</span>
-                          </div>
-                          <div className="w-1 h-1 rounded-full bg-brand-200" />
                           <div className="flex items-center gap-1.5 sm:gap-2">
                             <Heart size={14} className="sm:w-4 sm:h-4 text-brand-accent" fill="currentColor" />
                             <span className="text-[10px] sm:text-xs font-medium italic">Saved</span>

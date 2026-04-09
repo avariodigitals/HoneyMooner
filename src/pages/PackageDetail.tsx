@@ -684,73 +684,55 @@ const PackageDetail = () => {
                 {/* Travel date selection removed as requested */}
               </div>
 
-              <div className="pt-8 sm:pt-10 lg:pt-20 mt-6 sm:mt-8 lg:mt-20 border-t border-brand-50">
-                <div className="bg-brand-900 text-white rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-accent mb-1">Your Experience Matters</p>
-                      <h4 className="text-xl sm:text-2xl font-serif leading-tight">Share a Memory or Tip for Future Couples</h4>
-                      <p className="text-xs text-white/70 mt-1">Help others plan their dream honeymoon by sharing a highlight, a tip, or a special moment from your trip!</p>
+              <div className="pt-4 sm:pt-6 lg:pt-8 mt-4 sm:mt-6 lg:mt-8 border-t border-brand-50">
+                <div className="bg-gradient-to-br from-brand-50 via-white to-brand-100 rounded-3xl shadow-lg max-w-xl mx-auto p-0 sm:p-0 border border-brand-100">
+                  <div className="flex flex-col items-center px-6 pt-8 pb-4 sm:pt-10 sm:pb-6">
+                    <div className="w-full text-center mb-3">
+                      <p className="text-[11px] uppercase tracking-[0.25em] font-bold text-brand-accent mb-1">Your Experience Matters</p>
+                      <h4 className="text-xl sm:text-3xl font-serif leading-tight text-brand-900 mb-1">Share a Memory or Tip</h4>
+                      <p className="text-xs sm:text-sm text-brand-600 mb-2">Help others plan their dream honeymoon by sharing a highlight, a tip, or a special moment from your trip!</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-1 text-brand-accent pt-1">
+                    <div className="flex items-center gap-1 mb-4">
                       {[1, 2, 3, 4, 5].map((score) => (
                         <button
                           key={score}
                           type="button"
                           onClick={() => setReviewRating(score)}
-                          className={`transition-transform hover:scale-110 ${score <= reviewRating ? 'text-brand-accent' : 'text-white/30'}`}
+                          className={`transition-transform hover:scale-110 ${score <= reviewRating ? 'text-brand-accent' : 'text-brand-200'}`}
+                          aria-label={`Rate ${score} stars`}
                         >
-                          <Star size={18} fill="currentColor" />
+                          <Star size={22} fill="currentColor" />
                         </button>
                       ))}
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <input
                       value={reviewerName}
                       onChange={(e) => setReviewerName(e.target.value)}
-                      className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30"
+                      className="w-full rounded-xl bg-white border border-brand-100 px-4 py-3 text-sm text-brand-900 placeholder:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/30 mb-3 shadow-sm"
                       placeholder="Your name"
                     />
-                    {/* Email input removed as requested */}
-                  </div>
-
-                  <div className="flex items-center gap-2 sm:hidden">
-                    {[1, 2, 3, 4, 5].map((score) => (
+                    <textarea
+                      rows={3}
+                      value={reviewMessage}
+                      onChange={(e) => setReviewMessage(e.target.value)}
+                      className="w-full rounded-xl bg-white border border-brand-100 px-4 py-3 text-sm text-brand-900 placeholder:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/30 resize-none mb-3 shadow-sm"
+                      placeholder="Write about the romance, the service, and the moments you loved..."
+                    />
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full">
                       <button
-                        key={score}
                         type="button"
-                        onClick={() => setReviewRating(score)}
-                        className={`transition-transform hover:scale-110 ${score <= reviewRating ? 'text-brand-accent' : 'text-white/30'}`}
+                        onClick={submitReview}
+                        disabled={isReviewSubmitting}
+                        className="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-accent text-white font-semibold text-sm shadow-md hover:bg-brand-900 transition disabled:opacity-50"
                       >
-                        <Star size={18} fill="currentColor" />
+                        {isReviewSubmitting ? 'Submitting...' : 'Send Review'}
                       </button>
-                    ))}
-                  </div>
-
-                  <textarea
-                    rows={3}
-                    value={reviewMessage}
-                    onChange={(e) => setReviewMessage(e.target.value)}
-                    className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/30 resize-none"
-                    placeholder="Write about the romance, the service, and the moments you loved..."
-                  />
-
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={submitReview}
-                      disabled={isReviewSubmitting}
-                      className="btn-primary w-full sm:w-auto px-5 py-3 text-sm shadow-xl shadow-brand-accent/20 disabled:opacity-50"
-                    >
-                      {isReviewSubmitting ? 'Submitting...' : 'Send Review'}
-                    </button>
-                    {reviewFeedback ? (
-                      <p className="text-[10px] sm:text-xs text-brand-300 leading-relaxed italic">
-                        {reviewFeedback}
-                      </p>
-                    ) : null}
+                      {reviewFeedback ? (
+                        <p className="text-[11px] sm:text-xs text-brand-500 leading-relaxed italic mt-1 sm:mt-0">
+                          {reviewFeedback}
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>

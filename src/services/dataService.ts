@@ -1314,6 +1314,7 @@ export const dataService = {
   },
 
   async updateWishlist(items: string[]): Promise<boolean> {
+    console.log('[dataService] updateWishlist called with:', items);
     const token = authService.getToken();
     if (!token) return false;
 

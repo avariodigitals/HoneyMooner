@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Landmark, Loader2, Mail } from 'lucide-react';
+import { Landmark, Loader2 } from 'lucide-react';
 import { useCurrency } from '../../hooks/useCurrency';
 import { paymentService } from '../../services/paymentService';
 import SuccessModal from './SuccessModal';
@@ -78,8 +78,15 @@ function loadPaystackScript(): Promise<void> {
   return paystackScriptPromise;
 }
 
-const PaystackButton: React.FC<PaystackButtonProps> = ({ packageId, tierId, onSuccess, disabled, description, customId }) => {
-  const [email, setEmail] = useState('');
+const PaystackButton: React.FC<PaystackButtonProps> = ({
+  packageId,
+  tierId,
+  onSuccess,
+  disabled,
+  description,
+  customId
+}) => {
+  const [email] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -97,7 +104,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({ packageId, tierId, onSu
         if (!ignore) {
           setQuoteAmount(null);
           setIsQuoteLoading(false);
-          setErrorMessage('Select a package and tier to continue with Paystack.');
+          setErrorMessage('Please select a valid package and tier to continue.');
         }
         return;
       }
@@ -121,7 +128,16 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({ packageId, tierId, onSu
         setQuoteCurrency(quote.currency);
       } catch (error) {
         if (ignore) return;
-        const message = error instanceof Error ? error.message : 'Unable to load Paystack amount.';
+        let message = 'Unable to load payment amount.';
+        if (error instanceof Error) {
+          if (error.message.includes('Not Found')) {
+            message = 'This package or tier is not available for payment. Please contact support or choose another.';
+          } else if (error.message.includes('Invalid')) {
+            message = 'Invalid package or tier selected. Please try again.';
+          } else {
+            message = error.message;
+          }
+        }
         setErrorMessage(message);
         setQuoteAmount(null);
       } finally {
@@ -225,7 +241,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({ packageId, tierId, onSu
     }
   };
 
-  const isUnavailable = disabled || isProcessing || isQuoteLoading || quoteAmount === null;
+  const isUnavailable = disabled || isProcessing || isQuoteLoading || quoteAmount === null || !!errorMessage;
   const hasCurrencyConversion = quoteAmount !== null && quoteCurrency !== currency.code;
   const selectedCurrencyAmount = quoteAmount !== null ? formatPrice(quoteAmount, quoteCurrency) : null;
   const chargeAmount = quoteAmount !== null ? `${quoteCurrency} ${quoteAmount.toFixed(2)}` : null;
@@ -233,19 +249,6 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({ packageId, tierId, onSu
   return (
     <>
       <div className="space-y-3">
-        <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-300" size={16} />
-          <input
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="Email for your receipt"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="w-full h-11 sm:h-12 pl-11 pr-4 rounded-xl border border-brand-100 bg-white text-sm text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent"
-          />
-        </div>
-
         <button
           onClick={handlePayment}
           disabled={isUnavailable}

@@ -70,15 +70,19 @@ const AppContent = () => {
   );
 };
 
+import { WishlistProvider } from './context/WishlistContext';
+
 function App() {
   return (
     <HelmetProvider>
       <UserProvider>
         <CurrencyProvider>
-          <Router>
-            <ScrollToTop />
-            <AppContent />
-          </Router>
+          <WishlistProvider>
+            <Router>
+              <ScrollToTop />
+              <AppContent />
+            </Router>
+          </WishlistProvider>
         </CurrencyProvider>
       </UserProvider>
     </HelmetProvider>

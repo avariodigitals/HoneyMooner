@@ -6,12 +6,19 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
 import PayPalButton from '../components/ui/PayPalButton';
 import PaystackButton from '../components/ui/PaystackButton';
+import { useState } from 'react';
 import { useCurrency } from '../hooks/useCurrency';
 import { useData } from '../hooks/useData';
 import { ASSETS } from '../config/images';
 import { useGiftCardProducts } from '../hooks/useGiftCardProducts';
 
 const GiftCardCheckout = () => {
+
+    // Gift card recipient/sender fields
+    const [recipientName, setRecipientName] = useState('');
+    const [recipientEmail, setRecipientEmail] = useState('');
+    const [senderName, setSenderName] = useState('');
+    const [giftMessage, setGiftMessage] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const { homeContent } = useData();
@@ -183,7 +190,52 @@ const GiftCardCheckout = () => {
               </p>
             </div>
 
+
             <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-brand-700">Recipient Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={recipientName}
+                    onChange={e => setRecipientName(e.target.value)}
+                    placeholder="Who is receiving the gift?"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-brand-700">Recipient Email</label>
+                  <input
+                    type="email"
+                    className="input"
+                    value={recipientEmail}
+                    onChange={e => setRecipientEmail(e.target.value)}
+                    placeholder="Recipient's email address"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-brand-700">Your Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={senderName}
+                    onChange={e => setSenderName(e.target.value)}
+                    placeholder="Your name (sender)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-brand-700">Gift Message (optional)</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={giftMessage}
+                    onChange={e => setGiftMessage(e.target.value)}
+                    placeholder="Add a personal note (optional)"
+                  />
+                </div>
+              </div>
+
+
               <PayPalButton
                 packageId={paymentPackageId || 'gift-template-package'}
                 tierId={paymentTierId || 'gift-template-tier'}

@@ -305,16 +305,18 @@ const Packages = () => {
         </div>
 
         {/* Handpicked */}
-        <section className="mb-12 sm:mb-14 rounded-3xl border border-brand-accent/20 bg-gradient-to-b from-brand-accent/10 to-white px-4 sm:px-6 py-8 sm:py-10 shadow-sm">
-          <div className="text-center mb-10 sm:mb-12">
-            <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] font-bold text-brand-accent mb-4">Packages</p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-4">Handpicked for You</h2>
-          </div>
+        {searchTerm.trim() === '' && (
+          <section className="mb-12 sm:mb-14 rounded-3xl border border-brand-accent/20 bg-gradient-to-b from-brand-accent/10 to-white px-4 sm:px-6 py-8 sm:py-10 shadow-sm">
+            <div className="text-center mb-10 sm:mb-12">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] font-bold text-brand-accent mb-4">Packages</p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-brand-900 mb-4">Handpicked for You</h2>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {handpickedPackages.map((pkg) => renderPackageCard(pkg))}
-          </div>
-        </section>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {handpickedPackages.map((pkg) => renderPackageCard(pkg))}
+            </div>
+          </section>
+        )}
 
         {/* All Packages */}
         <section className="mb-8 sm:mb-10">

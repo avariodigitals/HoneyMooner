@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useWishlist } from '../context/WishlistContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useUser } from '../hooks/useUser';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
-import { dataService } from '../services/dataService';
+
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
 import { 
@@ -16,37 +16,12 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+
 const Wishlist = () => {
   const { user } = useUser();
   const { packages, destinations } = useData();
   const { formatPrice } = useCurrency();
-  const [wishlistItems, setWishlistItems] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const items = await dataService.getWishlist();
-        setWishlistItems(items);
-      } catch {
-        setError('Unable to load your wishlist right now. Please try again shortly.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchWishlist();
-  }, []);
-
-  const removeFromWishlist = async (id: string) => {
-    const newWishlist = wishlistItems.filter(item => item !== id);
-    setWishlistItems(newWishlist);
-    const updated = await dataService.updateWishlist(newWishlist);
-    if (!updated) {
-      setWishlistItems(wishlistItems);
-      setError('Could not update your wishlist. Please try again.');
-    }
-  };
+  const { wishlist: wishlistItems, isLoading, error, removeFromWishlist } = useWishlist();
 
   const wishlistedPackages = packages.filter(pkg => wishlistItems.includes(pkg.id));
 
@@ -78,17 +53,17 @@ const Wishlist = () => {
         </div>
       )}
 
-      {/* Romantic Hero Section - Responsive height */}
+      {/* Romantic Hero Section - Responsive height with custom background */}
       <section className="relative min-h-[40vh] lg:h-[50vh] flex items-center justify-center overflow-hidden py-12 lg:py-0">
         <div className="absolute inset-0">
           <img 
-            src="/images/placeholder-travel.svg" 
-            className="w-full h-full object-cover brightness-[0.6]"
-            alt="Romantic Background"
+            src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/pablo-heimplatz-OSboZGvoEz4-unsplash.jpg" 
+            className="w-full h-full object-cover brightness-[0.5]"
+            alt="Wishlist Background"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-900/40 via-transparent to-white" />
+          <div className="absolute inset-0 bg-black/40" />
         </div>
-        
+
         <div className="relative z-10 text-center space-y-4 lg:space-y-6 px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -121,7 +96,7 @@ const Wishlist = () => {
         </div>
       </section>
 
-      <div className="section-container relative z-20 pb-24 lg:pb-32 -mt-12 lg:-mt-16">
+      <div className="section-container relative z-20 pb-24 lg:pb-32 mt-12 lg:mt-20">
         {/* Wishlist Grid - Responsive gap */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10">
           <AnimatePresence mode="popLayout">

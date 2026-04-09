@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useWishlist } from '../context/WishlistContext';
 import Hero from '../components/ui/Hero';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
@@ -9,7 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { ASSETS } from '../config/images';
 import { useUser } from '../hooks/useUser';
-import { dataService } from '../services/dataService';
+
 import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
 
 const Home = () => {
@@ -18,7 +19,7 @@ const Home = () => {
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
   const navigate = useNavigate();
-  const [wishlistItems, setWishlistItems] = useState<string[]>([]);
+  const { wishlist: wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
   const [loadedDestinationImages, setLoadedDestinationImages] = useState<Record<string, boolean>>({});
   const [featuredStartIndex, setFeaturedStartIndex] = useState(0);
   
@@ -32,15 +33,7 @@ const Home = () => {
     .map((collection) => findPackageCollection(collection.slug) || collection)
     .slice(0, 4);
 
-  useEffect(() => {
-    let ignore = false;
-    dataService.getWishlist().then(items => {
-      if (!ignore) setWishlistItems(items);
-    }).catch(() => {
-      if (!ignore) setWishlistItems([]);
-    });
-    return () => { ignore = true; };
-  }, [isAuthenticated]);
+  // Wishlist is now managed globally via context
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -68,10 +61,11 @@ const Home = () => {
       navigate('/account', { state: { from: '/' } });
       return;
     }
-    const current = wishlistItems;
-    const next = current.includes(pkgId) ? current.filter((id: string) => id !== pkgId) : [...current, pkgId];
-    const ok = await dataService.updateWishlist(next);
-    if (ok) setWishlistItems(next);
+    if (wishlistItems.includes(pkgId)) {
+      await removeFromWishlist(pkgId);
+    } else {
+      await addToWishlist(pkgId);
+    }
   };
 
   return (

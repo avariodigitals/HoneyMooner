@@ -87,7 +87,7 @@ const GiftCardCheckout = () => {
   const paymentTierId = typeof location.state?.paymentTierId === 'string'
     ? location.state.paymentTierId
     : effectiveTier?.paymentTierId;
-
+  const payerEmail = recipientEmail.trim();
   const canStartPayment = Boolean(paymentPackageId && paymentTierId);
 
   if (isLoadingGiftPackages && !selectedPackage && !selectedTier) {
@@ -175,7 +175,7 @@ const GiftCardCheckout = () => {
                 </div>
                 <div className="flex items-start gap-3 text-sm text-brand-700">
                   <ShieldCheck size={16} className="mt-0.5 text-brand-accent shrink-0" />
-                  <span>Secure checkout options are available below via PayPal and Paystack.</span>
+                  <span>Secure checkout stays on this site and uses the published payment mapping for this exact gift product.</span>
                 </div>
               </div>
             </div>
@@ -248,6 +248,7 @@ const GiftCardCheckout = () => {
               <PaystackButton
                 packageId={paymentPackageId || 'gift-template-package'}
                 tierId={paymentTierId || 'gift-template-tier'}
+                email={payerEmail}
                 description={`Gift Card - ${effectivePackage.title} (${effectiveTier.name})`}
                 customId={`${customId}:paystack`}
                 disabled={!canStartPayment}
@@ -256,7 +257,7 @@ const GiftCardCheckout = () => {
 
               {!canStartPayment && (
                 <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                  Payment mapping is not published yet for this gift product. Publish payment_package_id and payment_tier_id from WordPress gift endpoint to enable instant checkout.
+                  Payment mapping is not published yet for this gift product. Publish `payment_package_id` and `payment_tier_id` from the WordPress gift endpoint to enable instant checkout.
                 </p>
               )}
             </div>

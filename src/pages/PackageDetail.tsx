@@ -43,6 +43,7 @@ const categoryIcons: { [key: string]: LucideIcon } = {
 };
 
 const PACKAGE_HERO_FALLBACK = 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg';
+const NUMERIC_ID_PATTERN = /^\d+$/;
 
 function hasUsableImage(image?: string): image is string {
   return Boolean(image && image.trim().length > 0 && !image.includes('/images/placeholder-travel.svg'));
@@ -54,6 +55,17 @@ function sanitizeExperienceHtml(html: string): string {
     .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
     .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
     .replace(/javascript:/gi, '');
+}
+
+function isPublishedPaymentPackageId(value: string | undefined): value is string {
+  return typeof value === 'string' && NUMERIC_ID_PATTERN.test(value.trim());
+}
+
+function isPublishedPaymentTierId(value: string | undefined): value is string {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim();
+  if (!normalized) return false;
+  return normalized !== 'starter' && normalized !== 'fallback-premium';
 }
 
 const PackageDetail = () => {
@@ -195,6 +207,9 @@ const PackageDetail = () => {
         : PACKAGE_HERO_FALLBACK;
 
   const selectedTier = pkg.tiers.find(t => t.id === selectedTierId) || pkg.tiers[0];
+  const paymentPackageId = isPublishedPaymentPackageId(pkg?.id) ? pkg.id : '';
+  const paymentTierId = isPublishedPaymentTierId(selectedTier?.id) ? selectedTier.id : '';
+  const canStartInlinePayment = Boolean(paymentPackageId && paymentTierId);
   const experienceHtml = (pkg.experienceContent || '').trim();
   const hasExperienceHtml = experienceHtml.length > 0;
 
@@ -637,21 +652,29 @@ const PackageDetail = () => {
 
               <div className="space-y-4 sm:space-y-5">
                 <PayPalButton 
-                  packageId={pkg.id}
-                  tierId={selectedTier.id}
+                  packageId={paymentPackageId || 'package-payment-unavailable'}
+                  tierId={paymentTierId || 'tier-payment-unavailable'}
                   description={`${pkg.title} full payment (${selectedTier.name})`}
                   customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}`}
+                  disabled={!canStartInlinePayment}
                   onSuccess={(details) => console.log('PayPal payment successful', details)} 
                 />
 
                 <PaystackButton
-                  packageId={pkg.id}
-                  tierId={selectedTier.id}
+                  packageId={paymentPackageId || 'package-payment-unavailable'}
+                  tierId={paymentTierId || 'tier-payment-unavailable'}
                   description={`${pkg.title} full payment (${selectedTier.name})`}
                   customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}:paystack`}
+                  disabled={!canStartInlinePayment}
                   onSuccess={(details) => console.log('Paystack payment successful', details)}
                 />
               </div>
+
+              {!canStartInlinePayment && (
+                <p className="text-[10px] sm:text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+                  Online payment is only available for packages synced from WordPress with a published payment tier mapping.
+                </p>
+              )}
 
               <p className="text-[9px] sm:text-[10px] text-center text-brand-400 italic">
                 Secure your romantic escape with PayPal or Paystack.

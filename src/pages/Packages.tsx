@@ -305,7 +305,7 @@ const Packages = () => {
         </div>
 
         {/* Handpicked */}
-        {searchTerm.trim() === '' && (
+        {searchTerm.trim() === '' && selectedDestination === 'all' && selectedStyle === 'all' && (
           <section className="mb-12 sm:mb-14 rounded-3xl border border-brand-accent/20 bg-gradient-to-b from-brand-accent/10 to-white px-4 sm:px-6 py-8 sm:py-10 shadow-sm">
             <div className="text-center mb-10 sm:mb-12">
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] font-bold text-brand-accent mb-4">Packages</p>

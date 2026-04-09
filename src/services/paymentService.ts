@@ -8,6 +8,7 @@ const PAYMENTS_BASE_URL = `${WP_BASE_URL}${PAYMENTS_NAMESPACE}`;
 const SAFE_ID_PATTERN = /^[a-zA-Z0-9_-]{1,100}$/;
 const SAFE_REFERENCE_PATTERN = /^[a-zA-Z0-9._:-]{6,200}$/;
 const SAFE_EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
+let wpRoutesPromise: Promise<Record<string, unknown>> | null = null;
 
 export interface CreatePayPalOrderInput {
   packageId: string;
@@ -91,6 +92,38 @@ interface ErrorResponse {
   message?: string;
 }
 
+function endpointPath(endpoint: string): string {
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    try {
+      return new URL(endpoint).pathname;
+    } catch {
+      return endpoint;
+    }
+  }
+
+  return endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+}
+
+async function getWPRoutes(): Promise<Record<string, unknown>> {
+  if (!wpRoutesPromise) {
+    wpRoutesPromise = fetch(WP_BASE_URL)
+      .then(async (response) => {
+        if (!response.ok) return {};
+        const data = await response.json().catch(() => ({})) as { routes?: Record<string, unknown> };
+        return data.routes || {};
+      })
+      .catch(() => ({}));
+  }
+
+  return wpRoutesPromise;
+}
+
+async function ensurePaymentRoute(route: string, providerName: string): Promise<void> {
+  const routes = await getWPRoutes();
+  if (endpointPath(route) in routes) return;
+  throw new Error(`${providerName} checkout is not available yet.`);
+}
+
 async function parseError(response: Response): Promise<Error> {
   try {
     const data = await response.json() as ErrorResponse;
@@ -170,6 +203,7 @@ export const paymentService = {
     if (!PAYMENTS_ENABLED) {
       throw new Error('Payments are currently disabled.');
     }
+    await ensurePaymentRoute(`${PAYMENTS_NAMESPACE}/paypal/quote`, 'PayPal');
 
     const params = new URLSearchParams({
       package_id: assertSafeId(packageId, 'package_id'),
@@ -188,6 +222,7 @@ export const paymentService = {
     if (!PAYMENTS_ENABLED) {
       throw new Error('Payments are currently disabled.');
     }
+    await ensurePaymentRoute(`${PAYMENTS_NAMESPACE}/paystack/quote`, 'Paystack');
 
     const params = new URLSearchParams({
       package_id: assertSafeId(packageId, 'package_id'),
@@ -206,6 +241,7 @@ export const paymentService = {
     if (!PAYMENTS_ENABLED) {
       throw new Error('Payments are currently disabled.');
     }
+    await ensurePaymentRoute(`${PAYMENTS_NAMESPACE}/paystack/initialize`, 'Paystack');
 
     const response = await fetch(`${PAYMENTS_BASE_URL}/paystack/initialize`, {
       method: 'POST',
@@ -231,6 +267,7 @@ export const paymentService = {
     if (!PAYMENTS_ENABLED) {
       throw new Error('Payments are currently disabled.');
     }
+    await ensurePaymentRoute(`${PAYMENTS_NAMESPACE}/paystack/verify`, 'Paystack');
 
     const response = await fetch(`${PAYMENTS_BASE_URL}/paystack/verify`, {
       method: 'POST',
@@ -249,6 +286,7 @@ export const paymentService = {
     if (!PAYMENTS_ENABLED) {
       throw new Error('Payments are currently disabled.');
     }
+    await ensurePaymentRoute(`${PAYMENTS_NAMESPACE}/paypal/create-order`, 'PayPal');
 
     const response = await fetch(`${PAYMENTS_BASE_URL}/paypal/create-order`, {
       method: 'POST',
@@ -274,6 +312,7 @@ export const paymentService = {
     if (!PAYMENTS_ENABLED) {
       throw new Error('Payments are currently disabled.');
     }
+    await ensurePaymentRoute(`${PAYMENTS_NAMESPACE}/paypal/capture-order`, 'PayPal');
 
     const response = await fetch(`${PAYMENTS_BASE_URL}/paypal/capture-order`, {
       method: 'POST',

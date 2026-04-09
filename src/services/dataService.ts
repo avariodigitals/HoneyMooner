@@ -21,6 +21,7 @@ const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoo
 const WP_SYNC_ENABLED = (import.meta.env.VITE_WP_SYNC_ENABLED ?? 'true') === 'true';
 const WP_PUBLIC_LEAD_ENDPOINT = import.meta.env.VITE_WP_PUBLIC_LEAD_ENDPOINT ?? '/custom/v1/leads';
 const WP_PUBLIC_LEAD_ENDPOINTS = import.meta.env.VITE_WP_PUBLIC_LEAD_ENDPOINTS ?? '';
+const WP_LEADS_READ_ENABLED = (import.meta.env.VITE_WP_LEADS_READ_ENABLED ?? 'false') === 'true';
 const WP_PACKAGE_REVIEWS_ENDPOINT = import.meta.env.VITE_WP_PACKAGE_REVIEWS_ENDPOINT ?? '/custom/v1/package-reviews';
 const WP_CONTACT_MESSAGES_ENDPOINT = import.meta.env.VITE_WP_CONTACT_MESSAGES_ENDPOINT ?? '/custom/v1/contact-messages';
 
@@ -777,19 +778,24 @@ export const dataService = {
 
   // --- Leads / Enquiries ---
   async getLeads(): Promise<Lead[]> {
+    if (!WP_LEADS_READ_ENABLED) return [];
+
     const token = authService.getToken();
     if (!token) return [];
 
     try {
       const ok = await checkWP();
       if (!ok) return [];
-      const response = await fetch(`${WP_BASE_URL}/wp/v2/leads?per_page=100`, {
+      const response = await fetch(`${WP_BASE_URL}/wp/v2/leads?per_page=100&orderby=date&order=desc`, {
         headers: bearerHeaders(token)
       });
-      if (!response.ok) return [];
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403 || response.status === 404) return [];
+        return [];
+      }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching leads:', error);
+      console.warn('Lead sync is unavailable in this environment:', error);
       return [];
     }
   },

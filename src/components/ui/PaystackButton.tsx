@@ -18,6 +18,7 @@ interface PaystackPaymentDetails {
 interface PaystackButtonProps {
   packageId: string;
   tierId: string;
+  email?: string;
   onSuccess?: (details: PaystackPaymentDetails) => void;
   disabled?: boolean;
   description?: string;
@@ -81,12 +82,12 @@ function loadPaystackScript(): Promise<void> {
 const PaystackButton: React.FC<PaystackButtonProps> = ({
   packageId,
   tierId,
+  email = '',
   onSuccess,
   disabled,
   description,
   customId
 }) => {
-  const [email] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -154,7 +155,8 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
     };
   }, [packageId, tierId]);
 
-  const isEmailValid = useMemo(() => /\S+@\S+\.\S+/.test(email.trim()), [email]);
+  const normalizedEmail = email.trim();
+  const isEmailValid = useMemo(() => /\S+@\S+\.\S+/.test(normalizedEmail), [normalizedEmail]);
 
   const handlePayment = async () => {
     if (!paymentService.isEnabled()) {
@@ -171,11 +173,11 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
     setErrorMessage('');
 
     try {
-      const callbackUrl = `${window.location.origin}${window.location.pathname}`;
+        const callbackUrl = `${window.location.origin}${window.location.pathname}`;
       const initialized = await paymentService.initializePaystackTransaction({
         packageId,
         tierId,
-        email: email.trim(),
+        email: normalizedEmail,
         description: description || 'The Honeymoonner Travel Package Payment',
         customId: customId || `payment-${Date.now()}`,
         callbackUrl
@@ -200,7 +202,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
 
       const handler = paystack.setup({
         key: paystackPublicKey,
-        email: email.trim(),
+        email: normalizedEmail,
         amount: amountInKobo,
         currency: initialized.currency || quoteCurrency,
         ref: initialized.reference,
@@ -213,7 +215,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
               amount: verification.amount,
               currency: verification.currency || quoteCurrency,
               customer: {
-                email: verification.customer_email || email.trim(),
+                email: verification.customer_email || normalizedEmail,
                 name: verification.customer_name || 'Paystack Customer'
               }
             };

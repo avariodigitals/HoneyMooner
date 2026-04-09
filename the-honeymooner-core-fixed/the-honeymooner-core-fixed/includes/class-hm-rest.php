@@ -11,10 +11,25 @@ class HM_REST {
 
     public static function register_routes(): void {
         register_rest_route('honeymooner/v1', '/leads', [
-            'methods' => 'POST',
-            'callback' => [self::class, 'submit_lead'],
-            'permission_callback' => '__return_true',
+            'methods' => ['POST', 'GET'],
+            'callback' => function (WP_REST_Request $request) {
+                if ($request->get_method() === 'POST') {
+                    return self::submit_lead($request);
+                } else {
+                    return self::get_leads($request);
+                }
+            },
+            'permission_callback' => function () {
+                return current_user_can('manage_options'); // Only admins can GET leads
+            },
         ]);
+    }
+
+    public static function get_leads(WP_REST_Request $request): WP_REST_Response {
+        global $wpdb;
+        $table = HM_Leads_DB::table_name();
+        $results = $wpdb->get_results("SELECT * FROM $table ORDER BY id DESC LIMIT 100", ARRAY_A);
+        return new WP_REST_Response($results, 200);
     }
 
     public static function submit_lead(WP_REST_Request $request): WP_REST_Response {

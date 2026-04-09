@@ -346,11 +346,8 @@ const Navbar = () => {
                                 )}
                                 onClick={() => setShowPackagesMobile((prev) => !prev)}
                                 style={{ outline: 'none' }}
-                                aria-expanded={showPackagesMobile}
-                                aria-controls="mobile-packages-dropdown"
                               >
-                                <span className="relative flex items-center gap-2">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-brand-accent/80 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="7" width="18" height="13" rx="2" strokeWidth="2" /><path d="M16 3v4M8 3v4" strokeWidth="2" /></svg>
+                                <span className="relative">
                                   {link.name}
                                   {isPackagesActive && (
                                     <motion.div 
@@ -359,16 +356,15 @@ const Navbar = () => {
                                     />
                                   )}
                                 </span>
-                                <span className={cn("ml-2 text-[30px] font-bold transition-transform duration-200", showPackagesMobile ? "rotate-90 text-brand-accent" : "rotate-0")}>›</span>
+                                <span className="ml-2 text-[30px] font-bold rotate-90">›</span>
                               </button>
                               {showPackagesMobile && (
-                                <div id="mobile-packages-dropdown" className="mt-3 rounded-2xl bg-white/95 shadow-xl border border-brand-100 px-4 py-3 space-y-2 animate-fadeInDown">
+                                <div className="pl-4 mt-2 space-y-2">
                                   <Link
                                     to={link.path}
                                     onClick={() => setIsOpen(false)}
-                                    className="flex items-center gap-2 text-lg font-serif text-brand-900 font-bold border-b border-brand-100 pb-2 mb-2 hover:text-brand-accent transition-colors"
+                                    className="block text-2xl sm:text-3xl font-serif text-white/90 font-bold border-b border-white/10 pb-1 mb-1 hover:text-brand-accent transition-colors"
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-brand-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="7" width="18" height="13" rx="2" strokeWidth="2" /><path d="M16 3v4M8 3v4" strokeWidth="2" /></svg>
                                     All Packages
                                   </Link>
                                   {packageExperienceLinks.map((item) => (
@@ -376,9 +372,8 @@ const Navbar = () => {
                                       key={item.path}
                                       to={item.path}
                                       onClick={() => setIsOpen(false)}
-                                      className="flex items-center gap-2 text-base font-serif text-brand-700 hover:text-brand-accent transition-colors py-1"
+                                      className="block text-2xl sm:text-3xl font-serif text-white/80 hover:text-brand-accent transition-colors py-1"
                                     >
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-brand-accent/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="2" /></svg>
                                       {item.name}
                                     </Link>
                                   ))}

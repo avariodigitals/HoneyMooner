@@ -236,12 +236,13 @@ const GiftCardCheckout = () => {
               </div>
 
 
+
               <PayPalButton
                 packageId={paymentPackageId || 'gift-template-package'}
                 tierId={paymentTierId || 'gift-template-tier'}
                 description={`Gift Card - ${effectivePackage.title} (${effectiveTier.name})`}
                 customId={`${customId}:paypal`}
-                disabled={!canStartPayment}
+                disabled={true}
                 onSuccess={(details) => console.log('Gift card PayPal payment success', details)}
               />
 
@@ -251,7 +252,7 @@ const GiftCardCheckout = () => {
                 email={payerEmail}
                 description={`Gift Card - ${effectivePackage.title} (${effectiveTier.name})`}
                 customId={`${customId}:paystack`}
-                disabled={!canStartPayment}
+                disabled={true}
                 onSuccess={(details) => console.log('Gift card Paystack payment success', details)}
               />
 

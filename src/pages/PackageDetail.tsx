@@ -634,7 +634,7 @@ const PackageDetail = () => {
                   tierId={paymentTierId || 'tier-payment-unavailable'}
                   description={`${pkg.title} full payment (${selectedTier.name})`}
                   customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}`}
-                  disabled={!canStartInlinePayment}
+                  disabled={true}
                   onSuccess={(details) => console.log('PayPal payment successful', details)} 
                 />
 
@@ -643,7 +643,7 @@ const PackageDetail = () => {
                   tierId={paymentTierId || 'tier-payment-unavailable'}
                   description={`${pkg.title} full payment (${selectedTier.name})`}
                   customId={`${pkg.id}:${selectedTier.id}:${selectedDate || 'open-date'}:paystack`}
-                  disabled={!canStartInlinePayment}
+                  disabled={true}
                   onSuccess={(details) => console.log('Paystack payment successful', details)}
                 />
               </div>

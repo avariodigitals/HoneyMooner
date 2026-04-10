@@ -722,7 +722,7 @@ export default function Booking() {
     <>
       <SEO
         title="Booking"
-        description="Share your travel preferences and let The Honeymoonner design a personalized luxury itinerary for your romantic getaway."
+        description="Share your travel preferences and let The Honeymooner Travel design a personalized luxury itinerary for your romantic getaway."
         keywords="honeymoon booking, luxury itinerary planning, romantic travel consultation"
       />
       <BookingForm 

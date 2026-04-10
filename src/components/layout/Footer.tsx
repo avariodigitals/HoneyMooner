@@ -43,7 +43,7 @@ const Footer = () => {
           <Link to="/" className="flex items-center justify-center sm:justify-start gap-2">
             <img 
               src="https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20White%20only.png" 
-              alt="The Honeymoonner" 
+              alt="The Honeymooner Travel" 
               className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
             />
           </Link>
@@ -90,11 +90,14 @@ const Footer = () => {
           <ul className="space-y-3 sm:space-y-4 text-sm text-brand-300">
             <li className="flex items-start justify-center sm:justify-start gap-3">
               <MapPin size={18} className="text-brand-accent shrink-0 mt-0.5" />
-              <span>Lagos, United Kingdom</span>
+              <span>UNIT 1, 137 Cheetham Hill Rd, Cheetham Hill, Manchester M8 8LY</span>
             </li>
             <li className="flex items-center justify-center sm:justify-start gap-3">
               <Phone size={18} className="text-brand-accent shrink-0" />
-              <span>+2348131760694</span>
+              <div className="flex flex-col gap-1">
+                <span>+2348131760694</span>
+                <span>07341 899849</span>
+              </div>
             </li>
             <li className="flex items-center justify-center sm:justify-start gap-3">
               <Mail size={18} className="text-brand-accent shrink-0" />

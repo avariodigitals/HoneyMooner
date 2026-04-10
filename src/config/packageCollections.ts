@@ -58,10 +58,10 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
   {
     slug: 'signature-experience',
     kind: 'theme',
-    title: 'The Honeymoonner Signature Experience',
+    title: 'The Honeymooner Travel Signature Experience',
     eyebrow: 'For Families of Newlyweds',
     audience: 'Couples who want a premium surprise-led honeymoon',
-    tagline: 'Not just a honeymoon... a love story designed by The Honeymoonner.',
+    tagline: 'Not just a honeymoon... a love story designed by The Honeymooner Travel.',
     intro: 'A deeply curated honeymoon format with thoughtful surprises, visual storytelling, and meaningful touches that feel personal from the first day.',
     highlights: [
       'Surprise itinerary elements',

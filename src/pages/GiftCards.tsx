@@ -56,7 +56,7 @@ const GiftCards = () => {
     >
       <SEO
         title="Honeymoon Gift Cards"
-        description="Gift newlyweds an unforgettable honeymoon with a premium gift card experience curated by The Honeymoonner."
+        description="Gift newlyweds an unforgettable honeymoon with a premium gift card experience curated by The Honeymooner Travel."
         image={homeContent.giftPackage.image || ASSETS.ROMANTIC_MOMENT_HOME}
       />
 

@@ -1,5 +1,5 @@
 /**
- * Centralized Image Assets for The Honeymoonner
+ * Centralized Image Assets for The Honeymooner Travel
  * 
  * This file contains all hardcoded image URLs used throughout the application.
  * When transitioning to ImageKit, update the links here to reflect the new paths.

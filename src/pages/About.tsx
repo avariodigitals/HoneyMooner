@@ -15,7 +15,7 @@ const About = () => {
     <div className="pt-24 min-h-screen">
       <SEO
         title="About Us"
-        description="Discover The Honeymoonner story and how our team curates intentional, luxury honeymoon experiences for couples worldwide."
+        description="Discover The Honeymooner Travel story and how our team curates intentional, luxury honeymoon experiences for couples worldwide."
         canonical="https://thehoneymoonertravel.com/about"
         keywords="about honeymoon planner, luxury honeymoon experts, romantic travel agency"
       />
@@ -58,10 +58,10 @@ const About = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-serif mb-6 text-brand-900">The Honeymoonner Philosophy</h2>
+            <h2 className="text-3xl md:text-4xl font-serif mb-6 text-brand-900">The Honeymooner Travel Philosophy</h2>
             <p className="text-lg text-brand-700 mb-6 leading-relaxed">
               We believe your honeymoon should be as intentional and memorable as your wedding day.
-              The Honeymoonner was built to offer a premium planning experience for couples who want
+              The Honeymooner Travel was built to offer a premium planning experience for couples who want
               more than a standard package.
             </p>
             <p className="text-lg text-brand-700 mb-8 leading-relaxed">

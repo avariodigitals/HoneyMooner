@@ -58,7 +58,7 @@ const defaultBookingContent: BookingContent = {
   },
   success: {
     title: 'Enquiry Received!',
-    message: 'Thank you for reaching out to The Honeymoonner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
+    message: 'Thank you for reaching out to The Honeymooner Travel. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
     cta: 'Return Home'
   },
   bespoke: {

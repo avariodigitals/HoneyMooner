@@ -19,11 +19,11 @@ const Journal = () => {
   const journalSchema = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    "name": "The Honeymoonner Journal",
+    "name": "The Honeymooner Travel Journal",
     "description": "Curated guides, personal stories, and expert advice for romantic travel.",
     "publisher": {
       "@type": "Organization",
-      "name": "The Honeymoonner"
+      "name": "The Honeymooner Travel"
     },
     "blogPost": posts.map(post => ({
       "@type": "BlogPosting",
@@ -53,7 +53,7 @@ const Journal = () => {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/hoi-an-and-da-nang-photographer-f1Yk1rGf3tE-unsplash-scaled.jpg" 
-            alt="The Honeymoonner Journal" 
+            alt="The Honeymooner Travel Journal" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-[1px]" />
@@ -65,7 +65,7 @@ const Journal = () => {
             animate={{ opacity: 1, y: 0 }}
             className="script-font mb-4 block text-2xl sm:text-3xl lg:text-4xl"
           >
-            The Honeymoonner Journal
+            The Honeymooner Travel Journal
           </motion.span>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
@@ -180,8 +180,8 @@ const Journal = () => {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-accent/5 rounded-full -ml-48 -mb-48 blur-3xl" />
         
         <div className="section-container relative z-10 text-center text-white">
-          <p className="script-font text-brand-accent-light mb-4">The Honeymoonner Circle</p>
-          <h2 className="text-4xl md:text-5xl font-serif mb-8">Join The Honeymoonner Circle</h2>
+          <p className="script-font text-brand-accent-light mb-4">The Honeymooner Travel Circle</p>
+          <h2 className="text-4xl md:text-5xl font-serif mb-8">Join The Honeymooner Travel Circle</h2>
           <p className="text-brand-200 text-lg mb-12 max-w-2xl mx-auto leading-relaxed">
             Receive exclusive travel inspiration, secret destination guides, and special romantic offers directly in your inbox.
           </p>

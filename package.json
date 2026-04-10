@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "migrate:wp": "tsx scripts/migrate-wordpress.ts",
-    "sync:woo:gifts": "tsx scripts/sync-woocommerce-gift-products.ts"
+    "sync:woo:gifts": "tsx scripts/sync-woocommerce-gift-products.ts",
+  "generate:sitemap": "node scripts/generate-sitemap.js",
+  "build": "npm run generate:sitemap && vite build",
+  "preview": "vite preview"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.1",
@@ -44,9 +47,4 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.0"
   }
-}
-
-"scripts": {
-  "generate:sitemap": "node scripts/generate-sitemap.js",
-  "build": "npm run generate:sitemap && vite build"
 }

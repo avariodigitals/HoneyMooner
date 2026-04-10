@@ -1,12 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
+
 import CurrencyProvider from './context/CurrencyProvider';
 import { UserProvider } from './context/UserProvider';
-import { AnimatePresence } from 'framer-motion';
+import { WishlistProvider } from './context/WishlistContext';
+
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ScrollToTop from './components/layout/ScrollToTop';
 import ScrollToTopButton from './components/ui/ScrollToTopButton';
+
 import Home from './pages/Home';
 import Destinations from './pages/Destinations';
 import Packages from './pages/Packages';
@@ -26,9 +31,15 @@ import GiftCards from './pages/GiftCards';
 import GiftCardCheckout from './pages/GiftCardCheckout';
 import ResetPassword from './pages/ResetPassword';
 
+import { trackPageView } from './services/analytics';
+
 const AnimatedRoutes = () => {
   const location = useLocation();
-  
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
@@ -69,8 +80,6 @@ const AppContent = () => {
     </div>
   );
 };
-
-import { WishlistProvider } from './context/WishlistContext';
 
 function App() {
   return (

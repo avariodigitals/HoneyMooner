@@ -101,6 +101,7 @@ const Contact = () => {
       <SEO
         title="Contact Us"
         description="Speak with The Honeymoonner travel experts and start planning a personalized honeymoon, anniversary, or romantic getaway."
+        canonical="https://thehoneymoonertravel.com/contact"
         keywords="honeymoon travel consultation, contact honeymoon planner, romantic getaway experts"
       />
       <Breadcrumbs />

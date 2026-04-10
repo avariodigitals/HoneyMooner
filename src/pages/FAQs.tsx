@@ -67,6 +67,7 @@ const FAQs = () => {
       <SEO
         title="Frequently Asked Questions"
         description="Find answers about honeymoon booking timelines, payment options, cancellations, visa support, and concierge service."
+        canonical="https://thehoneymoonertravel.com/faqs"
         keywords="honeymoon FAQ, travel planning questions, honeymoon payment policy"
       />
       <Breadcrumbs />

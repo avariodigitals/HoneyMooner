@@ -12,7 +12,6 @@ import { ASSETS } from '../config/images';
 import { useUser } from '../hooks/useUser';
 
 import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
-
 const Home = () => {
   const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
   const { packages, destinations, testimonials, homeContent } = useData();
@@ -76,9 +75,10 @@ const Home = () => {
       transition={{ duration: 0.5 }}
       className="flex flex-col min-h-screen"
     >
-      <SEO 
-        title="Home" 
-        description={homeContent.hero.subtitle}
+      <SEO
+        title="Luxury Honeymoon Packages & Romantic Getaways | The Honeymooner Travel"
+        description="Discover curated honeymoon packages, romantic escapes, destination inspiration, and unforgettable travel experiences with The Honeymooner Travel."
+        canonical="https://thehoneymoonertravel.com/"
       />
       <Hero />
 
@@ -530,5 +530,6 @@ const Home = () => {
     </motion.div>
   );
 };
+
 
 export default Home;

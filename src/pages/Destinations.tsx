@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUser } from '../hooks/useUser';
@@ -6,12 +6,16 @@ import { useWishlist } from '../context/WishlistContext';
 import type { Destination } from '../types';
 import { motion } from 'framer-motion';
 import { ArrowRight, Globe, Compass, Calendar, Heart } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
+import RankMathSEO from '../components/SEO';
+import { getRankMathSEO } from '../services/seo';
 
 const Destinations = () => {
   const { slug } = useParams();
+  const location = useLocation();
+  const [rankMathSeo, setRankMathSeo] = useState<string | null>(null);
   const { destinations, packages, isLoading } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
@@ -19,6 +23,15 @@ const Destinations = () => {
   const navigate = useNavigate();
   const [selectedContinent, setSelectedContinent] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    if (!slug || !location.pathname) return;
+
+    const fullUrl = `https://thehoneymoonertravel.com${location.pathname}`;
+    getRankMathSEO(fullUrl).then((data) => {
+      setRankMathSeo(data);
+    });
+  }, [slug, location.pathname]);
 
   const selectedDestination = destinations.find(d => d.slug === slug);
   const filteredPackages = packages.filter((pkg) => {
@@ -63,11 +76,16 @@ const Destinations = () => {
         transition={{ duration: 0.5 }}
         className="min-h-screen"
       >
-        <SEO
-          title={`${selectedDestination.name} Honeymoon Destination`}
-          description={selectedDestination.description}
-          keywords={`${selectedDestination.name} honeymoon, ${selectedDestination.country} romantic travel, luxury destination packages`}
-        />
+        {rankMathSeo ? (
+          <RankMathSEO raw={rankMathSeo} />
+        ) : (
+          <SEO
+            title={`${selectedDestination.name} Honeymoon Destination`}
+            description={selectedDestination.description}
+            canonical={`https://thehoneymoonertravel.com/destinations/${selectedDestination.slug}`}
+            keywords={`${selectedDestination.name} honeymoon, ${selectedDestination.country} romantic travel, luxury destination packages`}
+          />
+        )}
         <div className="absolute top-24 left-0 right-0 z-20">
           <Breadcrumbs />
         </div>
@@ -236,6 +254,7 @@ const Destinations = () => {
       <SEO
         title="Destinations"
         description="Explore handpicked romantic destinations around the world, from tropical islands to elegant city escapes."
+        canonical="https://thehoneymoonertravel.com/destinations"
         keywords="honeymoon destinations, romantic travel locations, luxury honeymoon spots"
       />
       <Breadcrumbs />

@@ -20,6 +20,7 @@ export default function Experiences() {
       <SEO
         title="Experiences"
         description="Curated honeymoon themes thoughtfully designed for different travel styles, budgets, and personalities."
+        canonical="https://thehoneymoonertravel.com/experiences"
       />
 
       <Breadcrumbs />

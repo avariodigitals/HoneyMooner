@@ -1122,7 +1122,7 @@ export const dataService = {
           title: 'Honeymoon Gift Package',
           description: 'Gift your children a stress-free, unforgettable honeymoon experience.',
           note: 'A meaningful wedding gift with expert planning, curated stays, and full support from start to finish.',
-          image: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg',
+          image: ASSETS.FALLBACK_PACKAGE,
           imageAlt: 'Parents gifting honeymoon package',
           primaryCtaLabel: 'View Packages',
           primaryCtaUrl: '/packages',

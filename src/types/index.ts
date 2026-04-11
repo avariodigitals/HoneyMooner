@@ -139,7 +139,14 @@ export interface HomeContent {
     title: string;
     subtitle: string;
     image: string;
-    cta: string;
+    cta: {
+      label: string;
+      url: string;
+    };
+    cta2?: {
+      label: string;
+      url: string;
+    };
   };
   destinations: {
     title: string;
@@ -234,4 +241,23 @@ export interface PackageReview {
   rating: number;
   message: string;
   createdAt: string;
+}
+
+export interface RouteIdea {
+  id: string;
+  slug: string;
+  title: string;
+  eyebrow: string;
+  tagline: string;
+  intro: string;
+  audience: string;
+  heroImage: string;
+  highlights: string[];
+  routeStops: string[];
+  match: {
+    categories: string[];
+    countries: string[];
+    destinations: string[];
+    tags: string[];
+  };
 }

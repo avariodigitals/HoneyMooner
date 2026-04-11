@@ -11,7 +11,7 @@ export const ASSETS = {
   WORDMARK_WHITE: "https://ik.imagekit.io/360t0n1jd9/Afrokoko%20Foundation%20Assets/Wordmark%20Logo%20No%20BG%20-%20White%20Only.png?updatedAt=1773691277015",
 
   // Global Fallbacks (Used if primary image fails)
-  FALLBACK_HERO: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg",
+  FALLBACK_HERO: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero-2.jpg",
   FALLBACK_PACKAGE: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg",
   FALLBACK_DESTINATION: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/photo-1507525428034-b723cf961d3e-scaled.jpg",
 

@@ -62,7 +62,88 @@ class HM_REST {
     }
 
     public static function register_rest_fields(): void {
-        foreach (['packages', 'destinations'] as $type) {
+                // Expose featured content (including hero image) for home-settings page
+                register_rest_field('page', 'hm_featured_content', [
+                    'get_callback' => function ($post_arr) {
+                        if (empty($post_arr['slug']) || $post_arr['slug'] !== 'home-settings') return null;
+                        $settings = get_option('hm_featured_content_settings', []);
+                        return [
+                            'hero_image' => $settings['hero_image'] ?? '',
+                            'hero_title' => $settings['hero_title'] ?? '',
+                            'hero_subtitle' => $settings['hero_subtitle'] ?? '',
+                            'cta1_label' => $settings['cta1_label'] ?? '',
+                            'cta1_url' => $settings['cta1_url'] ?? '',
+                            'cta2_label' => $settings['cta2_label'] ?? '',
+                            'cta2_url' => $settings['cta2_url'] ?? '',
+                        ];
+                    },
+                    'schema' => ['type' => 'object', 'context' => ['view', 'edit']],
+                ]);
+
+        register_rest_field('route_ideas', 'hm_route_data', [
+            'get_callback' => function (array $post_arr) {
+                $post_id = (int) $post_arr['id'];
+                return [
+                    'eyebrow' => get_post_meta($post_id, 'eyebrow', true),
+                    'title_override' => get_post_meta($post_id, 'title_override', true),
+                    'tagline' => get_post_meta($post_id, 'tagline', true),
+                    'intro' => get_post_meta($post_id, 'intro', true),
+                    'audience' => get_post_meta($post_id, 'audience', true),
+                    'hero_image' => get_post_meta($post_id, 'hero_image', true),
+                    'match_categories' => array_map('trim', explode(',', get_post_meta($post_id, 'match_categories', true) ?: '')),
+                    'match_countries' => array_map('trim', explode(',', get_post_meta($post_id, 'match_countries', true) ?: '')),
+                    'match_destinations' => array_map('trim', explode(',', get_post_meta($post_id, 'match_destinations', true) ?: '')),
+                    'match_tags' => array_map('trim', explode(',', get_post_meta($post_id, 'match_tags', true) ?: '')),
+                    'highlights' => hm_get_array_meta($post_id, 'highlights'),
+                    'route_stops' => hm_get_array_meta($post_id, 'route_stops'),
+                ];
+            },
+            'update_callback' => function ($value, $post_obj) {
+                error_log('HM_REST: update_callback called for post ' . $post_obj->ID);
+                error_log('HM_REST: value: ' . print_r($value, true));
+                $post_id = $post_obj->ID;
+                if (!is_array($value)) return;
+
+                $meta_keys = [
+                    'eyebrow', 'title_override', 'tagline', 'intro', 'audience', 'hero_image',
+                    'match_categories', 'match_countries', 'match_destinations', 'match_tags'
+                ];
+
+                foreach ($meta_keys as $key) {
+                    if (isset($value[$key])) {
+                        update_post_meta($post_id, $key, sanitize_textarea_field((string)$value[$key]));
+                    }
+                }
+
+                if (isset($value['highlights']) && is_array($value['highlights'])) {
+                    update_post_meta($post_id, 'highlights', json_encode($value['highlights']));
+                }
+
+                if (isset($value['route_stops']) && is_array($value['route_stops'])) {
+                    update_post_meta($post_id, 'route_stops', json_encode($value['route_stops']));
+                }
+            },
+            'schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'eyebrow' => ['type' => 'string'],
+                    'title_override' => ['type' => 'string'],
+                    'tagline' => ['type' => 'string'],
+                    'intro' => ['type' => 'string'],
+                    'audience' => ['type' => 'string'],
+                    'hero_image' => ['type' => 'string'],
+                    'match_categories' => ['type' => 'string'],
+                    'match_countries' => ['type' => 'string'],
+                    'match_destinations' => ['type' => 'string'],
+                    'match_tags' => ['type' => 'string'],
+                    'highlights' => ['type' => 'array'],
+                    'route_stops' => ['type' => 'array'],
+                ],
+                'context' => ['view', 'edit'],
+            ],
+        ]);
+
+        foreach (['packages', 'destinations', 'route_ideas'] as $type) {
             register_rest_field($type, 'featured_image_url', [
                 'get_callback' => function (array $post_arr) {
                     $image_id = get_post_thumbnail_id($post_arr['id']);

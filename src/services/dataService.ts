@@ -14,7 +14,8 @@ import type {
   PackageCategory,
   PricingTier,
   PackageInclusion,
-  Departure
+  Departure,
+  PricingBasis
 } from '../types';
 
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
@@ -300,6 +301,15 @@ interface WPReviewItem {
 
 interface WPPageItem {
   id: number;
+  hm_featured_content?: {
+    hero_image?: string;
+    hero_title?: string;
+    hero_subtitle?: string;
+    cta1_label?: string;
+    cta1_url?: string;
+    cta2_label?: string;
+    cta2_url?: string;
+  };
   acf?: {
     hero_title?: string;
     hero_subtitle?: string;
@@ -749,7 +759,7 @@ export const dataService = {
           tiers: tiers.length > 0
             ? tiers
             : packageData?.starting_price
-              ? [{ id: 'starter', name: 'Premium' as const, price: Number(packageData.starting_price), basis: (packageData.pricing_basis as any) || 'per couple' as const }]
+              ? [{ id: 'starter', name: 'Premium' as const, price: Number(packageData.starting_price), basis: (packageData.pricing_basis as PricingBasis) || 'per couple' as const }]
               : [{ id: 'fallback-premium', name: 'Premium' as const, price: 0, basis: 'per couple' as const }],
           inclusions: parseInclusions(item.acf?.inclusions || item.meta?.inclusions),
           exclusions: parseStringList(item.acf?.exclusions || item.meta?.exclusions),
@@ -1069,16 +1079,21 @@ export const dataService = {
       if (!response.ok) return null;
       const data = await response.json() as WPPageItem[];
       const page = data[0];
-      if (!page?.acf) return null;
+      
+      // If the page doesn't exist or doesn't have the expected plugin data, return null
+      if (!page) return null;
 
-      const heroImage = await resolveImageValue(page.acf.hero_image);
-      const giftImage = await resolveImageValue(page.acf.gift_image);
-      const [styleBeachImage, styleIslandImage, styleAdventureImage, styleCityImage] = await Promise.all([
+      // Prefer plugin's featured content hero image if available, else fallback to ACF, else fallback image
+      const heroImage = (page.hm_featured_content && page.hm_featured_content.hero_image)
+        || await resolveImageValue(page.acf?.hero_image)
+        || '';
+      const giftImage = page.acf ? await resolveImageValue(page.acf.gift_image) : '';
+      const [styleBeachImage, styleIslandImage, styleAdventureImage, styleCityImage] = page.acf ? await Promise.all([
         resolveImageValue(page.acf.browse_style_beach_image),
         resolveImageValue(page.acf.browse_style_island_image),
         resolveImageValue(page.acf.browse_style_adventure_image),
         resolveImageValue(page.acf.browse_style_city_image)
-      ]);
+      ]) : ['', '', '', ''];
 
       const fallbackHomeContent: HomeContent = {
         styleImages: {
@@ -1091,7 +1106,10 @@ export const dataService = {
           title: 'Plan a Once-in-a-Lifetime Honeymoon - Without the Stress',
           subtitle: 'We design fully personalized luxury honeymoon experiences - from destination selection to every intimate detail.',
           image: siteImageFallbacks.hero,
-          cta: 'Start Planning Your Honeymoon'
+          cta: {
+            label: 'Start Planning Your Honeymoon',
+            url: '/booking'
+          }
         },
         destinations: {
           title: 'Where Do You Want to Begin?',
@@ -1109,7 +1127,7 @@ export const dataService = {
           title: 'Honeymoon Gift Package',
           description: 'Gift your children a stress-free, unforgettable honeymoon experience.',
           note: 'A meaningful wedding gift with expert planning, curated stays, and full support from start to finish.',
-          image: 'https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/khamkeo-OcxlTBbb6SY-unsplash.jpg',
+          image: ASSETS.FALLBACK_PACKAGE,
           imageAlt: 'Parents gifting honeymoon package',
           primaryCtaLabel: 'View Packages',
           primaryCtaUrl: '/packages',
@@ -1125,20 +1143,27 @@ export const dataService = {
 
       return {
         hero: {
-          title: pick(page.acf.hero_title, fallbackHomeContent.hero.title),
-          subtitle: pick(page.acf.hero_subtitle, fallbackHomeContent.hero.subtitle),
+          title: pick(page.hm_featured_content?.hero_title || page.acf?.hero_title, fallbackHomeContent.hero.title),
+          subtitle: pick(page.hm_featured_content?.hero_subtitle || page.acf?.hero_subtitle, fallbackHomeContent.hero.subtitle),
           image: heroImage || fallbackHomeContent.hero.image,
-          cta: pick(page.acf.hero_cta, fallbackHomeContent.hero.cta)
+          cta: {
+            label: pick(page.hm_featured_content?.cta1_label || page.acf?.hero_cta, fallbackHomeContent.hero.cta.label),
+            url: page.hm_featured_content?.cta1_url || '/booking'
+          },
+          cta2: page.hm_featured_content?.cta2_label ? {
+            label: page.hm_featured_content.cta2_label,
+            url: page.hm_featured_content.cta2_url || '/packages'
+          } : undefined
         },
         destinations: {
-          title: pick(page.acf.destinations_title, fallbackHomeContent.destinations.title),
-          subtitle: pick(page.acf.destinations_subtitle, fallbackHomeContent.destinations.subtitle),
-          description: pick(page.acf.destinations_description, fallbackHomeContent.destinations.description)
+          title: pick(page.acf?.destinations_title, fallbackHomeContent.destinations.title),
+          subtitle: pick(page.acf?.destinations_subtitle, fallbackHomeContent.destinations.subtitle),
+          description: pick(page.acf?.destinations_description, fallbackHomeContent.destinations.description)
         },
         packages: {
-          title: pick(page.acf.packages_title, fallbackHomeContent.packages.title),
-          subtitle: pick(page.acf.packages_subtitle, fallbackHomeContent.packages.subtitle),
-          description: pick(page.acf.packages_description, fallbackHomeContent.packages.description)
+          title: pick(page.acf?.packages_title, fallbackHomeContent.packages.title),
+          subtitle: pick(page.acf?.packages_subtitle, fallbackHomeContent.packages.subtitle),
+          description: pick(page.acf?.packages_description, fallbackHomeContent.packages.description)
         },
         styleImages: {
           beach: styleBeachImage || fallbackHomeContent.styleImages.beach,
@@ -1148,16 +1173,16 @@ export const dataService = {
         },
         fallbackImages: siteImageFallbacks,
         giftPackage: {
-          eyebrow: pick(page.acf.gift_eyebrow, fallbackHomeContent.giftPackage.eyebrow),
-          title: pick(page.acf.gift_title, fallbackHomeContent.giftPackage.title),
-          description: pick(page.acf.gift_description, fallbackHomeContent.giftPackage.description),
-          note: pick(page.acf.gift_note, fallbackHomeContent.giftPackage.note),
+          eyebrow: pick(page.acf?.gift_eyebrow, fallbackHomeContent.giftPackage.eyebrow),
+          title: pick(page.acf?.gift_title, fallbackHomeContent.giftPackage.title),
+          description: pick(page.acf?.gift_description, fallbackHomeContent.giftPackage.description),
+          note: pick(page.acf?.gift_note, fallbackHomeContent.giftPackage.note),
           image: giftImage || fallbackHomeContent.giftPackage.image,
-          imageAlt: pick(page.acf.gift_image_alt, fallbackHomeContent.giftPackage.imageAlt),
-          primaryCtaLabel: pick(page.acf.gift_primary_cta_label, fallbackHomeContent.giftPackage.primaryCtaLabel),
-          primaryCtaUrl: pick(page.acf.gift_primary_cta_url, fallbackHomeContent.giftPackage.primaryCtaUrl),
-          secondaryCtaLabel: pick(page.acf.gift_secondary_cta_label, fallbackHomeContent.giftPackage.secondaryCtaLabel),
-          secondaryCtaUrl: pick(page.acf.gift_secondary_cta_url, fallbackHomeContent.giftPackage.secondaryCtaUrl)
+          imageAlt: pick(page.acf?.gift_image_alt, fallbackHomeContent.giftPackage.imageAlt),
+          primaryCtaLabel: pick(page.acf?.gift_primary_cta_label, fallbackHomeContent.giftPackage.primaryCtaLabel),
+          primaryCtaUrl: pick(page.acf?.gift_primary_cta_url, fallbackHomeContent.giftPackage.primaryCtaUrl),
+          secondaryCtaLabel: pick(page.acf?.gift_secondary_cta_label, fallbackHomeContent.giftPackage.secondaryCtaLabel),
+          secondaryCtaUrl: pick(page.acf?.gift_secondary_cta_url, fallbackHomeContent.giftPackage.secondaryCtaUrl)
         }
       };
     } catch (error) {
@@ -1367,6 +1392,41 @@ export const dataService = {
     } catch (error) {
       console.error('Error updating wishlist:', error);
       return false;
+    }
+  },
+
+  // --- Route Ideas ---
+  async getRouteIdeas(): Promise<RouteIdea[]> {
+    try {
+      const ok = await checkWP();
+      if (!ok) return [];
+      const response = await fetch(`${WP_BASE_URL}/wp/v2/route_ideas?_embed&per_page=100`);
+      if (!response.ok) return [];
+      const data = await response.json() as WPResponseItem[];
+      return data.map((item) => {
+        const routeData = (item as any).hm_route_data || {};
+        return {
+          id: String(item.id),
+          slug: item.slug,
+          title: cleanText(routeData.title_override || item.title?.rendered || ''),
+          eyebrow: cleanText(routeData.eyebrow || ''),
+          tagline: cleanText(routeData.tagline || ''),
+          intro: cleanText(routeData.intro || ''),
+          audience: cleanText(routeData.audience || ''),
+          heroImage: routeData.hero_image || '',
+          highlights: (routeData.highlights || []).map((h: any) => cleanText(h.text || h.stop_name || '')).filter(Boolean),
+          routeStops: (routeData.route_stops || []).map((s: any) => cleanText(s.stop_name || s.text || '')).filter(Boolean),
+          match: {
+            categories: routeData.match_categories || [],
+            countries: routeData.match_countries || [],
+            destinations: routeData.match_destinations || [],
+            tags: routeData.match_tags || []
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching route ideas:', error);
+      return [];
     }
   }
 };

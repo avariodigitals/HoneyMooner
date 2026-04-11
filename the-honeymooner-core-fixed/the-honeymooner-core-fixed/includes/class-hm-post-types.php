@@ -85,6 +85,44 @@ class HM_Post_Types {
             'capability_type' => ['package', 'packages'],
             'map_meta_cap' => true,
         ]);
+
+        $route_labels = [
+            'name' => 'Route Ideas',
+            'singular_name' => 'Route Idea',
+            'menu_name' => 'Route Ideas',
+            'name_admin_bar' => 'Route Idea',
+            'add_new' => 'Add New',
+            'add_new_item' => 'Add New Route Idea',
+            'new_item' => 'New Route Idea',
+            'edit_item' => 'Edit Route Idea',
+            'view_item' => 'View Route Idea',
+            'all_items' => 'All Route Ideas',
+            'search_items' => 'Search Route Ideas',
+            'not_found' => 'No route ideas found.',
+            'not_found_in_trash' => 'No route ideas found in Trash.',
+        ];
+
+        register_post_type('route_ideas', [
+            'labels' => $route_labels,
+            'public' => true,
+            'publicly_queryable' => true,
+            'show_ui' => true,
+            'show_in_menu' => 'hm_dashboard',
+            'show_in_admin_bar' => true,
+            'show_in_nav_menus' => false,
+            'show_in_rest' => true,
+            'rest_base' => 'route_ideas',
+            'rest_controller_class' => 'WP_REST_Posts_Controller',
+            'menu_icon' => 'dashicons-location',
+            'supports' => ['title', 'editor', 'thumbnail', 'excerpt', 'revisions', 'custom-fields'],
+            'rewrite' => ['slug' => 'route-ideas', 'with_front' => false],
+            'has_archive' => false,
+            'hierarchical' => false,
+            'exclude_from_search' => false,
+            'query_var' => true,
+            'capability_type' => 'post',
+            'map_meta_cap' => true,
+        ]);
     }
 
     public static function register_meta(): void {
@@ -147,6 +185,32 @@ class HM_Post_Types {
                 'show_in_rest' => [
                     'schema' => self::rest_schema_for_type($type),
                 ],
+                'sanitize_callback' => [self::class, 'sanitize_meta_value'],
+                'auth_callback' => function () {
+                    return current_user_can('edit_posts');
+                },
+            ]);
+        }
+
+        $route_meta = [
+            'eyebrow' => 'string',
+            'title_override' => 'string',
+            'intro' => 'string',
+            'tagline' => 'string',
+            'audience' => 'string',
+            'hero_image' => 'string',
+            'match_categories' => 'string',
+            'match_countries' => 'string',
+            'match_destinations' => 'string',
+            'match_tags' => 'string',
+            'highlights' => 'array',
+            'route_stops' => 'array',
+        ];
+        foreach ($route_meta as $key => $type) {
+            register_post_meta('route_ideas', $key, [
+                'single' => true,
+                'type' => $type,
+                'show_in_rest' => true,
                 'sanitize_callback' => [self::class, 'sanitize_meta_value'],
                 'auth_callback' => function () {
                     return current_user_can('edit_posts');

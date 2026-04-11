@@ -1393,5 +1393,40 @@ export const dataService = {
       console.error('Error updating wishlist:', error);
       return false;
     }
+  },
+
+  // --- Route Ideas ---
+  async getRouteIdeas(): Promise<RouteIdea[]> {
+    try {
+      const ok = await checkWP();
+      if (!ok) return [];
+      const response = await fetch(`${WP_BASE_URL}/wp/v2/route_ideas?_embed&per_page=100`);
+      if (!response.ok) return [];
+      const data = await response.json() as WPResponseItem[];
+      return data.map((item) => {
+        const routeData = (item as any).hm_route_data || {};
+        return {
+          id: String(item.id),
+          slug: item.slug,
+          title: cleanText(routeData.title_override || item.title?.rendered || ''),
+          eyebrow: cleanText(routeData.eyebrow || ''),
+          tagline: cleanText(routeData.tagline || ''),
+          intro: cleanText(routeData.intro || ''),
+          audience: cleanText(routeData.audience || ''),
+          heroImage: routeData.hero_image || '',
+          highlights: (routeData.highlights || []).map((h: any) => cleanText(h.text || h.stop_name || '')).filter(Boolean),
+          routeStops: (routeData.route_stops || []).map((s: any) => cleanText(s.stop_name || s.text || '')).filter(Boolean),
+          match: {
+            categories: routeData.match_categories || [],
+            countries: routeData.match_countries || [],
+            destinations: routeData.match_destinations || [],
+            tags: routeData.match_tags || []
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching route ideas:', error);
+      return [];
+    }
   }
 };

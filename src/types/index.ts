@@ -242,3 +242,22 @@ export interface PackageReview {
   message: string;
   createdAt: string;
 }
+
+export interface RouteIdea {
+  id: string;
+  slug: string;
+  title: string;
+  eyebrow: string;
+  tagline: string;
+  intro: string;
+  audience: string;
+  heroImage: string;
+  highlights: string[];
+  routeStops: string[];
+  match: {
+    categories: string[];
+    countries: string[];
+    destinations: string[];
+    tags: string[];
+  };
+}

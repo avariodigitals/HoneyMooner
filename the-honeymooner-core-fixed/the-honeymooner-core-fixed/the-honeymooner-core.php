@@ -27,6 +27,7 @@ require_once HM_CORE_PATH . 'includes/class-hm-reviews-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-sync-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-media-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-featured-content-admin.php';
+require_once HM_CORE_PATH . 'includes/class-hm-route-idea-meta.php';
 require_once HM_CORE_PATH . 'includes/class-hm-rest.php';
 require_once HM_CORE_PATH . 'includes/class-hm-admin-menu.php';
 require_once HM_CORE_PATH . 'includes/class-hm-activator.php';
@@ -41,6 +42,7 @@ add_action('plugins_loaded', function () {
     HM_Leads_Admin::init();
     HM_Reviews_Admin::init();
     HM_Featured_Content_Admin::init();
+    HM_Route_Idea_Meta::init();
     HM_REST::init();
     HM_Admin_Menu::init();
 

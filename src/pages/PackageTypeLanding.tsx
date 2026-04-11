@@ -9,14 +9,15 @@ import SEO from '../components/layout/SEO';
 import { findPackageCollection } from '../config/packageCollections';
 import type { Destination, TravelPackage } from '../types';
 
-function matchesCollection(pkg: TravelPackage, destination: Destination | undefined, collectionSlug: string) {
-  const collection = findPackageCollection(collectionSlug);
+function matchesCollection(pkg: TravelPackage, destination: Destination | undefined, collection: any) {
   if (!collection) return false;
 
   // Public collection pages should only surface honeymoon packages.
   if (pkg.category !== 'honeymoon') return false;
 
-  const { categories, destinationNames, destinationCountries, tags } = collection.match;
+  const { categories, tags } = collection.match;
+  const destinationNames = collection.match.destinationNames || collection.match.destinations;
+  const destinationCountries = collection.match.destinationCountries || collection.match.countries;
 
   if (categories && !categories.includes(pkg.category)) return false;
 
@@ -44,17 +45,31 @@ function matchesCollection(pkg: TravelPackage, destination: Destination | undefi
 
 const PackageTypeLanding = () => {
   const { slug } = useParams();
-  const { packages, destinations, isLoading } = useData();
+  const { packages, destinations, routeIdeas, isLoading } = useData();
   const { formatPrice } = useCurrency();
 
-  const collection = slug ? findPackageCollection(slug) : undefined;
+  const collection = useMemo(() => {
+    if (!slug) return undefined;
+    
+    // Try to find a dynamic route idea from WordPress first
+    const dynamicRoute = routeIdeas?.find(r => r.slug === slug);
+    if (dynamicRoute) {
+      return {
+        ...dynamicRoute,
+        route: dynamicRoute.routeStops || [],
+        destinations: dynamicRoute.destinations || []
+      };
+    }
+    
+    return findPackageCollection(slug);
+  }, [slug, routeIdeas]);
 
   const matchingPackages = useMemo(() => {
     if (!collection) return [];
 
     return packages.filter((pkg) => {
       const destination = destinations.find((item) => item.id === pkg.destinationId);
-      return matchesCollection(pkg, destination, collection.slug);
+      return matchesCollection(pkg, destination, collection);
     });
   }, [collection, destinations, packages]);
 

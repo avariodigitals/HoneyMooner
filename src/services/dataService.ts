@@ -301,6 +301,13 @@ interface WPReviewItem {
 
 interface WPPageItem {
   id: number;
+  hm_featured_content?: {
+    hero_image?: string;
+    hero_title?: string;
+    hero_subtitle?: string;
+    cta_label?: string;
+    cta_url?: string;
+  };
   acf?: {
     hero_title?: string;
     hero_subtitle?: string;
@@ -1070,16 +1077,21 @@ export const dataService = {
       if (!response.ok) return null;
       const data = await response.json() as WPPageItem[];
       const page = data[0];
-      if (!page?.acf) return null;
+      
+      // If the page doesn't exist or doesn't have the expected plugin data, return null
+      if (!page) return null;
 
-      const heroImage = await resolveImageValue(page.acf.hero_image);
-      const giftImage = await resolveImageValue(page.acf.gift_image);
-      const [styleBeachImage, styleIslandImage, styleAdventureImage, styleCityImage] = await Promise.all([
+      // Prefer plugin's featured content hero image if available, else fallback to ACF, else fallback image
+      const heroImage = (page.hm_featured_content && page.hm_featured_content.hero_image)
+        || await resolveImageValue(page.acf?.hero_image)
+        || '';
+      const giftImage = page.acf ? await resolveImageValue(page.acf.gift_image) : '';
+      const [styleBeachImage, styleIslandImage, styleAdventureImage, styleCityImage] = page.acf ? await Promise.all([
         resolveImageValue(page.acf.browse_style_beach_image),
         resolveImageValue(page.acf.browse_style_island_image),
         resolveImageValue(page.acf.browse_style_adventure_image),
         resolveImageValue(page.acf.browse_style_city_image)
-      ]);
+      ]) : ['', '', '', ''];
 
       const fallbackHomeContent: HomeContent = {
         styleImages: {
@@ -1126,20 +1138,20 @@ export const dataService = {
 
       return {
         hero: {
-          title: pick(page.acf.hero_title, fallbackHomeContent.hero.title),
-          subtitle: pick(page.acf.hero_subtitle, fallbackHomeContent.hero.subtitle),
+          title: pick(page.hm_featured_content?.hero_title || page.acf?.hero_title, fallbackHomeContent.hero.title),
+          subtitle: pick(page.hm_featured_content?.hero_subtitle || page.acf?.hero_subtitle, fallbackHomeContent.hero.subtitle),
           image: heroImage || fallbackHomeContent.hero.image,
-          cta: pick(page.acf.hero_cta, fallbackHomeContent.hero.cta)
+          cta: pick(page.hm_featured_content?.cta_label || page.acf?.hero_cta, fallbackHomeContent.hero.cta)
         },
         destinations: {
-          title: pick(page.acf.destinations_title, fallbackHomeContent.destinations.title),
-          subtitle: pick(page.acf.destinations_subtitle, fallbackHomeContent.destinations.subtitle),
-          description: pick(page.acf.destinations_description, fallbackHomeContent.destinations.description)
+          title: pick(page.acf?.destinations_title, fallbackHomeContent.destinations.title),
+          subtitle: pick(page.acf?.destinations_subtitle, fallbackHomeContent.destinations.subtitle),
+          description: pick(page.acf?.destinations_description, fallbackHomeContent.destinations.description)
         },
         packages: {
-          title: pick(page.acf.packages_title, fallbackHomeContent.packages.title),
-          subtitle: pick(page.acf.packages_subtitle, fallbackHomeContent.packages.subtitle),
-          description: pick(page.acf.packages_description, fallbackHomeContent.packages.description)
+          title: pick(page.acf?.packages_title, fallbackHomeContent.packages.title),
+          subtitle: pick(page.acf?.packages_subtitle, fallbackHomeContent.packages.subtitle),
+          description: pick(page.acf?.packages_description, fallbackHomeContent.packages.description)
         },
         styleImages: {
           beach: styleBeachImage || fallbackHomeContent.styleImages.beach,
@@ -1149,16 +1161,16 @@ export const dataService = {
         },
         fallbackImages: siteImageFallbacks,
         giftPackage: {
-          eyebrow: pick(page.acf.gift_eyebrow, fallbackHomeContent.giftPackage.eyebrow),
-          title: pick(page.acf.gift_title, fallbackHomeContent.giftPackage.title),
-          description: pick(page.acf.gift_description, fallbackHomeContent.giftPackage.description),
-          note: pick(page.acf.gift_note, fallbackHomeContent.giftPackage.note),
+          eyebrow: pick(page.acf?.gift_eyebrow, fallbackHomeContent.giftPackage.eyebrow),
+          title: pick(page.acf?.gift_title, fallbackHomeContent.giftPackage.title),
+          description: pick(page.acf?.gift_description, fallbackHomeContent.giftPackage.description),
+          note: pick(page.acf?.gift_note, fallbackHomeContent.giftPackage.note),
           image: giftImage || fallbackHomeContent.giftPackage.image,
-          imageAlt: pick(page.acf.gift_image_alt, fallbackHomeContent.giftPackage.imageAlt),
-          primaryCtaLabel: pick(page.acf.gift_primary_cta_label, fallbackHomeContent.giftPackage.primaryCtaLabel),
-          primaryCtaUrl: pick(page.acf.gift_primary_cta_url, fallbackHomeContent.giftPackage.primaryCtaUrl),
-          secondaryCtaLabel: pick(page.acf.gift_secondary_cta_label, fallbackHomeContent.giftPackage.secondaryCtaLabel),
-          secondaryCtaUrl: pick(page.acf.gift_secondary_cta_url, fallbackHomeContent.giftPackage.secondaryCtaUrl)
+          imageAlt: pick(page.acf?.gift_image_alt, fallbackHomeContent.giftPackage.imageAlt),
+          primaryCtaLabel: pick(page.acf?.gift_primary_cta_label, fallbackHomeContent.giftPackage.primaryCtaLabel),
+          primaryCtaUrl: pick(page.acf?.gift_primary_cta_url, fallbackHomeContent.giftPackage.primaryCtaUrl),
+          secondaryCtaLabel: pick(page.acf?.gift_secondary_cta_label, fallbackHomeContent.giftPackage.secondaryCtaLabel),
+          secondaryCtaUrl: pick(page.acf?.gift_secondary_cta_url, fallbackHomeContent.giftPackage.secondaryCtaUrl)
         }
       };
     } catch (error) {

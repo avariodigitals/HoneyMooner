@@ -13,7 +13,7 @@ const Hero = () => {
       {/* Dynamic Hero Image */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img 
-          src={homeContent.hero.image} 
+          src={homeContent.hero.image + '?v=1'} 
           className="w-full h-full object-cover opacity-60 scale-105 origin-center"
           alt="Luxury Honeymoon"
           onError={(e) => {

@@ -251,8 +251,8 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     tagline: 'A smooth cross-region journey.',
     intro: 'A route that blends city energy, island ease, and Southern African style into one honeymoon flow.',
     highlights: ['Regional variety', 'Strong honeymoon potential', 'Easy to personalize'],
-    destinations: ['Port of Departure', 'Cotonou', 'Cape Verde', 'Cape Town', 'Johannesburg', 'Lagos'],
-    route: ['Port of Departure', 'Cotonou', 'Cape Verde', 'Cape Town', 'Johannesburg', 'Lagos'],
+    destinations: ['Port of Departure', 'Cotonou', 'Cape Verde', 'Cape Town', 'Johannesburg'],
+    route: ['Port of Departure', 'Cotonou', 'Cape Verde', 'Cape Town', 'Johannesburg'],
     heroImage: romanticHeroImage,
     match: {
       destinationCountries: ['Benin', 'Cape Verde', 'South Africa', 'Nigeria'],
@@ -269,7 +269,7 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     intro: 'A big-scope itinerary through Asia that combines vibrant cities, beach life, and luxury stays.',
     highlights: ['Big-city stops', 'Beach downtime', 'Ideal for adventurous couples'],
     destinations: ['Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia'],
-    route: ['Port of Departure', 'Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia', 'Lagos'],
+    route: ['Port of Departure', 'Accra', 'Bali', 'Bangkok', 'Singapore', 'Malaysia'],
     heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationNames: ['Bali', 'Bangkok', 'Singapore'],
@@ -286,8 +286,8 @@ export const PACKAGE_COLLECTIONS: PackageCollectionDefinition[] = [
     tagline: 'Wildlife first, ocean calm after.',
     intro: 'A balanced route across East and Southern Africa with strong romance, wildlife, and beach appeal.',
     highlights: ['Safari and beach blend', 'Popular for African couples', 'Flexible stopover options'],
-    destinations: ['Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa', 'Lagos'],
-    route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa', 'Lagos'],
+    destinations: ['Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa'],
+    route: ['Port of Departure', 'Nairobi', 'Zanzibar', 'Cape Town', 'Namibia', 'Addis Ababa'],
     heroImage: '/images/placeholder-travel.svg',
     match: {
       destinationCountries: ['Kenya', 'Tanzania', 'South Africa', 'Namibia', 'Ethiopia'],

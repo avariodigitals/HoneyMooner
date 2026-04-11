@@ -1008,7 +1008,7 @@ export const dataService = {
         title: cleanText(item.title?.rendered || ''),
         excerpt: `${cleanText(item.excerpt?.rendered || '').substring(0, 160)}...`,
         category: cleanText(item._embedded?.['wp:term']?.[0]?.[0]?.name || 'Travel'),
-        author: cleanText(item._embedded?.author?.[0]?.name || 'The Honeymoonner'),
+        author: cleanText(item._embedded?.author?.[0]?.name || 'The Honeymooner Travel'),
         date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         image: item._embedded?.['wp:featuredmedia']?.[0]?.source_url || siteImageFallbacks.general,
         readTime: '8 min read',
@@ -1185,7 +1185,7 @@ export const dataService = {
         },
         success: {
           title: 'Enquiry Received!',
-          message: 'Thank you for reaching out to The Honeymoonner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
+          message: 'Thank you for reaching out to The Honeymooner Travel. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
           cta: 'Return Home'
         },
         bespoke: {

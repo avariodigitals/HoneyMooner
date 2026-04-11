@@ -23,7 +23,7 @@ const defaultHomeContent: HomeContent = {
   hero: {
     title: "Plan a Once-in-a-Lifetime Honeymoon — Without the Stress",
     subtitle: "We design fully personalized luxury honeymoon experiences — from destination selection to every intimate detail.",
-    image: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero.jpg",
+    image: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero-2.jpg",
     cta: "Start Planning Your Honeymoon"
   },
   destinations: {
@@ -58,7 +58,7 @@ const defaultBookingContent: BookingContent = {
   },
   success: {
     title: 'Enquiry Received!',
-    message: 'Thank you for reaching out to The Honeymoonner. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
+    message: 'Thank you for reaching out to The Honeymooner Travel. Our romantic travel specialist will contact you via WhatsApp or Email within the next 24 hours to begin planning your dream escape.',
     cta: 'Return Home'
   },
   bespoke: {

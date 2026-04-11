@@ -105,7 +105,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
 
             {/* Footer Decoration */}
             <div className="bg-brand-50 py-4 px-8 flex items-center justify-center gap-2 border-t border-brand-100">
-              <span className="text-[10px] text-brand-300 font-bold uppercase tracking-widest italic">The Honeymoonner</span>
+              <span className="text-[10px] text-brand-300 font-bold uppercase tracking-widest italic">The Honeymooner Travel</span>
             </div>
           </motion.div>
         </>

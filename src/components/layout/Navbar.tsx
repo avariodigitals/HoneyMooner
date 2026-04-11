@@ -78,7 +78,7 @@ const Navbar = () => {
         <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2 group relative z-[110]">
           <img 
             src={logoUrl} 
-            alt="The Honeymoonner" 
+            alt="The Honeymooner Travel" 
             className={cn(
               "w-auto transition-all duration-500 block",
               isTransparent ? "h-12 sm:h-20" : "h-10 sm:h-16"
@@ -514,7 +514,7 @@ const Navbar = () => {
                       </div>
 
                       <div className="text-center space-y-4">
-                        <p className="script-font text-brand-accent text-3xl opacity-80">The Honeymoonner</p>
+                        <p className="script-font text-brand-accent text-3xl opacity-80">The Honeymooner Travel</p>
                         <p className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-medium italic">Luxury Honeymoon Planning &copy; 2026</p>
                       </div>
                     </motion.div>

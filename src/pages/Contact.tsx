@@ -92,17 +92,54 @@ const Contact = () => {
 
   const contactInfo = [
     { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'info@thehoneymoonner.com', href: 'mailto:info@thehoneymoonner.com' },
-    { icon: <Phone className="w-5 h-5" />, label: 'Phone', value: '+2348131760694', href: 'tel:+2348131760694' },
-    { icon: <MapPin className="w-5 h-5" />, label: 'Office', value: 'Lagos, United Kingdom' },
+    { icon: <Phone className="w-5 h-5" />, label: 'Phone (Nigeria)', value: '+2348131760694', href: 'tel:+2348131760694' },
+    { icon: <Phone className="w-5 h-5" />, label: 'Phone (UK)', value: '07341 899849', href: 'tel:07341899849' },
+    { icon: <MapPin className="w-5 h-5" />, label: 'Office', value: 'UNIT 1, 137 Cheetham Hill Rd, Cheetham Hill, Manchester M8 8LY' },
   ];
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "The Honeymooner Travel",
+    "url": "https://thehoneymoonertravel.com",
+    "logo": "https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png",
+    "description": "Curated luxury honeymoon packages and romantic escapes. Discover the world's most intimate destinations with The Honeymooner Travel.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "UNIT 1, 137 Cheetham Hill Rd",
+      "addressLocality": "Cheetham Hill, Manchester",
+      "postalCode": "M8 8LY",
+      "addressCountry": "GB"
+    },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "telephone": "+2348131760694",
+        "contactType": "customer service",
+        "availableLanguage": "English",
+        "description": "Nigeria Office"
+      },
+      {
+        "@type": "ContactPoint",
+        "telephone": "07341 899849",
+        "contactType": "customer service",
+        "availableLanguage": "English",
+        "description": "UK Office"
+      }
+    ],
+    "sameAs": [
+      "https://thehoneymoonertravel.com"
+    ]
+  };
 
   return (
     <div className="pt-24 min-h-screen bg-brand-50">
       <SEO
         title="Contact Us"
-        description="Speak with The Honeymoonner travel experts and start planning a personalized honeymoon, anniversary, or romantic getaway."
+        description="Speak with The Honeymooner Travel travel experts and start planning a personalized honeymoon, anniversary, or romantic getaway."
         canonical="https://thehoneymoonertravel.com/contact"
         keywords="honeymoon travel consultation, contact honeymoon planner, romantic getaway experts"
+        schema={organizationSchema}
       />
       <Breadcrumbs />
 
@@ -111,7 +148,7 @@ const Contact = () => {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/natalya-zaritskaya-SIOdjcYotms-unsplash-scaled.jpg" 
-            alt="Contact The Honeymoonner" 
+            alt="Contact The Honeymooner Travel" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-[1px]" />

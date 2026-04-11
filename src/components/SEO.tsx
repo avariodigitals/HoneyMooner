@@ -60,15 +60,15 @@ function parseRawHeadHtml(raw: string) {
 }
 
 export default function SEO({
-  title = 'The Honeymoonner | Luxury Romantic Travel & Honeymoon Packages',
-  description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymoonner.',
+  title = 'The Honeymooner Travel | Luxury Romantic Travel & Honeymoon Packages',
+  description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymooner Travel.',
   canonical,
   image = DEFAULT_IMAGE,
   noindex = false,
   raw,
 }: SEOProps) {
   const rawHead = useMemo(() => (raw ? parseRawHeadHtml(raw) : null), [raw]);
-  const canonicalUrl = canonical || 'https://thehoneymooner.com';
+  const canonicalUrl = canonical || 'https://thehoneymoonertravel.com';
 
   if (raw && rawHead) {
     return <Helmet>{rawHead}</Helmet>;
@@ -85,7 +85,27 @@ export default function SEO({
         content={noindex ? 'noindex,nofollow' : 'index,follow'}
       />
 
+      {/* Open Graph / Facebook */}
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:site_name" content="The Honeymooner Travel" />
       {image && <meta property="og:image" content={image} />}
+      <meta property="og:image:alt" content="The Honeymooner Travel - Luxury Honeymoon Packages" />
+
+      {/* Twitter */}
+      <meta property="twitter:card" content="summary_large_image" />
+      <meta property="twitter:url" content={canonicalUrl} />
+      <meta property="twitter:title" content={title} />
+      <meta property="twitter:description" content={description} />
+      {image && <meta property="twitter:image" content={image} />}
+      <meta property="twitter:image:alt" content="The Honeymooner Travel - Luxury Honeymoon Packages" />
+
+      {/* Additional SEO */}
+      <meta name="author" content="The Honeymooner Travel" />
+      <link rel="author" href="https://thehoneymoonertravel.com" />
+      <meta name="publisher" content="The Honeymooner Travel" />
     </Helmet>
   );
 }

@@ -77,7 +77,7 @@ const FAQs = () => {
         <div className="absolute inset-0 z-0">
           <img 
             src="/images/placeholder-travel.svg" 
-            alt="FAQs The Honeymoonner" 
+            alt="FAQs The Honeymooner Travel" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-brand-900/40 backdrop-blur-[1px]" />

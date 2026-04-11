@@ -13,8 +13,8 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({
-  title = 'The Honeymoonner | Luxury Romantic Travel & Honeymoon Packages',
-  description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymoonner.',
+  title = 'The Honeymooner Travel | Luxury Romantic Travel & Honeymoon Packages',
+  description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymooner Travel.',
   keywords = 'honeymoon, romantic travel, luxury travel, honeymoon packages, romantic getaways, destination wedding',
   image = 'https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png',
   url = 'https://thehoneymoonner.com',
@@ -22,7 +22,7 @@ const SEO: React.FC<SEOProps> = ({
   type = 'website',
   schema
 }) => {
-  const siteTitle = title.includes('The Honeymoonner') ? title : `${title} | The Honeymoonner`;
+  const siteTitle = title.includes('The Honeymooner Travel') ? title : `${title} | The Honeymooner Travel`;
   const effectiveUrl = canonical || url;
 
   return (

@@ -62,6 +62,21 @@ class HM_REST {
     }
 
     public static function register_rest_fields(): void {
+                // Expose featured content (including hero image) for home-settings page
+                register_rest_field('page', 'hm_featured_content', [
+                    'get_callback' => function ($post_arr) {
+                        if (empty($post_arr['slug']) || $post_arr['slug'] !== 'home-settings') return null;
+                        $settings = get_option('hm_featured_content_settings', []);
+                        return [
+                            'hero_image' => $settings['hero_image'] ?? '',
+                            'hero_title' => $settings['hero_title'] ?? '',
+                            'hero_subtitle' => $settings['hero_subtitle'] ?? '',
+                            'cta_label' => $settings['cta_label'] ?? '',
+                            'cta_url' => $settings['cta_url'] ?? '',
+                        ];
+                    },
+                    'schema' => ['type' => 'object', 'context' => ['view', 'edit']],
+                ]);
         foreach (['packages', 'destinations'] as $type) {
             register_rest_field($type, 'featured_image_url', [
                 'get_callback' => function (array $post_arr) {

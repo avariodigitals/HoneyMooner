@@ -14,7 +14,8 @@ import type {
   PackageCategory,
   PricingTier,
   PackageInclusion,
-  Departure
+  Departure,
+  PricingBasis
 } from '../types';
 
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
@@ -749,7 +750,7 @@ export const dataService = {
           tiers: tiers.length > 0
             ? tiers
             : packageData?.starting_price
-              ? [{ id: 'starter', name: 'Premium' as const, price: Number(packageData.starting_price), basis: (packageData.pricing_basis as any) || 'per couple' as const }]
+              ? [{ id: 'starter', name: 'Premium' as const, price: Number(packageData.starting_price), basis: (packageData.pricing_basis as PricingBasis) || 'per couple' as const }]
               : [{ id: 'fallback-premium', name: 'Premium' as const, price: 0, basis: 'per couple' as const }],
           inclusions: parseInclusions(item.acf?.inclusions || item.meta?.inclusions),
           exclusions: parseStringList(item.acf?.exclusions || item.meta?.exclusions),

@@ -199,6 +199,7 @@ class HM_Post_Types {
             'tagline' => 'string',
             'audience' => 'string',
             'hero_image' => 'string',
+            'destinations' => 'string',
             'match_categories' => 'string',
             'match_countries' => 'string',
             'match_destinations' => 'string',

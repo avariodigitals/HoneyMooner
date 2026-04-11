@@ -90,6 +90,7 @@ class HM_REST {
                     'intro' => get_post_meta($post_id, 'intro', true),
                     'audience' => get_post_meta($post_id, 'audience', true),
                     'hero_image' => get_post_meta($post_id, 'hero_image', true),
+                    'destinations' => array_map('trim', explode(',', get_post_meta($post_id, 'destinations', true) ?: '')),
                     'match_categories' => array_map('trim', explode(',', get_post_meta($post_id, 'match_categories', true) ?: '')),
                     'match_countries' => array_map('trim', explode(',', get_post_meta($post_id, 'match_countries', true) ?: '')),
                     'match_destinations' => array_map('trim', explode(',', get_post_meta($post_id, 'match_destinations', true) ?: '')),
@@ -105,7 +106,7 @@ class HM_REST {
                 if (!is_array($value)) return;
 
                 $meta_keys = [
-                    'eyebrow', 'title_override', 'tagline', 'intro', 'audience', 'hero_image',
+                    'eyebrow', 'title_override', 'tagline', 'intro', 'audience', 'hero_image', 'destinations',
                     'match_categories', 'match_countries', 'match_destinations', 'match_tags'
                 ];
 
@@ -132,6 +133,7 @@ class HM_REST {
                     'intro' => ['type' => 'string'],
                     'audience' => ['type' => 'string'],
                     'hero_image' => ['type' => 'string'],
+                    'destinations' => ['type' => 'array'],
                     'match_categories' => ['type' => 'string'],
                     'match_countries' => ['type' => 'string'],
                     'match_destinations' => ['type' => 'string'],

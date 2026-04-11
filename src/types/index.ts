@@ -252,6 +252,7 @@ export interface RouteIdea {
   intro: string;
   audience: string;
   heroImage: string;
+  destinations: string[];
   highlights: string[];
   routeStops: string[];
   match: {

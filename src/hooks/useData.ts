@@ -23,7 +23,7 @@ const defaultHomeContent: HomeContent = {
   hero: {
     title: "Plan a Once-in-a-Lifetime Honeymoon — Without the Stress",
     subtitle: "We design fully personalized luxury honeymoon experiences — from destination selection to every intimate detail.",
-    image: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero2.jpg ",
+    image: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero-2.jpg",
     cta: "Start Planning Your Honeymoon"
   },
   destinations: {

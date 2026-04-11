@@ -305,8 +305,10 @@ interface WPPageItem {
     hero_image?: string;
     hero_title?: string;
     hero_subtitle?: string;
-    cta_label?: string;
-    cta_url?: string;
+    cta1_label?: string;
+    cta1_url?: string;
+    cta2_label?: string;
+    cta2_url?: string;
   };
   acf?: {
     hero_title?: string;
@@ -1104,7 +1106,10 @@ export const dataService = {
           title: 'Plan a Once-in-a-Lifetime Honeymoon - Without the Stress',
           subtitle: 'We design fully personalized luxury honeymoon experiences - from destination selection to every intimate detail.',
           image: siteImageFallbacks.hero,
-          cta: 'Start Planning Your Honeymoon'
+          cta: {
+            label: 'Start Planning Your Honeymoon',
+            url: '/booking'
+          }
         },
         destinations: {
           title: 'Where Do You Want to Begin?',
@@ -1141,7 +1146,14 @@ export const dataService = {
           title: pick(page.hm_featured_content?.hero_title || page.acf?.hero_title, fallbackHomeContent.hero.title),
           subtitle: pick(page.hm_featured_content?.hero_subtitle || page.acf?.hero_subtitle, fallbackHomeContent.hero.subtitle),
           image: heroImage || fallbackHomeContent.hero.image,
-          cta: pick(page.hm_featured_content?.cta_label || page.acf?.hero_cta, fallbackHomeContent.hero.cta)
+          cta: {
+            label: pick(page.hm_featured_content?.cta1_label || page.acf?.hero_cta, fallbackHomeContent.hero.cta.label),
+            url: page.hm_featured_content?.cta1_url || '/booking'
+          },
+          cta2: page.hm_featured_content?.cta2_label ? {
+            label: page.hm_featured_content.cta2_label,
+            url: page.hm_featured_content.cta2_url || '/packages'
+          } : undefined
         },
         destinations: {
           title: pick(page.acf?.destinations_title, fallbackHomeContent.destinations.title),

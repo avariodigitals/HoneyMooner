@@ -139,7 +139,14 @@ export interface HomeContent {
     title: string;
     subtitle: string;
     image: string;
-    cta: string;
+    cta: {
+      label: string;
+      url: string;
+    };
+    cta2?: {
+      label: string;
+      url: string;
+    };
   };
   destinations: {
     title: string;

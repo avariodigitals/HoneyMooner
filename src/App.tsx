@@ -30,6 +30,7 @@ import Wishlist from './pages/Wishlist';
 import GiftCards from './pages/GiftCards';
 import GiftCardCheckout from './pages/GiftCardCheckout';
 import ResetPassword from './pages/ResetPassword';
+import NotFound from './pages/NotFound';
 
 import { trackPageView } from './services/analytics';
 
@@ -62,7 +63,7 @@ const AnimatedRoutes = () => {
         <Route path="/account" element={<Account />} />
         <Route path="/account/wishlist" element={<Wishlist />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
   );

@@ -71,8 +71,10 @@ class HM_REST {
                             'hero_image' => $settings['hero_image'] ?? '',
                             'hero_title' => $settings['hero_title'] ?? '',
                             'hero_subtitle' => $settings['hero_subtitle'] ?? '',
-                            'cta_label' => $settings['cta_label'] ?? '',
-                            'cta_url' => $settings['cta_url'] ?? '',
+                            'cta1_label' => $settings['cta1_label'] ?? '',
+                            'cta1_url' => $settings['cta1_url'] ?? '',
+                            'cta2_label' => $settings['cta2_label'] ?? '',
+                            'cta2_url' => $settings['cta2_url'] ?? '',
                         ];
                     },
                     'schema' => ['type' => 'object', 'context' => ['view', 'edit']],

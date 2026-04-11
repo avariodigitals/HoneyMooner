@@ -8,6 +8,8 @@ import { ASSETS } from '../../config/images';
 const Hero = () => {
   const { homeContent } = useData();
 
+  if (!homeContent?.hero) return null;
+
   return (
     <div className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden bg-brand-900 w-full">
       {/* Dynamic Hero Image */}
@@ -50,7 +52,7 @@ const Hero = () => {
               className="relative group w-full"
             >
               <div className="absolute -inset-1 bg-brand-accent/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-1000" />
-              {homeContent.hero.cta.url.startsWith('http') ? (
+              {homeContent.hero.cta.url?.startsWith('http') ? (
                 <a 
                   href={homeContent.hero.cta.url} 
                   className="relative w-full min-h-[56px] bg-brand-accent text-white py-3 sm:py-4 px-8 rounded-full text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] shadow-[0_15px_40px_rgba(196,154,108,0.2)] flex items-center justify-center gap-3 overflow-hidden border border-brand-accent hover:bg-brand-700 transition-all duration-500 group"
@@ -61,7 +63,7 @@ const Hero = () => {
                 </a>
               ) : (
                 <Link 
-                  to={homeContent.hero.cta.url} 
+                  to={homeContent.hero.cta.url || "/booking"} 
                   className="relative w-full min-h-[56px] bg-brand-accent text-white py-3 sm:py-4 px-8 rounded-full text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] shadow-[0_15px_40px_rgba(196,154,108,0.2)] flex items-center justify-center gap-3 overflow-hidden border border-brand-accent hover:bg-brand-700 transition-all duration-500 group"
                 >
                   <span className="relative z-10">{homeContent.hero.cta.label}</span>
@@ -80,7 +82,7 @@ const Hero = () => {
                 transition={{ delay: 1.2, duration: 0.8 }}
                 className="w-full"
               >
-                {homeContent.hero.cta2.url.startsWith('http') ? (
+                {homeContent.hero.cta2.url?.startsWith('http') ? (
                   <a 
                     href={homeContent.hero.cta2.url} 
                     className="relative w-full min-h-[56px] px-8 py-3 sm:py-4 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-[0.3em] hover:bg-white/10 hover:border-brand-accent/50 transition-all duration-500 flex items-center justify-center gap-2 group"
@@ -90,7 +92,7 @@ const Hero = () => {
                   </a>
                 ) : (
                   <Link 
-                    to={homeContent.hero.cta2.url} 
+                    to={homeContent.hero.cta2.url || "/packages"} 
                     className="relative w-full min-h-[56px] px-8 py-3 sm:py-4 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-[0.3em] hover:bg-white/10 hover:border-brand-accent/50 transition-all duration-500 flex items-center justify-center gap-2 group"
                   >
                     <div className="absolute inset-0 rounded-full border border-white/0 group-hover:border-brand-accent/30 transition-all duration-700 scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100" />

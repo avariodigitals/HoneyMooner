@@ -24,7 +24,10 @@ const defaultHomeContent: HomeContent = {
     title: "Plan a Once-in-a-Lifetime Honeymoon — Without the Stress",
     subtitle: "We design fully personalized luxury honeymoon experiences — from destination selection to every intimate detail.",
     image: "https://cms.thehoneymoonertravel.com/wp-content/uploads/2026/04/homepage-default-hero-2.jpg",
-    cta: "Start Planning Your Honeymoon"
+    cta: {
+      label: "Start Planning Your Honeymoon",
+      url: "/booking"
+    }
   },
   destinations: {
     title: "Where Do You Want to Begin?",
@@ -145,7 +148,11 @@ function sanitizeHomeContent(content: HomeContent): HomeContent {
     },
     hero: {
       ...content.hero,
-      image: normalizeImage(content.hero?.image, defaultHomeContent.hero.image)
+      image: normalizeImage(content.hero?.image, defaultHomeContent.hero.image),
+      cta: typeof content.hero?.cta === 'object' ? {
+        label: content.hero.cta.label || defaultHomeContent.hero.cta.label,
+        url: content.hero.cta.url || defaultHomeContent.hero.cta.url
+      } : defaultHomeContent.hero.cta
     },
     giftPackage: {
       ...content.giftPackage,

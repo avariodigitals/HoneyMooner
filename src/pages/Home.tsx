@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useWishlist } from '../context/WishlistContext';
 import Hero from '../components/ui/Hero';
 import { useData } from '../hooks/useData';
@@ -12,48 +12,45 @@ import { ASSETS } from '../config/images';
 import { useUser } from '../hooks/useUser';
 
 import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
+
+const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
+
 const Home = () => {
-  const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
   const { packages, destinations, testimonials, homeContent } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
   const navigate = useNavigate();
   const { wishlist: wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
   const [loadedDestinationImages, setLoadedDestinationImages] = useState<Record<string, boolean>>({});
-  const [featuredStartIndex, setFeaturedStartIndex] = useState(0);
-  
+  const [featuredStartIndex] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const rawStored = window.localStorage.getItem(FEATURED_DESTINATION_INDEX_KEY);
+    const storedIndex = rawStored ? Number.parseInt(rawStored, 10) : 0;
+    const safeIndex = Number.isFinite(storedIndex) && storedIndex >= 0 ? storedIndex : 0;
+
+    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    if (navEntry?.type === 'reload') {
+      const next = safeIndex + 1;
+      window.localStorage.setItem(FEATURED_DESTINATION_INDEX_KEY, String(next));
+      return next;
+    }
+    return safeIndex;
+  });
+
   // Featured packages for the home page (first 3 honeymoons)
   const featuredPackages = packages.filter(p => p.category === 'honeymoon').slice(0, 3);
-  const featuredDestinations = destinations.length <= 3
+  
+  const total = destinations.length;
+  const effectiveStartIndex = total > 0 ? featuredStartIndex % total : 0;
+  
+  const featuredDestinations = total <= 3
     ? destinations
-    : Array.from({ length: 3 }, (_, idx) => destinations[(featuredStartIndex + idx) % destinations.length]);
+    : Array.from({ length: 3 }, (_, idx) => destinations[(effectiveStartIndex + idx) % total]);
+  
   const featuredThemeCollections = PACKAGE_COLLECTIONS
     .filter((collection) => collection.kind === 'theme' && collection.slug !== 'signature-experience')
     .map((collection) => findPackageCollection(collection.slug) || collection)
     .slice(0, 4);
-
-  // Wishlist is now managed globally via context
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const total = destinations.length;
-    if (total <= 3) {
-      setFeaturedStartIndex(0);
-      return;
-    }
-
-    const rawStored = window.localStorage.getItem(FEATURED_DESTINATION_INDEX_KEY);
-    const storedIndex = rawStored ? Number.parseInt(rawStored, 10) : 0;
-    const safeStoredIndex = Number.isFinite(storedIndex) && storedIndex >= 0 ? storedIndex : 0;
-    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    const isReload = navEntry?.type === 'reload';
-    const baseIndex = safeStoredIndex % total;
-    const nextIndex = isReload ? (baseIndex + 1) % total : baseIndex;
-
-    setFeaturedStartIndex(nextIndex);
-    window.localStorage.setItem(FEATURED_DESTINATION_INDEX_KEY, String(nextIndex));
-  }, [destinations.length]);
 
   const toggleWishlist = async (pkgId: string) => {
     if (!isAuthenticated) {
@@ -201,7 +198,7 @@ const Home = () => {
                     />
                   </button>
                   <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 flex flex-wrap gap-2 pr-4">
-                    {pkg.tags.slice(0, 3).map(tag => (
+                    {(pkg.tags || []).slice(0, 3).map(tag => (
                       <span key={tag} className="px-3 sm:px-4 py-1 sm:py-1.5 bg-brand-900/60 backdrop-blur-md text-white text-[9px] sm:text-[10px] uppercase tracking-widest font-bold rounded-full">
                         {tag}
                       </span>
@@ -234,8 +231,8 @@ const Home = () => {
                         Starting from
                       </p>
                       <p className="text-xl sm:text-2xl font-serif text-brand-900">
-                        {formatPrice(pkg.tiers[0].price)}
-                        <span className="text-[10px] sm:text-xs font-sans text-brand-400 ml-1 font-normal lowercase italic">/{pkg.tiers[0].basis.split(' ')[1]}</span>
+                        {formatPrice(pkg.tiers?.[0]?.price || 0)}
+                        <span className="text-[10px] sm:text-xs font-sans text-brand-400 ml-1 font-normal lowercase italic">/{pkg.tiers?.[0]?.basis?.split(' ')?.[1] || 'couple'}</span>
                       </p>
                     </div>
                     <Link to={`/packages/${pkg.slug}`} className="btn-primary inline-flex w-full sm:w-auto sm:min-w-[180px] min-h-[48px] px-8 py-3 text-xs sm:text-sm items-center justify-center gap-2 whitespace-nowrap text-center leading-none shadow-lg shadow-brand-accent/15 transition-all hover:-translate-y-0.5 self-center">

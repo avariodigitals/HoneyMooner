@@ -9,7 +9,7 @@ import SEO from '../components/layout/SEO';
 import { findPackageCollection } from '../config/packageCollections';
 import type { Destination, TravelPackage } from '../types';
 
-function matchesCollection(pkg: TravelPackage, destination: Destination | undefined, collection: any) {
+function matchesCollection(pkg: TravelPackage, destination: Destination | undefined, collection: { match: { categories?: string[]; tags?: string[]; destinations?: string[]; destinationNames?: string[]; countries?: string[]; destinationCountries?: string[] } } | undefined) {
   if (!collection) return false;
 
   // Public collection pages should only surface honeymoon packages.
@@ -22,14 +22,14 @@ function matchesCollection(pkg: TravelPackage, destination: Destination | undefi
   if (categories && !categories.includes(pkg.category)) return false;
 
   const nameMatch = destinationNames && destination
-    ? destinationNames.some((value) => destination.name.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(destination.name.toLowerCase()))
+    ? destinationNames.some((value: string) => destination.name.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(destination.name.toLowerCase()))
     : false;
 
   const countryMatch = destinationCountries && destination
-    ? destinationCountries.some((value) => destination.country.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(destination.country.toLowerCase()))
+    ? destinationCountries.some((value: string) => destination.country.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(destination.country.toLowerCase()))
     : false;
 
-  const tagMatch = tags ? tags.some((tag) => pkg.tags.some((pkgTag) => pkgTag.toLowerCase() === tag.toLowerCase())) : false;
+  const tagMatch = tags && Array.isArray(pkg.tags) ? tags.some((tag: string) => pkg.tags.some((pkgTag: string) => pkgTag.toLowerCase() === tag.toLowerCase())) : false;
 
   const hasCoverageCriteria = Boolean(destinationNames?.length || destinationCountries?.length || tags?.length);
 

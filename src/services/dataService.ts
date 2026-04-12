@@ -15,7 +15,8 @@ import type {
   PricingTier,
   PackageInclusion,
   Departure,
-  PricingBasis
+  PricingBasis,
+  RouteIdea
 } from '../types';
 
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
@@ -500,17 +501,38 @@ function parsePricingTiers(value: unknown): PricingTier[] {
 }
 
 function parseInclusions(value: unknown): PackageInclusion[] {
-  if (Array.isArray(value)) return value as PackageInclusion[];
-  const parsed = parseJson<PackageInclusion[]>(value);
-  if (Array.isArray(parsed)) return parsed;
-  return [];
+  const raw = Array.isArray(value) ? value : parseJson<any[]>(value);
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((inc: any): PackageInclusion | null => {
+      if (!inc || typeof inc !== 'object') return null;
+      return {
+        category: (inc.category || 'extras') as PackageInclusion['category'],
+        items: Array.isArray(inc.items) ? inc.items.map((i: any) => String(i)).filter(Boolean) : []
+      };
+    })
+    .filter((inc): inc is PackageInclusion => inc !== null);
 }
 
 function parseDepartures(value: unknown): Departure[] {
-  if (Array.isArray(value)) return value as Departure[];
-  const parsed = parseJson<Departure[]>(value);
-  if (Array.isArray(parsed)) return parsed;
-  return [];
+  const raw = Array.isArray(value) ? value : parseJson<any[]>(value);
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((dep: any): Departure | null => {
+      if (!dep || typeof dep !== 'object') return null;
+      const date = String(dep.date || '');
+      if (!date) return null;
+
+      return {
+        id: String(dep.id || date || Math.random()),
+        date,
+        availability: (dep.availability || 'available') as Departure['availability'],
+        priceAdjustment: typeof dep.priceAdjustment === 'number' ? dep.priceAdjustment : 0
+      };
+    })
+    .filter((dep): dep is Departure => dep !== null);
 }
 
 function parseSeo(value: unknown): { title: string; description: string; keywords: string[] } {

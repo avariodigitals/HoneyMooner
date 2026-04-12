@@ -12,6 +12,7 @@ import { ASSETS } from '../config/images';
 import { useUser } from '../hooks/useUser';
 
 import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
+import type { Destination } from '../types';
 
 const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
 
@@ -43,9 +44,15 @@ const Home = () => {
   const total = destinations.length;
   const effectiveStartIndex = total > 0 ? featuredStartIndex % total : 0;
   
-  const featuredDestinations = total <= 3
-    ? destinations
-    : Array.from({ length: 3 }, (_, idx) => destinations[(effectiveStartIndex + idx) % total]);
+  // Use curated destinations from WordPress if available, otherwise fall back to rotation
+  const featuredDestinations = (homeContent.destinations.featuredDestinationIds && homeContent.destinations.featuredDestinationIds.length > 0)
+    ? homeContent.destinations.featuredDestinationIds
+        .map(id => destinations.find(d => d.id === id))
+        .filter((d): d is Destination => d !== undefined)
+        .slice(0, 3)
+    : total <= 3
+      ? destinations
+      : Array.from({ length: 3 }, (_, idx) => destinations[(effectiveStartIndex + idx) % total]);
   
   const featuredThemeCollections = PACKAGE_COLLECTIONS
     .filter((collection) => collection.kind === 'theme' && collection.slug !== 'signature-experience')

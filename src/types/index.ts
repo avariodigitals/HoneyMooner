@@ -152,6 +152,7 @@ export interface HomeContent {
     title: string;
     subtitle: string;
     description: string;
+    featuredDestinationIds?: string[];
   };
   packages: {
     title: string;

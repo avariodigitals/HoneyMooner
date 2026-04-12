@@ -1208,7 +1208,8 @@ export const dataService = {
         destinations: {
           title: pick(page.acf?.destinations_title, fallbackHomeContent.destinations.title),
           subtitle: pick(page.acf?.destinations_subtitle, fallbackHomeContent.destinations.subtitle),
-          description: pick(page.acf?.destinations_description, fallbackHomeContent.destinations.description)
+          description: pick(page.acf?.destinations_description, fallbackHomeContent.destinations.description),
+          featuredDestinationIds: (page.hm_featured_content?.featured_destination_ids || []).map((id: number) => String(id))
         },
         packages: {
           title: pick(page.acf?.packages_title, fallbackHomeContent.packages.title),

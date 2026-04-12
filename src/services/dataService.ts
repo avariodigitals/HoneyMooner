@@ -515,6 +515,34 @@ function parseInclusions(value: unknown): PackageInclusion[] {
     .filter((inc): inc is PackageInclusion => inc !== null);
 }
 
+function parseExclusions(value: unknown): ExclusionItem[] {
+  const raw = Array.isArray(value) ? value : parseJson<any[]>(value);
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((item: any): ExclusionItem | null => {
+      if (!item) return null;
+      if (typeof item === 'string') return item.trim();
+      if (typeof item === 'object') {
+        // Handle common ACF repeater formats: { title, description } or { text }
+        if ('title' in item || 'description' in item) {
+          return {
+            title: item.title ? String(item.title).trim() : undefined,
+            description: item.description ? String(item.description).trim() : undefined
+          };
+        }
+        if ('text' in item) return String(item.text).trim();
+        if ('item' in item) return String(item.item).trim();
+        
+        // Fallback for other objects: try to find any string property
+        const firstString = Object.values(item).find(v => typeof v === 'string') as string | undefined;
+        return firstString ? firstString.trim() : null;
+      }
+      return String(item).trim();
+    })
+    .filter((item): item is ExclusionItem => item !== null);
+}
+
 function parseDepartures(value: unknown): Departure[] {
   const raw = Array.isArray(value) ? value : parseJson<any[]>(value);
   if (!Array.isArray(raw)) return [];
@@ -784,7 +812,7 @@ export const dataService = {
               ? [{ id: 'starter', name: 'Premium' as const, price: Number(packageData.starting_price), basis: (packageData.pricing_basis as PricingBasis) || 'per couple' as const }]
               : [{ id: 'fallback-premium', name: 'Premium' as const, price: 0, basis: 'per couple' as const }],
           inclusions: parseInclusions(item.acf?.inclusions || item.meta?.inclusions),
-          exclusions: parseStringList(item.acf?.exclusions || item.meta?.exclusions),
+          exclusions: parseExclusions(item.acf?.exclusions || item.meta?.exclusions || packageData?.exclusions),
           tags: parseStringList(item.acf?.tags || item.meta?.tags),
           departures: parseDepartures(item.acf?.departures || item.meta?.departures),
           seo

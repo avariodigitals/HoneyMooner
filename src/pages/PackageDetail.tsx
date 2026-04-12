@@ -557,8 +557,9 @@ const PackageDetail = () => {
                     let text = '';
                     if (typeof item === 'string') {
                       text = item;
-                    } else if (item && typeof item === 'object' && ('title' in item || 'description' in item)) {
-                      text = (item.title as string) || (item.description as string) || JSON.stringify(item);
+                    } else if (item && typeof item === 'object') {
+                      const record = item as { title?: string; description?: string };
+                      text = record.title || record.description || JSON.stringify(item);
                     } else {
                       text = JSON.stringify(item);
                     }

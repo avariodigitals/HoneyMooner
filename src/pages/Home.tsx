@@ -225,10 +225,10 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors leading-tight">
+                  <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors leading-tight line-clamp-2">
                     {pkg.title}
                   </h3>
-                  <p className="text-brand-600/90 text-sm leading-relaxed mb-8 flex-grow">
+                  <p className="text-brand-600/90 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
                     {pkg.summary}
                   </p>
 

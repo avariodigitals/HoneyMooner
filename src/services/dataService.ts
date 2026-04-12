@@ -14,6 +14,7 @@ import type {
   PackageCategory,
   PricingTier,
   PackageInclusion,
+  ExclusionItem,
   Departure,
   PricingBasis,
   RouteIdea
@@ -310,6 +311,7 @@ interface WPPageItem {
     cta1_url?: string;
     cta2_label?: string;
     cta2_url?: string;
+    featured_destination_ids?: number[];
   };
   acf?: {
     hero_title?: string;
@@ -501,41 +503,43 @@ function parsePricingTiers(value: unknown): PricingTier[] {
 }
 
 function parseInclusions(value: unknown): PackageInclusion[] {
-  const raw = Array.isArray(value) ? value : parseJson<any[]>(value);
+  const raw = Array.isArray(value) ? value : parseJson<unknown[]>(value);
   if (!Array.isArray(raw)) return [];
 
   return raw
-    .map((inc: any): PackageInclusion | null => {
+    .map((inc: unknown): PackageInclusion | null => {
       if (!inc || typeof inc !== 'object') return null;
+      const record = inc as { category?: string; items?: unknown[] };
       return {
-        category: (inc.category || 'extras') as PackageInclusion['category'],
-        items: Array.isArray(inc.items) ? inc.items.map((i: any) => String(i)).filter(Boolean) : []
+        category: (record.category || 'extras') as PackageInclusion['category'],
+        items: Array.isArray(record.items) ? record.items.map((i: unknown) => String(i)).filter(Boolean) : []
       };
     })
     .filter((inc): inc is PackageInclusion => inc !== null);
 }
 
 function parseExclusions(value: unknown): ExclusionItem[] {
-  const raw = Array.isArray(value) ? value : parseJson<any[]>(value);
+  const raw = Array.isArray(value) ? value : parseJson<unknown[]>(value);
   if (!Array.isArray(raw)) return [];
 
   return raw
-    .map((item: any): ExclusionItem | null => {
+    .map((item: unknown): ExclusionItem | null => {
       if (!item) return null;
       if (typeof item === 'string') return item.trim();
       if (typeof item === 'object') {
+        const record = item as Record<string, unknown>;
         // Handle common ACF repeater formats: { title, description } or { text }
-        if ('title' in item || 'description' in item) {
+        if ('title' in record || 'description' in record) {
           return {
-            title: item.title ? String(item.title).trim() : undefined,
-            description: item.description ? String(item.description).trim() : undefined
+            title: record.title ? String(record.title).trim() : undefined,
+            description: record.description ? String(record.description).trim() : undefined
           };
         }
-        if ('text' in item) return String(item.text).trim();
-        if ('item' in item) return String(item.item).trim();
+        if ('text' in record) return String(record.text).trim();
+        if ('item' in record) return String(record.item).trim();
         
         // Fallback for other objects: try to find any string property
-        const firstString = Object.values(item).find(v => typeof v === 'string') as string | undefined;
+        const firstString = Object.values(record).find(v => typeof v === 'string') as string | undefined;
         return firstString ? firstString.trim() : null;
       }
       return String(item).trim();
@@ -544,20 +548,21 @@ function parseExclusions(value: unknown): ExclusionItem[] {
 }
 
 function parseDepartures(value: unknown): Departure[] {
-  const raw = Array.isArray(value) ? value : parseJson<any[]>(value);
+  const raw = Array.isArray(value) ? value : parseJson<unknown[]>(value);
   if (!Array.isArray(raw)) return [];
 
   return raw
-    .map((dep: any): Departure | null => {
+    .map((dep: unknown): Departure | null => {
       if (!dep || typeof dep !== 'object') return null;
-      const date = String(dep.date || '');
+      const record = dep as { id?: string | number; date?: string; availability?: string; priceAdjustment?: number };
+      const date = String(record.date || '');
       if (!date) return null;
 
       return {
-        id: String(dep.id || date || Math.random()),
+        id: String(record.id || date || Math.random()),
         date,
-        availability: (dep.availability || 'available') as Departure['availability'],
-        priceAdjustment: typeof dep.priceAdjustment === 'number' ? dep.priceAdjustment : 0
+        availability: (record.availability || 'available') as Departure['availability'],
+        priceAdjustment: typeof record.priceAdjustment === 'number' ? record.priceAdjustment : 0
       };
     })
     .filter((dep): dep is Departure => dep !== null);
@@ -796,7 +801,10 @@ export const dataService = {
             'Travel Package',
           slug: item?.slug || `package-${item?.id ?? 'unknown'}`,
           category: item.acf?.category || item.meta?.category || packageData?.category || 'honeymoon',
-          summary: cleanText(item.acf?.summary || item.meta?.summary || packageData?.summary || ''),
+          summary: 
+            cleanText(item.acf?.summary || item.meta?.summary || packageData?.summary || '') ||
+            cleanText(item?.excerpt?.rendered || '') ||
+            (cleanText(item?.content?.rendered || '').substring(0, 160) + '...'),
           description: cleanText(item?.content?.rendered || ''),
           experienceContent:
             parseExperienceContent(item.acf?.experience_content || item.meta?.experience_content || packageData?.intro_content) ||
@@ -1061,8 +1069,8 @@ export const dataService = {
       const categoriesExclude = testimonialsCategoryId ? `&categories_exclude=${testimonialsCategoryId}` : '';
       const response = await fetch(`${WP_BASE_URL}/wp/v2/posts?_embed&per_page=20${categoriesExclude}`);
       if (!response.ok) return [];
-      const data = await response.json();
-      return data.map((item: WPResponseItem) => ({
+      const data = await response.json() as WPResponseItem[];
+      return data.map((item) => ({
         id: item.id.toString(),
         title: cleanText(item.title?.rendered || ''),
         excerpt: `${cleanText(item.excerpt?.rendered || '').substring(0, 160)}...`,
@@ -1388,7 +1396,7 @@ export const dataService = {
         headers: bearerHeaders(token)
       });
       if (!response.ok) return [];
-      const data = await response.json();
+      const data = await response.json() as { acf?: { hm_wishlist?: unknown } };
       return normalizeWishlistItems(data.acf?.hm_wishlist);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -1453,26 +1461,32 @@ export const dataService = {
       if (!ok) return [];
       const response = await fetch(`${WP_BASE_URL}/wp/v2/route_ideas?_embed&per_page=100&_=${Date.now()}`);
       if (!response.ok) return [];
-      const data = await response.json() as WPResponseItem[];
+      const data = await response.json() as (WPResponseItem & { hm_route_data?: Record<string, unknown> })[];
       return data.map((item) => {
-        const routeData = (item as any).hm_route_data || {};
+        const routeData = item.hm_route_data || {};
         return {
           id: String(item.id),
           slug: item.slug,
-          title: cleanText(routeData.title_override || item.title?.rendered || ''),
-          eyebrow: cleanText(routeData.eyebrow || ''),
-          tagline: cleanText(routeData.tagline || ''),
-          intro: cleanText(routeData.intro || ''),
-          audience: cleanText(routeData.audience || ''),
-          heroImage: routeData.hero_image || '',
-          destinations: routeData.destinations || [],
-          highlights: (routeData.highlights || []).map((h: any) => cleanText(h.text || h.stop_name || '')).filter(Boolean),
-          routeStops: (routeData.route_stops || []).map((s: any) => cleanText(s.stop_name || s.text || '')).filter(Boolean),
+          title: cleanText(String(routeData.title_override || item.title?.rendered || '')),
+          eyebrow: cleanText(String(routeData.eyebrow || '')),
+          tagline: cleanText(String(routeData.tagline || '')),
+          intro: cleanText(String(routeData.intro || '')),
+          audience: cleanText(String(routeData.audience || '')),
+          heroImage: String(routeData.hero_image || ''),
+          destinations: Array.isArray(routeData.destinations) ? routeData.destinations : [],
+          highlights: (Array.isArray(routeData.highlights) ? routeData.highlights : []).map((h: unknown) => {
+            const rh = h as { text?: string; stop_name?: string };
+            return cleanText(rh.text || rh.stop_name || '');
+          }).filter(Boolean),
+          routeStops: (Array.isArray(routeData.route_stops) ? routeData.route_stops : []).map((s: unknown) => {
+            const rs = s as { stop_name?: string; text?: string };
+            return cleanText(rs.stop_name || rs.text || '');
+          }).filter(Boolean),
           match: {
-            categories: routeData.match_categories || [],
-            countries: routeData.match_countries || [],
-            destinations: routeData.match_destinations || [],
-            tags: routeData.match_tags || []
+            categories: Array.isArray(routeData.match_categories) ? routeData.match_categories : [],
+            countries: Array.isArray(routeData.match_countries) ? routeData.match_countries : [],
+            destinations: Array.isArray(routeData.match_destinations) ? routeData.match_destinations : [],
+            tags: Array.isArray(routeData.match_tags) ? routeData.match_tags : []
           }
         };
       });

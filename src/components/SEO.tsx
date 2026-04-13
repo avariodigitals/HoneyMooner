@@ -11,7 +11,7 @@ type SEOProps = {
 };
 
 const DEFAULT_IMAGE =
-  'https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png';
+  'https://cms.thehoneymoonertravel.com/wp-content/uploaowinhds/2026/04/Logo-DP-SMedia-B.png';
 
 function createAttributes(element: Element) {
   const attrs: Record<string, string> = {};

@@ -92,8 +92,8 @@ const Contact = () => {
 
   const contactInfo = [
     { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'info@thehoneymoonner.com', href: 'mailto:info@thehoneymoonner.com' },
-    { icon: <Phone className="w-5 h-5" />, label: 'Phone (Nigeria)', value: '+2348131760694', href: 'tel:+2348131760694' },
-    { icon: <Phone className="w-5 h-5" />, label: 'Phone (UK)', value: '07341 899849', href: 'tel:07341899849' },
+    { icon: <Phone className="w-5 h-5" />, label: 'Phone (UK)', value: '+447341899849', href: 'tel:+447341899849' },
+    { icon: <Phone className="w-5 h-5" />, label: 'Phone (Nigeria)', value: '+2358131760694', href: 'tel:+2358131760694' },
     { icon: <MapPin className="w-5 h-5" />, label: 'Office', value: 'UNIT 1, 137 Cheetham Hill Rd, Cheetham Hill, Manchester M8 8LY' },
   ];
 
@@ -114,17 +114,17 @@ const Contact = () => {
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "telephone": "+2348131760694",
-        "contactType": "customer service",
-        "availableLanguage": "English",
-        "description": "Nigeria Office"
-      },
-      {
-        "@type": "ContactPoint",
-        "telephone": "07341 899849",
+        "telephone": "+447341899849",
         "contactType": "customer service",
         "availableLanguage": "English",
         "description": "UK Office"
+      },
+      {
+        "@type": "ContactPoint",
+        "telephone": "+2358131760694",
+        "contactType": "customer service",
+        "availableLanguage": "English",
+        "description": "Nigeria Office"
       }
     ],
     "sameAs": [

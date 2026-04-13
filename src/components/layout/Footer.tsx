@@ -51,10 +51,10 @@ const Footer = () => {
             Crafting intimate, premium, and unforgettable romantic travel experiences for couples worldwide.
           </p>
           <div className="flex items-center justify-center sm:justify-start gap-4 pt-2">
-            <a href="#" className="hover:text-brand-accent transition-colors">
+            <a href="https://www.instagram.com/thehoneymooner/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-accent transition-colors">
               <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
             </a>
-            <a href="#" className="hover:text-brand-accent transition-colors">
+            <a href="https://web.facebook.com/thehoneymooner?" target="_blank" rel="noopener noreferrer" className="hover:text-brand-accent transition-colors">
               <Facebook className="w-5 h-5 sm:w-6 sm:h-6" />
             </a>
           </div>
@@ -95,8 +95,8 @@ const Footer = () => {
             <li className="flex items-center justify-center sm:justify-start gap-3">
               <Phone size={18} className="text-brand-accent shrink-0" />
               <div className="flex flex-col gap-1">
-                <span>+2348131760694</span>
-                <span>07341 899849</span>
+                <span>+447341899849</span>
+                <span>+2358131760694</span>
               </div>
             </li>
             <li className="flex items-center justify-center sm:justify-start gap-3">

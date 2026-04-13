@@ -603,6 +603,56 @@ function cleanText(value: string): string {
   return decodeHtml(stripHtml(value || '')).trim();
 }
 
+function normalizeStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => {
+        if (item === null || item === undefined) return [];
+        if (typeof item === 'string') return [item];
+        if (typeof item === 'object' && item !== null) {
+          const itemObj = item as Record<string, unknown>;
+          return [
+            itemObj.text,
+            itemObj.stop_name,
+            itemObj.value,
+            itemObj.name
+          ].filter((field): field is string => typeof field === 'string');
+        }
+        return [String(item)];
+      })
+      .map((item) => cleanText(item))
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return normalizeStringArray(parsed);
+      } catch {
+        try {
+          const normalized = trimmed.replace(/'/g, '"');
+          const parsed = JSON.parse(normalized);
+          return normalizeStringArray(parsed);
+        } catch {
+          // fall back to splitting below
+        }
+      }
+    }
+
+    return trimmed
+      .replace(/^[\[\(]+|[\]\)]+$/g, '')
+      .split(/[,|;\/>\u2192\u2013\u2014\n]+/) // commas, pipes, semicolons, arrows, slashes, newlines
+      .map((item) => cleanText(item.replace(/^['"]+|['"]+$/g, '')))
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 function humanizeSlug(value: string): string {
   if (!value) return '';
   return value
@@ -1473,20 +1523,14 @@ export const dataService = {
           intro: cleanText(String(routeData.intro || '')),
           audience: cleanText(String(routeData.audience || '')),
           heroImage: String(routeData.hero_image || ''),
-          destinations: Array.isArray(routeData.destinations) ? routeData.destinations : [],
-          highlights: (Array.isArray(routeData.highlights) ? routeData.highlights : []).map((h: unknown) => {
-            const rh = h as { text?: string; stop_name?: string };
-            return cleanText(rh.text || rh.stop_name || '');
-          }).filter(Boolean),
-          routeStops: (Array.isArray(routeData.route_stops) ? routeData.route_stops : []).map((s: unknown) => {
-            const rs = s as { stop_name?: string; text?: string };
-            return cleanText(rs.stop_name || rs.text || '');
-          }).filter(Boolean),
+          destinations: normalizeStringArray(routeData.destinations),
+          highlights: normalizeStringArray(routeData.highlights),
+          routeStops: normalizeStringArray(routeData.route_stops),
           match: {
-            categories: Array.isArray(routeData.match_categories) ? routeData.match_categories : [],
-            countries: Array.isArray(routeData.match_countries) ? routeData.match_countries : [],
-            destinations: Array.isArray(routeData.match_destinations) ? routeData.match_destinations : [],
-            tags: Array.isArray(routeData.match_tags) ? routeData.match_tags : []
+            categories: normalizeStringArray(routeData.match_categories),
+            countries: normalizeStringArray(routeData.match_countries),
+            destinations: normalizeStringArray(routeData.match_destinations),
+            tags: normalizeStringArray(routeData.match_tags)
           }
         };
       });

@@ -9,17 +9,20 @@ import SEO from '../components/layout/SEO';
 import { findPackageCollection } from '../config/packageCollections';
 import type { Destination, TravelPackage } from '../types';
 
-function matchesCollection(pkg: TravelPackage, destination: Destination | undefined, collection: { match: { categories?: string[]; tags?: string[]; destinations?: string[]; destinationNames?: string[]; countries?: string[]; destinationCountries?: string[] } } | undefined) {
+function matchesCollection(pkg: TravelPackage, destination: Destination | undefined, collection: { match: { categories?: string[]; tags?: string[]; destinations?: string[]; destinationNames?: string[]; countries?: string[]; destinationCountries?: string[]; fallbackCategory?: string } } & { destinations?: string[]; route?: string[] } | undefined) {
   if (!collection) return false;
 
   // Public collection pages should only surface honeymoon packages.
   if (pkg.category !== 'honeymoon') return false;
 
-  const { categories, tags } = collection.match;
+  const { categories, tags, fallbackCategory } = collection.match;
   const destinationNames = collection.match.destinationNames || collection.match.destinations;
   const destinationCountries = collection.match.destinationCountries || collection.match.countries;
+  const collectionDestinations = collection.destinations || [];
+  const collectionRouteStops = collection.route || [];
+  const hasCategoryFilter = Array.isArray(categories) && categories.length > 0;
 
-  if (categories && !categories.includes(pkg.category)) return false;
+  if (hasCategoryFilter && !categories!.includes(pkg.category)) return false;
 
   const nameMatch = destinationNames && destination
     ? destinationNames.some((value: string) => destination.name.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(destination.name.toLowerCase()))
@@ -31,16 +34,29 @@ function matchesCollection(pkg: TravelPackage, destination: Destination | undefi
 
   const tagMatch = tags && Array.isArray(pkg.tags) ? tags.some((tag: string) => pkg.tags.some((pkgTag: string) => pkgTag.toLowerCase() === tag.toLowerCase())) : false;
 
-  const hasCoverageCriteria = Boolean(destinationNames?.length || destinationCountries?.length || tags?.length);
+  const destinationFieldMatch = collectionDestinations.length > 0 && destination
+    ? collectionDestinations.some((value: string) => destination.name.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(destination.name.toLowerCase()))
+    : false;
 
-  // If a collection defines specific coverage, only show packages that match it.
+  const routeFieldMatch = collectionRouteStops.length > 0 && destination
+    ? collectionRouteStops.some((value: string) => destination.name.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(destination.name.toLowerCase()))
+    : false;
+
+  const hasCoverageCriteria = Boolean(destinationNames?.length || destinationCountries?.length || tags?.length || collectionDestinations.length || collectionRouteStops.length);
+
   if (hasCoverageCriteria) {
-    return Boolean(nameMatch || countryMatch || tagMatch);
+    return Boolean(nameMatch || countryMatch || tagMatch || destinationFieldMatch || routeFieldMatch);
   }
 
-  // Collections without specific coverage criteria (e.g. curated global experiences)
-  // can still rely on category-level filtering.
-  return Boolean(categories?.includes(pkg.category));
+  if (hasCategoryFilter) {
+    return categories!.includes(pkg.category);
+  }
+
+  if (fallbackCategory) {
+    return pkg.category === fallbackCategory;
+  }
+
+  return pkg.category === 'honeymoon';
 }
 
 const PackageTypeLanding = () => {

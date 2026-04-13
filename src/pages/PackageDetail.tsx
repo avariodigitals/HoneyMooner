@@ -241,8 +241,8 @@ const PackageDetail = () => {
     },
     "offers": {
       "@type": "AggregateOffer",
-      "lowPrice": Math.min(...pkg.tiers.map(t => t.price)),
-      "highPrice": Math.max(...pkg.tiers.map(t => t.price)),
+      "lowPrice": Math.min(...(pkg.tiers?.map(t => t.price) || [0])),
+      "highPrice": Math.max(...(pkg.tiers?.map(t => t.price) || [0])),
       "priceCurrency": "USD"
     }
   };
@@ -318,13 +318,13 @@ const PackageDetail = () => {
         {/* Gallery Navigation */}
         <div className="absolute bottom-8 sm:bottom-16 right-4 sm:right-8 lg:right-16 flex gap-2 sm:gap-4 z-20">
           <button
-            onClick={() => setCurrentImgIndex((prev) => (prev === 0 ? pkg.gallery.length - 1 : prev - 1))}
+            onClick={() => setCurrentImgIndex((prev) => (prev === 0 ? (pkg.gallery?.length || 1) - 1 : prev - 1))}
             className="p-2 sm:p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
           >
             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <button
-            onClick={() => setCurrentImgIndex((prev) => (prev === pkg.gallery.length - 1 ? 0 : prev + 1))}
+            onClick={() => setCurrentImgIndex((prev) => (prev === (pkg.gallery?.length || 1) - 1 ? 0 : prev + 1))}
             className="p-2 sm:p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
           >
             <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -481,7 +481,7 @@ const PackageDetail = () => {
           <div className="space-y-6 sm:space-y-8">
             <h3 className="text-xl sm:text-2xl font-serif text-brand-900">Select Your Experience Level</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {pkg.tiers.map((tier) => (
+              {(pkg.tiers || []).map((tier) => (
                 <div
                   key={tier.id}
                   onClick={() => setSelectedTierId(tier.id)}
@@ -520,7 +520,7 @@ const PackageDetail = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12 relative z-10">
               <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-8 sm:gap-y-10">
-                {pkg.inclusions.map((inc, idx) => {
+                {(pkg.inclusions || []).map((inc, idx) => {
                   const Icon = categoryIcons[inc.category] || Star;
                   return (
                     <div key={idx} className="space-y-3 sm:space-y-4">
@@ -531,7 +531,7 @@ const PackageDetail = () => {
                         <h4 className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-brand-400">{inc.category}</h4>
                       </div>
                       <ul className="space-y-2 sm:space-y-2.5">
-                        {inc.items.map((item, i) => (
+                        {(inc.items || []).map((item, i) => (
                           <li key={i} className="flex items-start gap-2.5 sm:gap-3 text-brand-700">
                             <div className="w-1.5 h-1.5 rounded-full bg-brand-accent/30 mt-1.5 shrink-0" />
                             <span className="text-xs sm:text-sm leading-relaxed">{item}</span>
@@ -553,12 +553,13 @@ const PackageDetail = () => {
                   </h4>
                 </div>
                 <ul className="space-y-3 sm:space-y-4">
-                  {pkg.exclusions.map((item, idx) => {
+                  {(pkg.exclusions || []).map((item, idx) => {
                     let text = '';
                     if (typeof item === 'string') {
                       text = item;
-                    } else if (item && typeof item === 'object' && ('title' in item || 'description' in item)) {
-                      text = (item.title as string) || (item.description as string) || JSON.stringify(item);
+                    } else if (item && typeof item === 'object') {
+                      const record = item as { title?: string; description?: string };
+                      text = record.title || record.description || JSON.stringify(item);
                     } else {
                       text = JSON.stringify(item);
                     }

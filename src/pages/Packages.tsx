@@ -18,8 +18,9 @@ const STYLE_ALIASES: Record<string, string[]> = {
 };
 
 
-function matchesStyleFilter(pkgTags: string[], selectedStyle: string): boolean {
+function matchesStyleFilter(pkgTags: string[] | undefined, selectedStyle: string): boolean {
   if (selectedStyle === 'all') return true;
+  if (!Array.isArray(pkgTags)) return false;
   const normalized = selectedStyle.trim().toLowerCase();
   const candidates = STYLE_ALIASES[normalized] || [selectedStyle];
   return candidates.some((candidate) => pkgTags.includes(candidate));
@@ -37,9 +38,11 @@ const Packages = () => {
   const [selectedStyle, setSelectedCategoryStyle] = useState(() => location.state?.style || 'all');
 
   // Adjust style filter when navigation state changes (e.g. user clicks a style on Home page)
-  useEffect(() => {
+  const [prevLocationStyle, setPrevLocationStyle] = useState(location.state?.style);
+  if (location.state?.style !== prevLocationStyle) {
+    setPrevLocationStyle(location.state?.style);
     setSelectedCategoryStyle(location.state?.style || 'all');
-  }, [location.state?.style]);
+  }
 
   useEffect(() => {
     if (location.state?.style) {
@@ -115,10 +118,10 @@ const Packages = () => {
           </div>
         </div>
 
-        <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors">
+        <h3 className="text-xl font-serif text-brand-900 mb-4 group-hover:text-brand-accent transition-colors line-clamp-2">
           {pkg.title}
         </h3>
-        <p className="text-brand-600 text-sm leading-relaxed mb-6 flex-grow line-clamp-2">
+        <p className="text-brand-600 text-sm leading-relaxed mb-6 flex-grow line-clamp-3">
           {pkg.summary}
         </p>
 
@@ -128,7 +131,7 @@ const Packages = () => {
               Starting from
             </p>
             <p className="text-xl font-serif text-brand-900">
-              {formatPrice(pkg.tiers[0].price)}
+              {formatPrice(pkg.tiers?.[0]?.price || 0)}
             </p>
           </div>
           <Link to={`/packages/${pkg.slug}`} className="btn-primary py-2 px-6 text-xs">

@@ -152,6 +152,7 @@ export interface HomeContent {
     title: string;
     subtitle: string;
     description: string;
+    featuredDestinationIds?: string[];
   };
   packages: {
     title: string;
@@ -252,6 +253,7 @@ export interface RouteIdea {
   intro: string;
   audience: string;
   heroImage: string;
+  destinations: string[];
   highlights: string[];
   routeStops: string[];
   match: {

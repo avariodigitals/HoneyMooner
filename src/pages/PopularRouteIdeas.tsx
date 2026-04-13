@@ -3,12 +3,24 @@ import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
 import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
+import { useData } from '../hooks/useData';
 
-const routeCollections = PACKAGE_COLLECTIONS
+const staticRouteCollections = PACKAGE_COLLECTIONS
   .filter((collection) => collection.kind === 'route')
   .map((collection) => findPackageCollection(collection.slug) || collection);
 
 export default function PopularRouteIdeas() {
+  const { routeIdeas } = useData();
+
+  const routeCollections = [
+    ...staticRouteCollections.filter((staticRoute) => !routeIdeas.some((dynamicRoute) => dynamicRoute.slug === staticRoute.slug)),
+    ...routeIdeas.map((route) => ({
+      ...route,
+      route: route.routeStops || [],
+      destinations: route.destinations || []
+    }))
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0 }}

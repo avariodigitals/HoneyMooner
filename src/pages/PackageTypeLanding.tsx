@@ -308,11 +308,23 @@ const PackageTypeLanding = () => {
               <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-accent">Destinations</p>
             </div>
             <div className="flex flex-wrap gap-2 mb-8">
-              {collection.destinations.map((destination) => (
-                <span key={destination} className="text-xs bg-white border-2 border-brand-accent/30 rounded-full px-4 py-2 text-brand-700 font-semibold">
-                  {destination}
-                </span>
-              ))}
+              {(collection.route || []).map((destinationName) => {
+                const destination = destinations.find(d => d.name.toLowerCase() === destinationName.toLowerCase());
+                const destinationSlug = destination?.slug;
+                return destinationSlug ? (
+                  <Link
+                    key={destinationName}
+                    to={`/destinations/${destinationSlug}`}
+                    className="text-xs bg-white border-2 border-brand-accent/30 rounded-full px-4 py-2 text-brand-700 font-semibold hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-colors"
+                  >
+                    {destinationName}
+                  </Link>
+                ) : (
+                  <span key={destinationName} className="text-xs bg-white border-2 border-brand-accent/30 rounded-full px-4 py-2 text-brand-700 font-semibold">
+                    {destinationName}
+                  </span>
+                );
+              })}
             </div>
             <div className="pt-8 border-t-2 border-brand-accent/20">
               <p className="text-brand-700 text-sm leading-relaxed font-light">

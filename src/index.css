@@ -129,4 +129,73 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-brand-accent/40;
   }
+
+  .prose img,
+  .prose figure img,
+  .prose img[src],
+  .prose p img,
+  .prose div img,
+  .prose figure > img {
+    display: block !important;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    object-fit: contain !important;
+  }
+
+  .prose figure,
+  .prose .wp-block-image,
+  .prose .wp-caption {
+    @apply my-8;
+    text-align: center;
+    width: 100%;
+  }
+
+  .prose figcaption,
+  .prose .wp-caption-text {
+    @apply mt-4 text-sm text-brand-500;
+  }
+
+  /* Blog content image styling */
+  .blog-article-content {
+    width: 100%;
+  }
+
+  .blog-article-content img,
+  .blog-article-content figure img,
+  .blog-article-content p > img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 2rem auto !important;
+    object-fit: contain !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Override WordPress inline width/height styles */
+  .blog-article-content img[width],
+  .blog-article-content img[height],
+  .blog-article-content img[style] {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .blog-article-content figure {
+    margin: 2rem 0 !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .blog-article-content figcaption {
+    margin-top: 1rem !important;
+    font-size: 0.875rem !important;
+    color: #a18072 !important;
+  }
+
+  .blog-content {
+    width: 100%;
+  }
 }

@@ -128,9 +128,9 @@ const JournalDetail = () => {
           </p>
 
           {/* Main Content */}
-          <div className="prose prose-brand prose-lg max-w-none text-brand-700 space-y-8 leading-relaxed">
+          <div className="prose prose-brand prose-lg max-w-none text-brand-700 space-y-8 leading-relaxed blog-content">
             {post.content ? (
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              <div className="blog-article-content" dangerouslySetInnerHTML={{ __html: post.content }} />
             ) : (
               <p>No content available for this story yet.</p>
             )}

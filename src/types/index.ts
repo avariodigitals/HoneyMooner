@@ -263,3 +263,22 @@ export interface RouteIdea {
     tags: string[];
   };
 }
+
+export interface Theme {
+  id: string;
+  slug: string;
+  title: string;
+  eyebrow: string;
+  audience: string;
+  tagline: string;
+  intro: string;
+  heroImage: string;
+  highlights: string[];
+  destinations: string[];
+  match: {
+    categories: string[];
+    tags: string[];
+    destinationNames: string[];
+    destinationCountries: string[];
+  };
+}

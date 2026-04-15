@@ -17,7 +17,8 @@ import type {
   ExclusionItem,
   Departure,
   PricingBasis,
-  RouteIdea
+  RouteIdea,
+  Theme
 } from '../types';
 
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
@@ -1536,6 +1537,42 @@ export const dataService = {
       });
     } catch (error) {
       console.error('Error fetching route ideas:', error);
+      return [];
+    }
+  },
+
+  // --- Themes ---
+  async getThemes(): Promise<Theme[]> {
+    try {
+      const ok = await checkWP();
+      if (!ok) return [];
+      // Use cache busting to ensure we get fresh data from WP
+      const response = await fetch(`${WP_BASE_URL}/wp/v2/themes?_embed&per_page=100&_=${Date.now()}`);
+      if (!response.ok) return [];
+      const data = await response.json() as (WPResponseItem & { hm_theme_data?: Record<string, unknown> })[];
+      return data.map((item) => {
+        const themeData = item.hm_theme_data || {};
+        return {
+          id: String(item.id),
+          slug: item.slug,
+          title: cleanText(item.title?.rendered || ''),
+          eyebrow: cleanText(String(themeData.eyebrow || '')),
+          audience: cleanText(String(themeData.audience || '')),
+          tagline: cleanText(String(themeData.tagline || '')),
+          intro: cleanText(String(themeData.intro || '')),
+          heroImage: String(themeData.hero_image || ''),
+          highlights: normalizeStringArray(themeData.highlights),
+          destinations: normalizeStringArray(themeData.destinations),
+          match: {
+            categories: normalizeStringArray(themeData.match_categories),
+            tags: normalizeStringArray(themeData.match_tags),
+            destinationNames: normalizeStringArray(themeData.match_destination_names),
+            destinationCountries: normalizeStringArray(themeData.match_destination_countries)
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching themes:', error);
       return [];
     }
   }

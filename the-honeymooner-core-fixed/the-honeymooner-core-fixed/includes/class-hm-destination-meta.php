@@ -13,8 +13,9 @@ class HM_Destination_Meta {
         add_meta_box('hm_destination_details', 'Destination Details', [self::class, 'render'], 'destinations', 'normal', 'high');
     }
 
-    public static function render(WP_Post $post): void {
+    public static function render($post) {
         wp_nonce_field('hm_destination_save', 'hm_destination_nonce');
+        
         $meta = [
             'country' => get_post_meta($post->ID, 'country', true),
             'continent' => get_post_meta($post->ID, 'continent', true),
@@ -27,6 +28,9 @@ class HM_Destination_Meta {
             'meta_description' => get_post_meta($post->ID, 'meta_description', true),
             'canonical_url' => get_post_meta($post->ID, 'canonical_url', true),
         ];
+
+        $image_preview = hm_get_hero_image_fallback($meta['image']);
+        
         $highlights = hm_get_array_meta($post->ID, 'highlights');
         ?>
         <div class="hm-grid hm-grid-2">
@@ -34,14 +38,20 @@ class HM_Destination_Meta {
             <p><label><strong>Continent</strong></label><input type="text" class="widefat" name="hm_destination[continent]" value="<?php echo esc_attr($meta['continent']); ?>"></p>
         </div>
         <div class="hm-grid hm-grid-2">
-            <p><label><strong>Image URL</strong></label><input type="url" class="widefat" name="hm_destination[image]" value="<?php echo esc_attr($meta['image']); ?>"></p>
+            <p>
+                <label><strong>Image URL</strong></label>
+                <input type="url" class="widefat" name="hm_destination[image]" value="<?php echo esc_attr($meta['image']); ?>">
+                <div class="hm-image-preview" style="margin-top: 10px;">
+                    <img src="<?php echo esc_url($image_preview); ?>" style="max-width: 200px; height: auto; border: 1px solid #ddd; padding: 4px; background: #fff;">
+                </div>
+            </p>
             <p><label><strong>Starting Price</strong></label><input type="number" step="0.01" class="widefat" name="hm_destination[starting_price]" value="<?php echo esc_attr((string) $meta['starting_price']); ?>"></p>
         </div>
         <div class="hm-grid hm-grid-2">
-            <p><label><strong>Subtitle</strong></label><input type="text" class="widefat" name="hm_destination[subtitle]" value="<?php echo esc_attr($meta['subtitle']); ?>"></p>
-            <p><label><strong>Best Time to Visit</strong></label><input type="text" class="widefat" name="hm_destination[best_time_to_visit]" value="<?php echo esc_attr($meta['best_time_to_visit']); ?>"></p>
+            <p><label><strong>Subtitle</strong></label><input type="text" class="widefat" name="hm_destination[subtitle]" value="<?php echo isset($meta['subtitle']) ? esc_attr($meta['subtitle']) : ''; ?>"></p>
+            <p><label><strong>Best Time to Visit</strong></label><input type="text" class="widefat" name="hm_destination[best_time_to_visit]" value="<?php echo isset($meta['best_time_to_visit']) ? esc_attr($meta['best_time_to_visit']) : ''; ?>"></p>
         </div>
-        <p><label><strong>Intro Content</strong></label><textarea class="widefat" rows="5" name="hm_destination[intro_content]"><?php echo esc_textarea($meta['intro_content']); ?></textarea></p>
+        <p><label><strong>Intro Content</strong></label><textarea class="widefat" rows="5" name="hm_destination[intro_content]"><?php echo isset($meta['intro_content']) ? esc_textarea($meta['intro_content']) : ''; ?></textarea></p>
         <div class="hm-repeater" data-name="hm_destination_highlights">
             <div class="hm-repeater-header"><h3>Highlights</h3><button type="button" class="button hm-add-row">Add Highlight</button></div>
             <div class="hm-repeater-rows">
@@ -50,13 +60,13 @@ class HM_Destination_Meta {
             <template><?php self::highlight_row('__index__', ['title' => '', 'description' => '']); ?></template>
         </div>
         <h3>SEO</h3>
-        <p><label><strong>SEO Title</strong></label><input type="text" class="widefat" name="hm_destination[seo_title]" value="<?php echo esc_attr($meta['seo_title']); ?>"></p>
-        <p><label><strong>Meta Description</strong></label><textarea class="widefat" rows="4" name="hm_destination[meta_description]"><?php echo esc_textarea($meta['meta_description']); ?></textarea></p>
-        <p><label><strong>Canonical URL</strong></label><input type="url" class="widefat" name="hm_destination[canonical_url]" value="<?php echo esc_attr($meta['canonical_url']); ?>"></p>
+        <p><label><strong>SEO Title</strong></label><input type="text" class="widefat" name="hm_destination[seo_title]" value="<?php echo isset($meta['seo_title']) ? esc_attr($meta['seo_title']) : ''; ?>"></p>
+        <p><label><strong>Meta Description</strong></label><textarea class="widefat" rows="4" name="hm_destination[meta_description]"><?php echo isset($meta['meta_description']) ? esc_textarea($meta['meta_description']) : ''; ?></textarea></p>
+        <p><label><strong>Canonical URL</strong></label><input type="url" class="widefat" name="hm_destination[canonical_url]" value="<?php echo isset($meta['canonical_url']) ? esc_attr($meta['canonical_url']) : ''; ?>"></p>
         <?php
     }
 
-    private static function highlight_row($index, array $row): void {
+    private static function highlight_row($index, array $row) {
         ?>
         <div class="hm-row">
             <div class="hm-grid hm-grid-2">
@@ -68,7 +78,7 @@ class HM_Destination_Meta {
         <?php
     }
 
-    public static function save(int $post_id): void {
+    public static function save($post_id) {
         if (!isset($_POST['hm_destination_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['hm_destination_nonce'])), 'hm_destination_save')) return;
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
         if (!current_user_can('edit_post', $post_id)) return;
@@ -84,8 +94,8 @@ class HM_Destination_Meta {
         $clean = [];
         if (is_array($rows)) {
             foreach ($rows as $row) {
-                $title = sanitize_text_field($row['title'] ?? '');
-                $description = sanitize_text_field($row['description'] ?? '');
+                $title = isset($row['title']) ? sanitize_text_field($row['title']) : '';
+                $description = isset($row['description']) ? sanitize_text_field($row['description']) : '';
                 if ($title !== '' || $description !== '') $clean[] = ['title' => $title, 'description' => $description];
             }
         }

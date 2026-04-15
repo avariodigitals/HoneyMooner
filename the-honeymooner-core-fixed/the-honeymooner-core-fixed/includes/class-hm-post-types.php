@@ -123,6 +123,44 @@ class HM_Post_Types {
             'capability_type' => 'post',
             'map_meta_cap' => true,
         ]);
+
+        $theme_labels = [
+            'name' => 'Themes',
+            'singular_name' => 'Theme',
+            'menu_name' => 'Themes',
+            'name_admin_bar' => 'Theme',
+            'add_new' => 'Add New',
+            'add_new_item' => 'Add New Theme',
+            'new_item' => 'New Theme',
+            'edit_item' => 'Edit Theme',
+            'view_item' => 'View Theme',
+            'all_items' => 'All Themes',
+            'search_items' => 'Search Themes',
+            'not_found' => 'No themes found.',
+            'not_found_in_trash' => 'No themes found in Trash.',
+        ];
+
+        register_post_type('themes', [
+            'labels' => $theme_labels,
+            'public' => true,
+            'publicly_queryable' => true,
+            'show_ui' => true,
+            'show_in_menu' => 'hm_dashboard',
+            'show_in_admin_bar' => true,
+            'show_in_nav_menus' => false,
+            'show_in_rest' => true,
+            'rest_base' => 'themes',
+            'rest_controller_class' => 'WP_REST_Posts_Controller',
+            'menu_icon' => 'dashicons-art',
+            'supports' => ['title', 'editor', 'thumbnail', 'excerpt', 'revisions', 'custom-fields'],
+            'rewrite' => ['slug' => 'themes', 'with_front' => false],
+            'has_archive' => false,
+            'hierarchical' => false,
+            'exclude_from_search' => false,
+            'query_var' => true,
+            'capability_type' => 'post',
+            'map_meta_cap' => true,
+        ]);
     }
 
     public static function register_meta(): void {
@@ -209,6 +247,31 @@ class HM_Post_Types {
         ];
         foreach ($route_meta as $key => $type) {
             register_post_meta('route_ideas', $key, [
+                'single' => true,
+                'type' => $type,
+                'show_in_rest' => true,
+                'sanitize_callback' => [self::class, 'sanitize_meta_value'],
+                'auth_callback' => function () {
+                    return current_user_can('edit_posts');
+                },
+            ]);
+        }
+
+        $theme_meta = [
+            'eyebrow' => 'string',
+            'audience' => 'string',
+            'tagline' => 'string',
+            'intro' => 'string',
+            'hero_image' => 'string',
+            'highlights' => 'array',
+            'destinations' => 'array',
+            'match_categories' => 'array',
+            'match_tags' => 'array',
+            'match_destination_names' => 'array',
+            'match_destination_countries' => 'array',
+        ];
+        foreach ($theme_meta as $key => $type) {
+            register_post_meta('themes', $key, [
                 'single' => true,
                 'type' => $type,
                 'show_in_rest' => true,

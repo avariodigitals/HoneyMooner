@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Destination, TravelPackage, Lead, Testimonial, BlogPost, HomeContent, BookingContent, RouteIdea } from '../types';
+import type { Destination, TravelPackage, Lead, Testimonial, BlogPost, HomeContent, BookingContent, RouteIdea, Theme } from '../types';
 import { dataService } from '../services/dataService';
 import { initialPosts, initialTestimonials } from '../data/mock';
 import { ASSETS } from '../config/images';
@@ -123,6 +123,7 @@ type DataSnapshot = {
   bookingContent: BookingContent;
   posts: BlogPost[];
   routeIdeas: RouteIdea[];
+  themes: Theme[];
 };
 
 const SNAPSHOT_STORAGE_KEY = 'honeymoonner:data-snapshot:v1';
@@ -226,6 +227,7 @@ function loadPersistedSnapshot(): DataSnapshot | null {
       testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials : initialSnapshot.testimonials,
       posts: Array.isArray(parsed.posts) ? parsed.posts : initialSnapshot.posts,
       routeIdeas: Array.isArray(parsed.routeIdeas) ? parsed.routeIdeas : initialSnapshot.routeIdeas,
+      themes: Array.isArray(parsed.themes) ? parsed.themes : initialSnapshot.themes,
       homeContent: parsed.homeContent || initialSnapshot.homeContent,
       bookingContent: parsed.bookingContent || initialSnapshot.bookingContent
     });
@@ -242,7 +244,8 @@ const initialSnapshot: DataSnapshot = {
   homeContent: defaultHomeContent,
   bookingContent: defaultBookingContent,
   posts: initialPosts,
-  routeIdeas: []
+  routeIdeas: [],
+  themes: []
 };
 
 const emptySnapshot: DataSnapshot = initialSnapshot;
@@ -273,12 +276,13 @@ async function ensureCoreSnapshot(options?: { force?: boolean }): Promise<DataSn
   inflightCorePromise = (async () => {
     let shouldResolveCore = true;
     try {
-      const [wpDestinations, wpPackages, wpHomeContent, wpBookingContent, wpRouteIdeas] = await Promise.all([
+      const [wpDestinations, wpPackages, wpHomeContent, wpBookingContent, wpRouteIdeas, wpThemes] = await Promise.all([
         dataService.getDestinations(),
         dataService.getPackages(),
         dataService.getHomeContent(),
         dataService.getBookingContent(),
-        dataService.getRouteIdeas()
+        dataService.getRouteIdeas(),
+        dataService.getThemes()
       ]);
 
       const current = getCurrentSnapshot();
@@ -293,7 +297,8 @@ async function ensureCoreSnapshot(options?: { force?: boolean }): Promise<DataSn
         packages: nextPackages,
         homeContent: nextHomeContent,
         bookingContent: nextBookingContent,
-        routeIdeas: wpRouteIdeas
+        routeIdeas: wpRouteIdeas,
+        themes: wpThemes
       };
       const sanitizedSnapshot = sanitizeSnapshot(snapshot);
 
@@ -391,6 +396,7 @@ export const useData = () => {
   const [bookingContent, setBookingContent] = useState<BookingContent>(getCurrentSnapshot().bookingContent);
   const [posts, setPosts] = useState<BlogPost[]>(getCurrentSnapshot().posts);
   const [routeIdeas, setRouteIdeas] = useState<RouteIdea[]>(getCurrentSnapshot().routeIdeas);
+  const [themes, setThemes] = useState<Theme[]>(getCurrentSnapshot().themes);
   const [isLoading, setIsLoading] = useState(!hasCoreContent(getCurrentSnapshot()));
   const [isSecondaryLoading, setIsSecondaryLoading] = useState(!secondaryResolved);
 
@@ -410,6 +416,7 @@ export const useData = () => {
       setHomeContent(snapshot.homeContent);
       setBookingContent(snapshot.bookingContent);
       setRouteIdeas(snapshot.routeIdeas);
+      setThemes(snapshot.themes);
       setIsLoading(false);
     };
 
@@ -421,6 +428,7 @@ export const useData = () => {
       setHomeContent(snapshot.homeContent);
       setBookingContent(snapshot.bookingContent);
       setRouteIdeas(snapshot.routeIdeas);
+      setThemes(snapshot.themes);
     };
 
     const fetchSecondary = async () => {
@@ -478,6 +486,7 @@ export const useData = () => {
     bookingContent,
     posts,
     routeIdeas,
+    themes,
     isLoading,
     isSecondaryLoading,
     addLead

@@ -17,7 +17,7 @@ import type { Destination } from '../types';
 const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
 
 const Home = () => {
-  const { packages, destinations, testimonials, homeContent } = useData();
+  const { packages, destinations, testimonials, homeContent, themes } = useData();
   const { formatPrice } = useCurrency();
   const { isAuthenticated } = useUser();
   const navigate = useNavigate();
@@ -54,10 +54,12 @@ const Home = () => {
       ? destinations
       : Array.from({ length: 3 }, (_, idx) => destinations[(effectiveStartIndex + idx) % total]);
   
-  const featuredThemeCollections = PACKAGE_COLLECTIONS
-    .filter((collection) => collection.kind === 'theme' && collection.slug !== 'signature-experience')
-    .map((collection) => findPackageCollection(collection.slug) || collection)
-    .slice(0, 4);
+  const featuredThemeCollections = themes.length > 0
+    ? themes.slice(0, 4)
+    : PACKAGE_COLLECTIONS
+        .filter((collection) => collection.kind === 'theme' && collection.slug !== 'signature-experience')
+        .map((collection) => findPackageCollection(collection.slug) || collection)
+        .slice(0, 4);
 
   const toggleWishlist = async (pkgId: string) => {
     if (!isAuthenticated) {

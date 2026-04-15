@@ -28,6 +28,7 @@ require_once HM_CORE_PATH . 'includes/class-hm-sync-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-media-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-featured-content-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-route-idea-meta.php';
+require_once HM_CORE_PATH . 'includes/class-hm-theme-meta.php';
 require_once HM_CORE_PATH . 'includes/class-hm-rest.php';
 require_once HM_CORE_PATH . 'includes/class-hm-admin-menu.php';
 require_once HM_CORE_PATH . 'includes/class-hm-activator.php';
@@ -43,11 +44,13 @@ add_action('plugins_loaded', function () {
     HM_Reviews_Admin::init();
     HM_Featured_Content_Admin::init();
     HM_Route_Idea_Meta::init();
+    HM_Theme_Meta::init();
     HM_REST::init();
     HM_Admin_Menu::init();
 
     add_action('admin_enqueue_scripts', function ($hook) {
         if (strpos((string) $hook, 'hm_') !== false || in_array($hook, ['post.php', 'post-new.php'], true)) {
+            wp_enqueue_media();
             wp_enqueue_style('hm-core-admin', HM_CORE_URL . 'assets/css/admin.css', [], HM_CORE_VERSION);
             wp_enqueue_script('hm-core-admin', HM_CORE_URL . 'assets/js/admin.js', ['jquery'], HM_CORE_VERSION, true);
         }

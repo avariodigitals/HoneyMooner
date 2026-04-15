@@ -61,13 +61,22 @@ function matchesCollection(pkg: TravelPackage, destination: Destination | undefi
 
 const PackageTypeLanding = () => {
   const { slug } = useParams();
-  const { packages, destinations, routeIdeas, isLoading } = useData();
+  const { packages, destinations, routeIdeas, themes, isLoading } = useData();
   const { formatPrice } = useCurrency();
 
   const collection = useMemo(() => {
     if (!slug) return undefined;
     
-    // Try to find a dynamic route idea from WordPress first
+    // Try to find a dynamic theme from WordPress first
+    const dynamicTheme = themes?.find(t => t.slug === slug);
+    if (dynamicTheme) {
+      return {
+        ...dynamicTheme,
+        route: dynamicTheme.destinations || []
+      };
+    }
+
+    // Try to find a dynamic route idea from WordPress
     const dynamicRoute = routeIdeas?.find(r => r.slug === slug);
     if (dynamicRoute) {
       return {
@@ -78,7 +87,7 @@ const PackageTypeLanding = () => {
     }
     
     return findPackageCollection(slug);
-  }, [slug, routeIdeas]);
+  }, [slug, routeIdeas, themes]);
 
   const matchingPackages = useMemo(() => {
     if (!collection) return [];

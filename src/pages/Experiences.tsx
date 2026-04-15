@@ -3,12 +3,25 @@ import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
 import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
-
-const themeCollections = PACKAGE_COLLECTIONS
-  .filter((collection) => collection.kind === 'theme')
-  .map((collection) => findPackageCollection(collection.slug) || collection);
+import { useData } from '../hooks/useData';
 
 export default function Experiences() {
+  const { themes, isLoading } = useData();
+
+  const themeCollections = themes.length > 0 
+    ? themes 
+    : PACKAGE_COLLECTIONS
+        .filter((collection) => collection.kind === 'theme')
+        .map((collection) => findPackageCollection(collection.slug) || collection);
+
+  if (isLoading && themes.length === 0) {
+    return (
+      <div className="pt-24 min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}

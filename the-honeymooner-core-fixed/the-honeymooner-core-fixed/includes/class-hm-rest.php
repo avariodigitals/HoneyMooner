@@ -68,7 +68,7 @@ class HM_REST {
                         if (empty($post_arr['slug']) || $post_arr['slug'] !== 'home-settings') return null;
                         $settings = get_option('hm_featured_content_settings', []);
                         return [
-                            'hero_image' => $settings['hero_image'] ?? '',
+                            'hero_image' => hm_get_hero_image_fallback($settings['hero_image'] ?? ''),
                             'hero_title' => $settings['hero_title'] ?? '',
                             'hero_subtitle' => $settings['hero_subtitle'] ?? '',
                             'featured_destination_ids' => $settings['featured_destination_ids'] ?? [],
@@ -82,7 +82,7 @@ class HM_REST {
                 ]);
 
         register_rest_field('route_ideas', 'hm_route_data', [
-            'get_callback' => function (array $post_arr) {
+            'get_callback' => function ($post_arr) {
                 $post_id = (int) $post_arr['id'];
                 return [
                     'eyebrow' => get_post_meta($post_id, 'eyebrow', true),
@@ -90,7 +90,7 @@ class HM_REST {
                     'tagline' => get_post_meta($post_id, 'tagline', true),
                     'intro' => get_post_meta($post_id, 'intro', true),
                     'audience' => get_post_meta($post_id, 'audience', true),
-                    'hero_image' => get_post_meta($post_id, 'hero_image', true),
+                    'hero_image' => hm_get_hero_image_fallback(get_post_meta($post_id, 'hero_image', true)),
                     'destinations' => array_map('trim', explode(',', get_post_meta($post_id, 'destinations', true) ?: '')),
                     'match_categories' => array_map('trim', explode(',', get_post_meta($post_id, 'match_categories', true) ?: '')),
                     'match_countries' => array_map('trim', explode(',', get_post_meta($post_id, 'match_countries', true) ?: '')),
@@ -146,9 +146,9 @@ class HM_REST {
             ],
         ]);
 
-        foreach (['packages', 'destinations', 'route_ideas'] as $type) {
+        foreach (['packages', 'destinations', 'route_ideas', 'themes'] as $type) {
             register_rest_field($type, 'featured_image_url', [
-                'get_callback' => function (array $post_arr) {
+                'get_callback' => function ($post_arr) {
                     $image_id = get_post_thumbnail_id($post_arr['id']);
                     return $image_id ? wp_get_attachment_image_url($image_id, 'full') : null;
                 },
@@ -156,8 +156,28 @@ class HM_REST {
             ]);
         }
 
+        register_rest_field('themes', 'hm_theme_data', [
+            'get_callback' => function ($post_arr) {
+                $post_id = (int) $post_arr['id'];
+                return [
+                    'eyebrow' => get_post_meta($post_id, 'eyebrow', true),
+                    'audience' => get_post_meta($post_id, 'audience', true),
+                    'tagline' => get_post_meta($post_id, 'tagline', true),
+                    'intro' => get_post_meta($post_id, 'intro', true),
+                    'hero_image' => hm_get_hero_image_fallback(get_post_meta($post_id, 'hero_image', true)),
+                    'highlights' => hm_get_array_meta($post_id, 'highlights'),
+                    'destinations' => hm_get_array_meta($post_id, 'destinations'),
+                    'match_categories' => hm_get_array_meta($post_id, 'match_categories'),
+                    'match_tags' => hm_get_array_meta($post_id, 'match_tags'),
+                    'match_destination_names' => hm_get_array_meta($post_id, 'match_destination_names'),
+                    'match_destination_countries' => hm_get_array_meta($post_id, 'match_destination_countries'),
+                ];
+            },
+            'schema' => ['type' => 'object', 'context' => ['view', 'edit']],
+        ]);
+
         register_rest_field('packages', 'hm_package_data', [
-            'get_callback' => function (array $post_arr) {
+            'get_callback' => function ($post_arr) {
                 $post_id = (int) $post_arr['id'];
                 return [
                     'package_id' => get_post_meta($post_id, 'package_id', true),
@@ -188,7 +208,7 @@ class HM_REST {
         ]);
 
         register_rest_field('destinations', 'hm_destination_data', [
-            'get_callback' => function (array $post_arr) {
+            'get_callback' => function ($post_arr) {
                 $post_id = (int) $post_arr['id'];
                 return [
                     'country' => get_post_meta($post_id, 'country', true),

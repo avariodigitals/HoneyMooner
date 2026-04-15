@@ -26,6 +26,7 @@
     @apply overflow-x-hidden max-w-full;
     width: 100%;
     -webkit-overflow-scrolling: touch;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
@@ -34,6 +35,15 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
+  }
+
+  /* Prevent iOS Safari from auto-zooming when form controls are focused. */
+  @media (max-width: 767px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 }
 
@@ -199,3 +209,4 @@
     width: 100%;
   }
 }
+

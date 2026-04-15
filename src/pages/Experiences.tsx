@@ -2,14 +2,14 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
-import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
+import { PACKAGE_COLLECTIONS, findPackageCollection, mergeThemeWithFallback } from '../config/packageCollections';
 import { useData } from '../hooks/useData';
 
 export default function Experiences() {
   const { themes, isLoading } = useData();
 
   const themeCollections = themes.length > 0 
-    ? themes 
+    ? themes.map(wpTheme => mergeThemeWithFallback(wpTheme, findPackageCollection(wpTheme.slug)))
     : PACKAGE_COLLECTIONS
         .filter((collection) => collection.kind === 'theme')
         .map((collection) => findPackageCollection(collection.slug) || collection);

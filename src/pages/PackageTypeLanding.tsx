@@ -6,7 +6,7 @@ import { useData } from '../hooks/useData';
 import { useCurrency } from '../hooks/useCurrency';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import SEO from '../components/layout/SEO';
-import { findPackageCollection } from '../config/packageCollections';
+import { findPackageCollection, mergeThemeWithFallback } from '../config/packageCollections';
 import type { Destination, TravelPackage } from '../types';
 
 function matchesCollection(pkg: TravelPackage, destination: Destination | undefined, collection: { match: { categories?: string[]; tags?: string[]; destinations?: string[]; destinationNames?: string[]; countries?: string[]; destinationCountries?: string[]; fallbackCategory?: string } } & { destinations?: string[]; route?: string[] } | undefined) {
@@ -70,9 +70,10 @@ const PackageTypeLanding = () => {
     // Try to find a dynamic theme from WordPress first
     const dynamicTheme = themes?.find(t => t.slug === slug);
     if (dynamicTheme) {
+      const merged = mergeThemeWithFallback(dynamicTheme, findPackageCollection(slug));
       return {
-        ...dynamicTheme,
-        route: dynamicTheme.destinations || []
+        ...merged,
+        route: merged.destinations || []
       };
     }
 

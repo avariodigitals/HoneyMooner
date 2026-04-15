@@ -1,4 +1,4 @@
-import type { PackageCategory } from '../types';
+import type { PackageCategory, Theme } from '../types';
 
 export type PackageCollectionKind = 'theme' | 'route';
 
@@ -479,5 +479,37 @@ export function findPackageCollection(slug: string): PackageCollectionDefinition
   return {
     ...collection,
     heroImage: resolveCollectionHeroImage(collection)
+  };
+}
+
+/**
+ * Merges WordPress dynamic theme data with hardcoded fallback data.
+ * WordPress data takes priority if it's not empty.
+ */
+export function mergeThemeWithFallback(wpTheme: Theme, hardcoded: PackageCollectionDefinition | undefined): Theme | PackageCollectionDefinition {
+  if (!hardcoded) return wpTheme;
+
+  const isNotEmpty = (val: string | string[] | undefined | null) => {
+    if (Array.isArray(val)) return val.length > 0;
+    return val && String(val).trim().length > 0 && !String(val).includes('placeholder-travel.svg');
+  };
+
+  return {
+    ...hardcoded,
+    id: wpTheme.id || hardcoded.slug,
+    title: isNotEmpty(wpTheme.title) ? wpTheme.title : hardcoded.title,
+    eyebrow: isNotEmpty(wpTheme.eyebrow) ? wpTheme.eyebrow : hardcoded.eyebrow,
+    audience: isNotEmpty(wpTheme.audience) ? wpTheme.audience : hardcoded.audience,
+    tagline: isNotEmpty(wpTheme.tagline) ? wpTheme.tagline : hardcoded.tagline,
+    intro: isNotEmpty(wpTheme.intro) ? wpTheme.intro : hardcoded.intro,
+    heroImage: isNotEmpty(wpTheme.heroImage) ? wpTheme.heroImage : resolveCollectionHeroImage(hardcoded),
+    highlights: isNotEmpty(wpTheme.highlights) ? wpTheme.highlights : hardcoded.highlights,
+    destinations: isNotEmpty(wpTheme.destinations) ? wpTheme.destinations : hardcoded.destinations,
+    match: {
+      categories: isNotEmpty(wpTheme.match?.categories) ? (wpTheme.match.categories as PackageCategory[]) : hardcoded.match.categories,
+      tags: isNotEmpty(wpTheme.match?.tags) ? wpTheme.match.tags : hardcoded.match.tags,
+      destinationNames: isNotEmpty(wpTheme.match?.destinationNames) ? wpTheme.match.destinationNames : hardcoded.match.destinationNames,
+      destinationCountries: isNotEmpty(wpTheme.match?.destinationCountries) ? wpTheme.match.destinationCountries : hardcoded.match.destinationCountries,
+    }
   };
 }

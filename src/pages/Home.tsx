@@ -11,8 +11,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ASSETS } from '../config/images';
 import { useUser } from '../hooks/useUser';
 
-import { PACKAGE_COLLECTIONS, findPackageCollection } from '../config/packageCollections';
-import type { Destination } from '../types';
+import { PACKAGE_COLLECTIONS, findPackageCollection, mergeThemeWithFallback } from '../config/packageCollections';
+import type { Destination, TravelPackage } from '../types';
 
 const FEATURED_DESTINATION_INDEX_KEY = 'honeymoonner:home-featured-destination-index';
 
@@ -55,7 +55,7 @@ const Home = () => {
       : Array.from({ length: 3 }, (_, idx) => destinations[(effectiveStartIndex + idx) % total]);
   
   const featuredThemeCollections = themes.length > 0
-    ? themes.slice(0, 4)
+    ? themes.slice(0, 4).map(wpTheme => mergeThemeWithFallback(wpTheme, findPackageCollection(wpTheme.slug)))
     : PACKAGE_COLLECTIONS
         .filter((collection) => collection.kind === 'theme' && collection.slug !== 'signature-experience')
         .map((collection) => findPackageCollection(collection.slug) || collection)

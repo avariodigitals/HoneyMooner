@@ -96,7 +96,7 @@ const Footer = () => {
               <Phone size={18} className="text-brand-accent shrink-0" />
               <div className="flex flex-col gap-1">
                 <span>+447341899849</span>
-                <span>+2358131760694</span>
+                <span>+2348131760694</span>
               </div>
             </li>
             <li className="flex items-center justify-center sm:justify-start gap-3">

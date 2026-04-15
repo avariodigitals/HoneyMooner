@@ -644,8 +644,8 @@ function normalizeStringArray(value: unknown): string[] {
     }
 
     return trimmed
-      .replace(/^[\[\(]+|[\]\)]+$/g, '')
-      .split(/[,|;\/>\u2192\u2013\u2014\n]+/) // commas, pipes, semicolons, arrows, slashes, newlines
+      .replace(/^[[(]+|[\])]+$/g, '')
+      .split(/[,|;/>\u2192\u2013\u2014\n]+/) // commas, pipes, semicolons, arrows, slashes, newlines
       .map((item) => cleanText(item.replace(/^['"]+|['"]+$/g, '')))
       .filter(Boolean);
   }

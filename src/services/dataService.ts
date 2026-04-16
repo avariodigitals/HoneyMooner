@@ -19,6 +19,16 @@ async function getConsultationQuote() {
   }
 }
 
+async function getConsultationSlots(date: string) {
+  try {
+    const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/slots?date=${date}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching consultation slots:', error);
+    throw error;
+  }
+}
+
 async function validateConsultationCoupon(code: string) {
   try {
     const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/coupon/validate`, {
@@ -58,6 +68,9 @@ interface ConsultationRequestPayload {
   email: string;
   phone: string;
   preferred_date: string;
+  time_slot: string;
+  comm_preference: string;
+  timezone: string;
   alternate_date?: string;
   package_name?: string;
   package_id?: string;
@@ -836,6 +849,7 @@ export const dataService = {
   // Consultation API
   getConsultationSettings,
   getConsultationQuote,
+  getConsultationSlots,
   validateConsultationCoupon,
   generateConsultationPaymentAccess,
   submitConsultationRequest,

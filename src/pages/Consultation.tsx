@@ -50,6 +50,9 @@ export default function Consultation() {
     packageId: '',
     tierId: '',
     preferredDate: '',
+    timeSlot: '',
+    commPreference: 'WhatsApp Call',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     alternateDate: '',
     adults: 2,
     children: 0,
@@ -67,13 +70,18 @@ export default function Consultation() {
     paymentCurrency: '',
   });
 
+  const [availableSlots, setAvailableSlots] = useState<{ time: string; available: boolean }[]>([]);
+
   // Consultation API integration
   const {
     loading: consultationLoading,
     error: consultationError,
     success: consultationSuccess,
+    settings: consultationSettings,
+    quote: consultationQuote,
     fetchSettings,
     fetchQuote,
+    fetchSlots,
     validateCoupon,
     generatePaymentAccess,
     submitConsultation,
@@ -81,12 +89,27 @@ export default function Consultation() {
     setSuccess: setConsultationSuccess
   } = useConsultation();
 
+  // Fetch slots when date changes
+  useEffect(() => {
+    if (formData.preferredDate) {
+      fetchSlots(formData.preferredDate).then(result => {
+        if (result?.success) {
+          setAvailableSlots(result.slots);
+          setFormData(prev => ({ ...prev, timeSlot: '' })); // Reset slot when date changes
+        }
+      });
+    }
+  }, [formData.preferredDate, fetchSlots]);
+
+  // Update description from settings
+  const dynamicDescription = consultationSettings?.page_description || consultationCopy.description;
+  const dynamicTitle = consultationSettings?.page_title || consultationCopy.title;
+
   // Example: fetch consultation settings/fee on mount (optional, can be used to show info)
   useEffect(() => {
     fetchSettings();
     fetchQuote();
-    // eslint-disable-next-line
-  }, []);
+  }, [fetchSettings, fetchQuote]);
 
   const packages = useMemo(() => allPackages.filter((pkg) => pkg.category === 'honeymoon'), [allPackages]);
   const selectedPkg = useMemo(() => packages.find((pkg) => pkg.id === formData.packageId), [packages, formData.packageId]);
@@ -166,8 +189,8 @@ export default function Consultation() {
             <div className="space-y-8 sm:space-y-10 lg:space-y-12">
               <div>
                 <p className="script-font mb-4">{consultationCopy.eyebrow}</p>
-                <h1 className="text-3xl md:text-5xl font-serif text-brand-900 mb-5 sm:mb-6">{consultationCopy.title}</h1>
-                <p className="text-brand-600 leading-relaxed text-base sm:text-lg max-w-2xl">{consultationCopy.description}</p>
+                <h1 className="text-3xl md:text-5xl font-serif text-brand-900 mb-5 sm:mb-6">{dynamicTitle}</h1>
+                <p className="text-brand-600 leading-relaxed text-base sm:text-lg max-w-2xl">{dynamicDescription}</p>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <ExpectCard title="Tailored Guidance" text="We shape the consultation around your destination style, timing, and comfort level." />
                   <ExpectCard title="Flexible Dates" text="Choose a preferred date and a backup option so planning stays easy." />
@@ -209,13 +232,16 @@ export default function Consultation() {
                     }
                   }
                   // Submit consultation request
-                  if (accessToken) {
+                  if (accessToken || !consultationQuote?.payment_enabled) {
                     const submitResult = await submitConsultation({
                       access_token: accessToken,
                       traveler_name: formData.travelerName,
                       email: formData.email,
                       phone: formData.phone,
                       preferred_date: formData.preferredDate,
+                      time_slot: formData.timeSlot,
+                      comm_preference: formData.commPreference,
+                      timezone: formData.timezone,
                       alternate_date: formData.alternateDate,
                       package_name: selectedPkg?.title,
                       package_id: selectedPkg?.id,
@@ -307,32 +333,60 @@ export default function Consultation() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                   <Field icon={Phone} label="WhatsApp / Phone" type="tel" value={formData.phone} placeholder="+234..." onChange={(value) => setFormData((current) => ({ ...current, phone: value }))} required />
                   <div className="space-y-3 sm:space-y-4">
-                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Preferred Travel Date</label>
+                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Preferred Date</label>
                     <div className="relative">
                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
-                      {selectedPkg?.departures && selectedPkg.departures.length > 0 ? (
-                        <select
-                          required
-                          value={formData.preferredDate}
-                          onChange={(event) => setFormData((current) => ({ ...current, preferredDate: event.target.value }))}
-                          className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base bg-white appearance-none"
-                        >
-                          <option value="">Select a preferred date</option>
-                          {selectedPkg.departures.map((departure) => (
-                            <option key={departure.id} value={departure.date} disabled={departure.availability === 'sold-out'}>
-                              {new Date(departure.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}{departure.availability !== 'available' ? ` (${departure.availability})` : ''}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input required type="date" value={formData.preferredDate} onChange={(event) => setFormData((current) => ({ ...current, preferredDate: event.target.value }))} className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base" />
-                      )}
+                      <input 
+                        required 
+                        type="date" 
+                        min={new Date().toISOString().split('T')[0]}
+                        value={formData.preferredDate} 
+                        onChange={(event) => setFormData((current) => ({ ...current, preferredDate: event.target.value }))} 
+                        className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 sm:space-y-4">
+                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Available Time Slots</label>
+                    <div className="relative">
+                      <Loader2 className={`absolute left-4 top-1/2 -translate-y-1/2 text-brand-200 ${consultationLoading ? 'animate-spin' : 'hidden'}`} size={18} />
+                      <select
+                        required
+                        disabled={!formData.preferredDate || consultationLoading}
+                        value={formData.timeSlot}
+                        onChange={(event) => setFormData((current) => ({ ...current, timeSlot: event.target.value }))}
+                        className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base bg-white appearance-none"
+                      >
+                        <option value="">{formData.preferredDate ? 'Select a time slot' : 'Choose a date first'}</option>
+                        {availableSlots.map((slot) => (
+                          <option key={slot.time} value={slot.time} disabled={!slot.available}>
+                            {slot.time} {!slot.available ? '(Busy)' : ''}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                  <Field icon={Calendar} label="Alternate Date" type="date" value={formData.alternateDate} placeholder="" onChange={(value) => setFormData((current) => ({ ...current, alternateDate: value }))} />
+                  <div className="space-y-3 sm:space-y-4">
+                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Communication Preference</label>
+                    <select
+                      value={formData.commPreference}
+                      onChange={(event) => setFormData((current) => ({ ...current, commPreference: event.target.value }))}
+                      className="w-full px-4 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base bg-white"
+                    >
+                      <option value="WhatsApp Call">WhatsApp Call</option>
+                      <option value="Zoom Call">Zoom Call</option>
+                      <option value="Phone Call">Phone Call</option>
+                    </select>
+                  </div>
+                  <Field icon={Globe} label="Timezone" type="text" value={formData.timezone} placeholder="Your timezone" onChange={(value) => setFormData((current) => ({ ...current, timezone: value }))} required />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                  <Field icon={Calendar} label="Alternate Date (Backup)" type="date" value={formData.alternateDate} placeholder="" onChange={(value) => setFormData((current) => ({ ...current, alternateDate: value }))} />
                   <Field icon={Globe} label="Country of Residence" type="text" value={formData.countryOfResidence} placeholder="e.g. Nigeria" onChange={(value) => setFormData((current) => ({ ...current, countryOfResidence: value }))} required />
                 </div>
 

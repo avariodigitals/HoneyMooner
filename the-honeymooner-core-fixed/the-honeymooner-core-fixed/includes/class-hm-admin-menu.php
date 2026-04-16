@@ -19,6 +19,8 @@ class HM_Admin_Menu {
         add_submenu_page('hm_dashboard', 'Sync Status', 'Sync Status', 'edit_packages', 'hm_sync_status', [HM_Sync_Admin::class, 'render_page']);
         add_submenu_page('hm_dashboard', 'Media Manager', 'Media Manager', 'edit_packages', 'hm_media_manager', [HM_Media_Admin::class, 'render_page']);
         add_submenu_page('hm_dashboard', 'Featured Content', 'Featured Content', 'edit_packages', 'hm_featured_content', [HM_Featured_Content_Admin::class, 'render_page']);
+        add_submenu_page('hm_dashboard', 'Consultation', 'Consultation', 'manage_options', 'hm_consultation', [HM_Consultation_Admin::class, 'render_page']);
+        add_submenu_page('hm_dashboard', 'Consultation Requests', 'Consultation Requests', 'manage_options', 'edit.php?post_type=consultation_request');
     }
 
     public static function render_dashboard(): void {
@@ -42,3 +44,5 @@ class HM_Admin_Menu {
         <?php
     }
 }
+
+

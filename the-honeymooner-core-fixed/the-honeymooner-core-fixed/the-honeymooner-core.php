@@ -29,7 +29,9 @@ require_once HM_CORE_PATH . 'includes/class-hm-media-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-featured-content-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-route-idea-meta.php';
 require_once HM_CORE_PATH . 'includes/class-hm-theme-meta.php';
+require_once HM_CORE_PATH . 'includes/class-hm-consultation-admin.php';
 require_once HM_CORE_PATH . 'includes/class-hm-rest.php';
+require_once HM_CORE_PATH . 'includes/class-hm-consultation-rest.php';
 require_once HM_CORE_PATH . 'includes/class-hm-admin-menu.php';
 require_once HM_CORE_PATH . 'includes/class-hm-activator.php';
 
@@ -45,7 +47,9 @@ add_action('plugins_loaded', function () {
     HM_Featured_Content_Admin::init();
     HM_Route_Idea_Meta::init();
     HM_Theme_Meta::init();
+    HM_Consultation_Admin::init();
     HM_REST::init();
+    HM_Consultation_REST::init();
     HM_Admin_Menu::init();
 
     add_action('admin_enqueue_scripts', function ($hook) {
@@ -56,3 +60,7 @@ add_action('plugins_loaded', function () {
         }
     });
 });
+
+
+
+

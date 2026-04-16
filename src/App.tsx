@@ -19,6 +19,7 @@ import Experiences from './pages/Experiences';
 import PackageTypeLanding from './pages/PackageTypeLanding';
 import PackageDetail from './pages/PackageDetail';
 import Booking from './pages/Booking';
+import Consultation from './pages/Consultation';
 import PopularRouteIdeas from './pages/PopularRouteIdeas';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -57,6 +58,7 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking" element={<Booking />} />
+        <Route path="/consultation" element={<Consultation />} />
         <Route path="/gift-cards" element={<GiftCards />} />
         <Route path="/gift-cards/checkout" element={<GiftCardCheckout />} />
         <Route path="/faqs" element={<FAQs />} />
@@ -100,3 +102,5 @@ function App() {
 }
 
 export default App;
+
+

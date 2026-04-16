@@ -14,6 +14,7 @@ const BREADCRUMB_ROUTE_PATTERNS = [
   '/about',
   '/contact',
   '/booking',
+  '/consultation',
   '/gift-cards',
   '/gift-cards/checkout',
   '/faqs',
@@ -85,3 +86,4 @@ const Breadcrumbs = () => {
 };
 
 export default Breadcrumbs;
+

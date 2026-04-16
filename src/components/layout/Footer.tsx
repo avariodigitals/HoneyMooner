@@ -54,7 +54,7 @@ const Footer = () => {
             <a href="https://www.instagram.com/thehoneymooner/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-accent transition-colors">
               <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
             </a>
-            <a href="https://web.facebook.com/thehoneymooner?" target="_blank" rel="noopener noreferrer" className="hover:text-brand-accent transition-colors">
+            <a href="https://web.facebook.com/thehoneymoonertravel?mibextid=wwXIfr&rdid=8T1wvhmaRxtBMmwP&share_url=https%3A%2F%2Fweb.facebook.com%2Fshare%2F1CjGvKZxni%2F%3Fmibextid%3DwwXIfr%26_rdc%3D1%26_rdr#" target="_blank" rel="noopener noreferrer" className="hover:text-brand-accent transition-colors">
               <Facebook className="w-5 h-5 sm:w-6 sm:h-6" />
             </a>
           </div>

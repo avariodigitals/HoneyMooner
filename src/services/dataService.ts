@@ -67,6 +67,7 @@ interface ConsultationRequestPayload {
   traveler_name: string;
   email: string;
   phone: string;
+  intended_travel_date: string;
   preferred_date: string;
   time_slot: string;
   comm_preference: string;

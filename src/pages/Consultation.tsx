@@ -49,6 +49,7 @@ export default function Consultation() {
   const [formData, setFormData] = useState({
     packageId: '',
     tierId: '',
+    intendedTravelDate: '',
     preferredDate: '',
     timeSlot: '',
     commPreference: 'WhatsApp Call',
@@ -238,6 +239,7 @@ export default function Consultation() {
                       traveler_name: formData.travelerName,
                       email: formData.email,
                       phone: formData.phone,
+                      intended_travel_date: formData.intendedTravelDate,
                       preferred_date: formData.preferredDate,
                       time_slot: formData.timeSlot,
                       comm_preference: formData.commPreference,
@@ -333,7 +335,24 @@ export default function Consultation() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                   <Field icon={Phone} label="WhatsApp / Phone" type="tel" value={formData.phone} placeholder="+234..." onChange={(value) => setFormData((current) => ({ ...current, phone: value }))} required />
                   <div className="space-y-3 sm:space-y-4">
-                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Preferred Date</label>
+                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Intended Travel Date</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
+                      <input 
+                        required 
+                        type="date" 
+                        min={new Date().toISOString().split('T')[0]}
+                        value={formData.intendedTravelDate} 
+                        onChange={(event) => setFormData((current) => ({ ...current, intendedTravelDate: event.target.value }))} 
+                        className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base" 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                  <div className="space-y-3 sm:space-y-4">
+                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Preferred Consultation Date</label>
                     <div className="relative">
                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
                       <input 

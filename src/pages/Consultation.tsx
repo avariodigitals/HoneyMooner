@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ElementType } from 'react';
+import { useConsultation } from '../hooks/useConsultation';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -59,7 +60,33 @@ export default function Consultation() {
     occasion: 'honeymoon' as Lead['occasion'],
     message: '',
     couponCode: '',
+    accessToken: '',
+    paymentProvider: '',
+    paymentReference: '',
+    paymentAmount: 0,
+    paymentCurrency: '',
   });
+
+  // Consultation API integration
+  const {
+    loading: consultationLoading,
+    error: consultationError,
+    success: consultationSuccess,
+    fetchSettings,
+    fetchQuote,
+    validateCoupon,
+    generatePaymentAccess,
+    submitConsultation,
+    setError: setConsultationError,
+    setSuccess: setConsultationSuccess
+  } = useConsultation();
+
+  // Example: fetch consultation settings/fee on mount (optional, can be used to show info)
+  useEffect(() => {
+    fetchSettings();
+    fetchQuote();
+    // eslint-disable-next-line
+  }, []);
 
   const packages = useMemo(() => allPackages.filter((pkg) => pkg.category === 'honeymoon'), [allPackages]);
   const selectedPkg = useMemo(() => packages.find((pkg) => pkg.id === formData.packageId), [packages, formData.packageId]);
@@ -109,7 +136,7 @@ export default function Consultation() {
           <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-10">
             <CheckCircle2 size={48} />
           </div>
-          <h1 className="text-4xl font-serif text-brand-900">{consultationCopy.readyTitle}</h1>
+          <h1 className="text-4xl font-serif text-brand-900">{consultationSuccess || consultationCopy.readyTitle}</h1>
           <p className="text-brand-600 text-lg leading-relaxed">{consultationCopy.readyMessage}</p>
           <div className="pt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button onClick={() => setIsSubmitted(false)} className="btn-outline px-10 py-4 w-full sm:w-auto">Back to Consultation</button>
@@ -148,7 +175,81 @@ export default function Consultation() {
                 </div>
               </div>
 
-              <form onSubmit={(event) => { event.preventDefault(); setIsSubmitted(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="space-y-6 sm:space-y-8 bg-white rounded-[28px] sm:rounded-[36px] border border-brand-100 shadow-sm p-5 sm:p-8 lg:p-10">
+              <form
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  setConsultationError(null);
+                  setConsultationSuccess(null);
+                  // Coupon validation (if code entered)
+                  let accessToken = formData.accessToken;
+                  if (formData.couponCode) {
+                    const couponResult = await validateCoupon(formData.couponCode);
+                    if (couponResult?.success && couponResult?.access_token) {
+                      accessToken = couponResult.access_token;
+                      setFormData((current) => ({ ...current, accessToken }));
+                    } else {
+                      setConsultationError(couponResult?.message || 'Invalid consultation code.');
+                      return;
+                    }
+                  }
+                  // Payment access (if no coupon and payment info provided)
+                  if (!accessToken && formData.paymentProvider && formData.paymentReference) {
+                    const paymentResult = await generatePaymentAccess({
+                      payment_provider: formData.paymentProvider,
+                      payment_reference: formData.paymentReference,
+                      payment_amount: formData.paymentAmount,
+                      payment_currency: formData.paymentCurrency,
+                    });
+                    if (paymentResult?.success && paymentResult?.access_token) {
+                      accessToken = paymentResult.access_token;
+                      setFormData((current) => ({ ...current, accessToken }));
+                    } else {
+                      setConsultationError(paymentResult?.message || 'Payment verification failed.');
+                      return;
+                    }
+                  }
+                  // Submit consultation request
+                  if (accessToken) {
+                    const submitResult = await submitConsultation({
+                      access_token: accessToken,
+                      traveler_name: formData.travelerName,
+                      email: formData.email,
+                      phone: formData.phone,
+                      preferred_date: formData.preferredDate,
+                      alternate_date: formData.alternateDate,
+                      package_name: selectedPkg?.title,
+                      package_id: selectedPkg?.id,
+                      package_tier: selectedTier?.name,
+                      adults: formData.adults,
+                      children: formData.children,
+                      country_of_residence: formData.countryOfResidence,
+                      occasion: formData.occasion,
+                      message: formData.message,
+                      source_url: window.location.href,
+                    });
+                    if (submitResult?.success) {
+                      setIsSubmitted(true);
+                      setConsultationSuccess(submitResult.message || 'Consultation request submitted successfully.');
+                    } else {
+                      setConsultationError(submitResult?.message || 'Failed to submit consultation request.');
+                    }
+                  } else {
+                    setConsultationError('A valid consultation code or payment is required.');
+                  }
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="space-y-6 sm:space-y-8 bg-white rounded-[28px] sm:rounded-[36px] border border-brand-100 shadow-sm p-5 sm:p-8 lg:p-10"
+              >
+                                {consultationError && (
+                                  <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-2">
+                                    {consultationError}
+                                  </div>
+                                )}
+                                {consultationLoading && (
+                                  <div className="bg-brand-50 border border-brand-100 text-brand-700 rounded-xl px-4 py-3 text-sm mb-2">
+                                    Processing your request...
+                                  </div>
+                                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                   <div className="space-y-3 sm:space-y-4">
                     <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Desired Package</label>

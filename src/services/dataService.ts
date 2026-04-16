@@ -1,3 +1,88 @@
+// --- Consultation API ---
+async function getConsultationSettings() {
+  try {
+    const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/settings`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching consultation settings:', error);
+    throw error;
+  }
+}
+
+async function getConsultationQuote() {
+  try {
+    const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/quote`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching consultation quote:', error);
+    throw error;
+  }
+}
+
+async function validateConsultationCoupon(code: string) {
+  try {
+    const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/coupon/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error validating consultation coupon:', error);
+    throw error;
+  }
+}
+
+async function generateConsultationPaymentAccess(payment: {
+  payment_provider: string;
+  payment_reference: string;
+  payment_amount: number;
+  payment_currency: string;
+}) {
+  try {
+    const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/payment-access`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payment)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error generating consultation payment access:', error);
+    throw error;
+  }
+}
+
+interface ConsultationRequestPayload {
+  access_token: string;
+  traveler_name: string;
+  email: string;
+  phone: string;
+  preferred_date: string;
+  alternate_date?: string;
+  package_name?: string;
+  package_id?: string;
+  package_tier?: string;
+  adults?: number;
+  children?: number;
+  country_of_residence?: string;
+  occasion: string;
+  message?: string;
+  source_url?: string;
+}
+
+async function submitConsultationRequest(formData: ConsultationRequestPayload) {
+  try {
+    const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error submitting consultation request:', error);
+    throw error;
+  }
+}
 import { authService } from './authService';
 import { ASSETS } from '../config/images';
 import type { 
@@ -748,6 +833,12 @@ async function getSiteImageFallbacks(): Promise<SiteImageFallbacks> {
 
 export const dataService = {
   checkWP,
+  // Consultation API
+  getConsultationSettings,
+  getConsultationQuote,
+  validateConsultationCoupon,
+  generateConsultationPaymentAccess,
+  submitConsultationRequest,
   // --- Destinations ---
   async getDestinations(): Promise<Destination[]> {
     try {

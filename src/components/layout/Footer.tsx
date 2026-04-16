@@ -26,7 +26,7 @@ const Footer = () => {
               Get a custom itinerary, pricing, and availability tailored to your budget and timeline.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-              <Link to="/booking" className="btn-primary w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-lg text-center">
+              <Link to="/consultation" className="btn-primary w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-lg text-center">
                 Start Planning
               </Link>
               <Link to="/contact" className="btn-outline w-full sm:w-auto border-white text-white hover:bg-white hover:text-brand-900 px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-lg text-center">

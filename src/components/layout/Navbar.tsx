@@ -49,7 +49,7 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Destinations', path: '/destinations' },
     { name: 'Packages', path: '/packages' },
-    { name: 'Booking', path: '/booking' },
+    { name: 'Consult', path: '/consultation' },
     { name: 'Journal', path: '/journal' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
@@ -93,7 +93,7 @@ const Navbar = () => {
 
         {/* Desktop Links - Show on Large Screens */}
         <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-          {navLinks.map((link) => {
+          {navLinks.filter(link => link.name !== 'Consult').map((link) => {
             if (link.name === 'Packages') {
               const isPackagesActive = location.pathname.startsWith('/packages') || location.pathname.startsWith('/gift-cards');
               return (
@@ -261,11 +261,11 @@ const Navbar = () => {
             )}
           </div>
 
-          <Link to="/booking" className={cn(
+          <Link to="/consultation" className={cn(
             "btn-primary py-2.5 px-6 text-[10px] font-bold tracking-[0.2em] transition-all duration-300",
             isTransparent && "bg-white text-brand-900 hover:bg-brand-50 border-white"
           )}>
-            Start Planning
+            Get Consultation
           </Link>
         </div>
 

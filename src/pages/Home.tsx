@@ -293,8 +293,8 @@ const Home = () => {
                   to="/gift-cards"
                   className="btn-primary w-full sm:w-auto px-8 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold text-center shadow-xl shadow-brand-accent/20 inline-flex items-center justify-center gap-3"
                 >
-                  <Heart size={16} className="shrink-0" fill="currentColor" />
                   Gift a Honeymoon
+                  <span className="ml-2 flex items-center"><Heart size={18} className="shrink-0 animate-pulse" fill="currentColor" /></span>
                 </Link>
                 <Link to="/packages" className="btn-outline w-full sm:w-auto px-8 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
                   Explore Packages
@@ -524,7 +524,7 @@ const Home = () => {
             Schedule a complimentary consultation with our romantic travel specialists today and start your journey together.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-            <Link to="/booking" className="btn-primary w-full sm:w-auto px-10 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
+            <Link to="/consultation" className="btn-primary w-full sm:w-auto px-10 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold text-center">
               Book a Consultation
             </Link>
             <Link to="/packages" className="text-white border-b border-white/30 hover:border-white transition-all py-2 text-xs sm:text-sm uppercase tracking-widest font-bold w-full sm:w-auto text-center">

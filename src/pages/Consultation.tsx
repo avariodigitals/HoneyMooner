@@ -15,7 +15,6 @@ import {
   MessageSquare,
   Phone,
   Star,
-  Ticket,
   User,
   Wallet,
 } from 'lucide-react';
@@ -62,7 +61,6 @@ export default function Consultation() {
     countryOfResidence: '',
     occasion: 'honeymoon' as Lead['occasion'],
     message: '',
-    couponCode: '',
     accessToken: '',
     paymentProvider: '',
     paymentReference: '',
@@ -82,7 +80,6 @@ export default function Consultation() {
     fetchSettings,
     fetchQuote,
     fetchSlots,
-    validateCoupon,
     generatePaymentAccess,
     submitConsultation,
     setError: setConsultationError,
@@ -193,7 +190,7 @@ export default function Consultation() {
                 <p className="text-brand-600 leading-relaxed text-base sm:text-lg max-w-2xl">{dynamicDescription}</p>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <ExpectCard title="Tailored Guidance" text="We shape the consultation around your destination style, timing, and comfort level." />
-                  <ExpectCard title="Clear Next Step" text="Use a valid consultation code or continue with secure payment at confirmation." />
+                  <ExpectCard title="Clear Next Step" text={consultationQuote?.payment_enabled ? "Continue with secure payment at confirmation to finalize your consultation request." : "Confirm your details to submit your consultation request for review."} />
                 </div>
               </div>
 
@@ -202,18 +199,9 @@ export default function Consultation() {
                   event.preventDefault();
                   setConsultationError(null);
                   setConsultationSuccess(null);
-                  // Coupon validation (if code entered)
+                  
                   let accessToken = formData.accessToken;
-                  if (formData.couponCode) {
-                    const couponResult = await validateCoupon(formData.couponCode);
-                    if (couponResult?.success && couponResult?.access_token) {
-                      accessToken = couponResult.access_token;
-                      setFormData((current) => ({ ...current, accessToken }));
-                    } else {
-                      setConsultationError(couponResult?.message || 'Invalid consultation code.');
-                      return;
-                    }
-                  }
+
                   // Payment access (if no coupon and payment info provided)
                   if (!accessToken && formData.paymentProvider && formData.paymentReference) {
                     const paymentResult = await generatePaymentAccess({
@@ -417,32 +405,29 @@ export default function Consultation() {
                   </div>
                 </div>
 
-                <div className="bg-brand-accent/5 rounded-[24px] border border-brand-accent/10 p-5 sm:p-7 space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-brand-accent/10 text-brand-accent flex items-center justify-center shrink-0"><Wallet size={22} /></div>
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-2">Consultation Access</h3>
-                      <p className="text-brand-600 text-sm sm:text-base leading-relaxed">At confirmation, you will either apply a valid consultation code or continue with your preferred secure payment option to complete the request.</p>
+                {consultationQuote?.payment_enabled && (
+                  <div className="bg-brand-accent/5 rounded-[24px] border border-brand-accent/10 p-5 sm:p-7 space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-brand-accent/10 text-brand-accent flex items-center justify-center shrink-0"><Wallet size={22} /></div>
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-serif text-brand-900 mb-2">Consultation Access</h3>
+                        <p className="text-brand-600 text-sm sm:text-base leading-relaxed">At confirmation, you will continue with your preferred secure payment option to complete the request.</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
-                    <Field icon={Ticket} label="Consultation Code" type="text" value={formData.couponCode} placeholder="Enter code if you have one" onChange={(value) => setFormData((current) => ({ ...current, couponCode: value.toUpperCase() }))} compact />
-                    <button type="button" onClick={() => setCheckoutNotice('Your consultation code will be checked during confirmation.')} className="w-full md:w-auto px-6 py-3.5 rounded-xl border border-brand-accent/30 text-brand-accent font-bold uppercase tracking-widest text-[10px] sm:text-xs hover:bg-brand-accent hover:text-white transition-colors min-h-[50px]">Apply Code</button>
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <ActionCard icon={CreditCard} title="Pay with Paystack" description="Fast card checkout for clients who want to complete payment in one step." onClick={() => setCheckoutNotice('Paystack will be available at confirmation.')} />
+                      <ActionCard icon={Wallet} title="Pay with PayPal" description="A convenient wallet option for clients who prefer PayPal." onClick={() => setCheckoutNotice('PayPal will be available at confirmation.')} />
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <ActionCard icon={CreditCard} title="Pay with Paystack" description="Fast card checkout for clients who want to complete payment in one step." onClick={() => setCheckoutNotice('Paystack will be available at confirmation.')} />
-                    <ActionCard icon={Wallet} title="Pay with PayPal" description="A convenient wallet option for clients who prefer PayPal." onClick={() => setCheckoutNotice('PayPal will be available at confirmation.')} />
-                  </div>
+                    <div className="rounded-2xl border border-brand-accent/15 bg-white px-4 py-4 text-sm text-brand-700">
+                      <p className="font-semibold text-brand-900 mb-1">Before you confirm</p>
+                      <p>Please review your dates, traveller details, and preferred payment path carefully so your consultation can be processed smoothly.</p>
+                    </div>
 
-                  <div className="rounded-2xl border border-brand-accent/15 bg-white px-4 py-4 text-sm text-brand-700">
-                    <p className="font-semibold text-brand-900 mb-1">Before you confirm</p>
-                    <p>Please review your dates, traveller details, and preferred payment path carefully so your consultation can be processed smoothly.</p>
+                    {checkoutNotice ? <p className="text-brand-600 text-xs sm:text-sm italic">{checkoutNotice}</p> : null}
                   </div>
-
-                  {checkoutNotice ? <p className="text-brand-600 text-xs sm:text-sm italic">{checkoutNotice}</p> : null}
-                </div>
+                )}
 
                 <button type="submit" className="btn-primary w-full py-4 sm:py-5 flex items-center justify-center gap-3 text-base sm:text-lg shadow-xl shadow-brand-accent/20 min-h-[56px]">
                   Continue to Confirmation
@@ -467,7 +452,10 @@ export default function Consultation() {
                     <SummaryRow label="Base package from" value={formatPrice(selectedTier.price)} />
                     <SummaryRow label="Date rule" value="Open unless marked closed" />
                     <div className="pt-4 sm:pt-6 border-t border-brand-50 space-y-3 sm:space-y-4">
-                      {['Preferred and alternate dates selected', 'Your consultation code can be added during confirmation', 'Choose the payment method that feels most convenient for you'].map((item) => (
+                      {[
+                        'Preferred and alternate dates selected',
+                        consultationQuote?.payment_enabled ? 'Choose the payment method that feels most convenient for you' : 'No payment required for this consultation'
+                      ].map((item) => (
                         <div key={item} className="flex items-start gap-3 text-xs sm:text-sm text-brand-600">
                           <CheckCircle2 size={16} className="text-brand-accent mt-0.5 shrink-0" />
                           <span>{item}</span>
@@ -495,7 +483,7 @@ export default function Consultation() {
                 <div className="space-y-3 text-brand-600 text-xs sm:text-sm leading-relaxed">
                   <p>1. Choose the package direction and dates that feel closest to your plans.</p>
                   <p>2. Share enough detail for us to understand the mood, pacing, and experience level you want.</p>
-                  <p>3. At confirmation, you will be able to complete the consultation with a valid code or secure payment.</p>
+                  <p>3. {consultationQuote?.payment_enabled ? "At confirmation, you will be able to complete the consultation with a secure payment." : "Review and confirm your request to send it to our planning team."}</p>
                 </div>
                 <div className="mt-6 rounded-2xl bg-white border border-brand-100 px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-brand-accent mb-2">Helpful Note</p>

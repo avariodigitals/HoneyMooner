@@ -29,20 +29,6 @@ async function getConsultationSlots(date: string) {
   }
 }
 
-async function validateConsultationCoupon(code: string) {
-  try {
-    const response = await fetch(`${WP_BASE_URL}/honeymooner/v1/consultation/coupon/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error validating consultation coupon:', error);
-    throw error;
-  }
-}
-
 async function generateConsultationPaymentAccess(payment: {
   payment_provider: string;
   payment_reference: string;
@@ -60,28 +46,6 @@ async function generateConsultationPaymentAccess(payment: {
     console.error('Error generating consultation payment access:', error);
     throw error;
   }
-}
-
-interface ConsultationRequestPayload {
-  access_token: string;
-  traveler_name: string;
-  email: string;
-  phone: string;
-  intended_travel_date: string;
-  preferred_date: string;
-  time_slot: string;
-  comm_preference: string;
-  timezone: string;
-  alternate_date?: string;
-  package_name?: string;
-  package_id?: string;
-  package_tier?: string;
-  adults?: number;
-  children?: number;
-  country_of_residence?: string;
-  occasion: string;
-  message?: string;
-  source_url?: string;
 }
 
 async function submitConsultationRequest(formData: ConsultationRequestPayload) {
@@ -117,7 +81,9 @@ import type {
   Departure,
   PricingBasis,
   RouteIdea,
-  Theme
+  Theme,
+  ItineraryDay,
+  ConsultationRequestPayload
 } from '../types';
 
 const WP_BASE_URL = import.meta.env.VITE_WP_BASE_URL ?? 'https://cms.thehoneymoonertravel.com/wp-json';
@@ -321,6 +287,9 @@ interface WPResponseItem {
     experience_content?: string;
     experience_seo_content?: string;
     package_experience_content?: string;
+    starting_price?: number;
+    best_time_to_visit?: string;
+    itinerary?: unknown[];
   };
   hm_package_data?: {
     package_id?: string;
@@ -353,6 +322,7 @@ interface WPResponseItem {
     meta_description?: string;
     canonical_url?: string;
     highlights?: Array<{ title?: string; description?: string }>;
+    starting_price?: number;
   };
   acf?: {
     country?: string;
@@ -377,6 +347,9 @@ interface WPResponseItem {
     experience_content?: string;
     experience_seo_content?: string;
     package_experience_content?: string;
+    starting_price?: number;
+    best_time_to_visit?: string;
+    itinerary?: unknown[];
   };
   _embedded?: {
     'wp:featuredmedia'?: Array<{ source_url: string }>;
@@ -647,6 +620,39 @@ function parseExclusions(value: unknown): ExclusionItem[] {
     .filter((item): item is ExclusionItem => item !== null);
 }
 
+function parseItinerary(value: unknown): ItineraryDay[] {
+  const raw = Array.isArray(value) ? value : parseJson<unknown[]>(value);
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((item: unknown): ItineraryDay | null => {
+      if (!item || typeof item !== 'object') return null;
+      const record = item as {
+        day_number?: number | string;
+        day?: number | string;
+        day_title?: string;
+        title?: string;
+        day_description?: string;
+        description?: string;
+        day_summary?: string;
+        day_image?: string;
+        image?: string;
+        activity?: string;
+        highlight_tag?: string;
+      };
+
+      const dayNum = Number(record.day_number ?? record.day ?? 0);
+      return {
+        day: dayNum,
+        title: cleanText(record.day_title || record.title || `Day ${dayNum}`),
+        description: cleanText(record.day_description || record.description || record.day_summary || ''),
+        image: record.day_image || record.image || '',
+        activity: record.highlight_tag || record.activity || ''
+      };
+    })
+    .filter((item): item is ItineraryDay => item !== null && item.day > 0);
+}
+
 function parseDepartures(value: unknown): Departure[] {
   const raw = Array.isArray(value) ? value : parseJson<unknown[]>(value);
   if (!Array.isArray(raw)) return [];
@@ -851,7 +857,6 @@ export const dataService = {
   getConsultationSettings,
   getConsultationQuote,
   getConsultationSlots,
-  validateConsultationCoupon,
   generateConsultationPaymentAccess,
   submitConsultationRequest,
   // --- Destinations ---
@@ -877,7 +882,9 @@ export const dataService = {
         continent: item.acf?.continent || item.meta?.continent || 'Africa',
         description: cleanText(item?.content?.rendered || ''),
         image: (item as WPResponseItem & { _resolvedImage?: string })._resolvedImage || siteImageFallbacks.destination,
-        slug: item?.slug || `destination-${item?.id ?? 'unknown'}`
+        slug: item?.slug || `destination-${item?.id ?? 'unknown'}`,
+        startingPrice: Number(item.acf?.starting_price || item.meta?.starting_price || 0),
+        bestTimeToVisit: cleanText(item.acf?.best_time_to_visit || item.meta?.best_time_to_visit || '')
       }))).then((items) => items.filter((item) => Boolean(item.id)));
     } catch (error) {
       console.error('Error fetching destinations:', error);
@@ -978,6 +985,7 @@ export const dataService = {
               : [{ id: 'fallback-premium', name: 'Premium' as const, price: 0, basis: 'per couple' as const }],
           inclusions: parseInclusions(item.acf?.inclusions || item.meta?.inclusions),
           exclusions: parseExclusions(item.acf?.exclusions || item.meta?.exclusions || packageData?.exclusions),
+          itinerary: parseItinerary(item.acf?.itinerary || item.meta?.itinerary || packageData?.itinerary),
           tags: parseStringList(item.acf?.tags || item.meta?.tags),
           departures: parseDepartures(item.acf?.departures || item.meta?.departures),
           seo

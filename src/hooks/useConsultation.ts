@@ -1,24 +1,65 @@
 import { useState, useCallback } from 'react';
 import { dataService } from '../services/dataService';
+import type { ConsultationRequestPayload } from '../types';
+
+export interface ConsultationSettings {
+  page_title: string;
+  page_description: string;
+  fee_amount: number;
+  fee_currency: string;
+  payment_enabled: boolean;
+  [key: string]: unknown; // Allow for other fields from WP
+}
+
+export interface ConsultationQuote {
+  success: boolean;
+  payment_enabled: boolean;
+  fee_amount: number;
+  fee_currency: string;
+  message?: string;
+}
+
+export interface ConsultationSlot {
+  time: string;
+  available: boolean;
+}
+
+export interface ConsultationSlotsResponse {
+  success: boolean;
+  slots: ConsultationSlot[];
+  message?: string;
+}
+
+export interface ConsultationPaymentAccessResponse {
+  success: boolean;
+  access_token: string;
+  message?: string;
+}
+
+export interface ConsultationSubmitResponse {
+  success: boolean;
+  message: string;
+}
 
 export function useConsultation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [settings, setSettings] = useState<any>(null);
-  const [quote, setQuote] = useState<any>(null);
+  const [settings, setSettings] = useState<ConsultationSettings | null>(null);
+  const [quote, setQuote] = useState<ConsultationQuote | null>(null);
   
   // Fetch consultation settings (title, description, fee, etc.)
   const fetchSettings = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await dataService.getConsultationSettings();
+      const data = await dataService.getConsultationSettings() as { success: boolean; settings: ConsultationSettings };
       if (data?.success) setSettings(data.settings);
       setLoading(false);
       return data;
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch consultation settings');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch consultation settings';
+      setError(message);
       setLoading(false);
       return null;
     }
@@ -29,27 +70,13 @@ export function useConsultation() {
     setLoading(true);
     setError(null);
     try {
-      const data = await dataService.getConsultationQuote();
+      const data = await dataService.getConsultationQuote() as ConsultationQuote;
       if (data?.success) setQuote(data);
       setLoading(false);
       return data;
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch consultation quote');
-      setLoading(false);
-      return null;
-    }
-  }, []);
-
-  // Validate coupon code
-  const validateCoupon = useCallback(async (code: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await dataService.validateConsultationCoupon(code);
-      setLoading(false);
-      return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to validate coupon');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch consultation quote';
+      setError(message);
       setLoading(false);
       return null;
     }
@@ -65,23 +92,24 @@ export function useConsultation() {
     setLoading(true);
     setError(null);
     try {
-      const result = await dataService.generateConsultationPaymentAccess(payment);
+      const result = await dataService.generateConsultationPaymentAccess(payment) as ConsultationPaymentAccessResponse;
       setLoading(false);
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate payment access');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to generate payment access';
+      setError(message);
       setLoading(false);
       return null;
     }
   }, []);
 
   // Submit consultation request
-  const submitConsultation = useCallback(async (formData: any) => {
+  const submitConsultation = useCallback(async (formData: ConsultationRequestPayload) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const result = await dataService.submitConsultationRequest(formData);
+      const result = await dataService.submitConsultationRequest(formData) as ConsultationSubmitResponse;
       setLoading(false);
       if (result?.success) {
         setSuccess(result.message || 'Consultation request submitted successfully');
@@ -89,8 +117,9 @@ export function useConsultation() {
         setError(result?.message || 'Failed to submit consultation request');
       }
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit consultation request');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to submit consultation request';
+      setError(message);
       setLoading(false);
       return null;
     }
@@ -101,11 +130,12 @@ export function useConsultation() {
     setLoading(true);
     setError(null);
     try {
-      const result = await dataService.getConsultationSlots(date);
+      const result = await dataService.getConsultationSlots(date) as ConsultationSlotsResponse;
       setLoading(false);
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch available slots');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch available slots';
+      setError(message);
       setLoading(false);
       return null;
     }
@@ -120,7 +150,6 @@ export function useConsultation() {
     fetchSettings,
     fetchQuote,
     fetchSlots,
-    validateCoupon,
     generatePaymentAccess,
     submitConsultation,
     setError,

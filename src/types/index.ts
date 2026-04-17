@@ -121,6 +121,28 @@ export interface BlogPost {
   content?: string;
 }
 
+export interface ConsultationRequestPayload {
+  access_token: string;
+  traveler_name: string;
+  email: string;
+  phone: string;
+  intended_travel_date: string;
+  preferred_date: string;
+  time_slot: string;
+  comm_preference: string;
+  timezone: string;
+  alternate_date?: string;
+  package_name?: string;
+  package_id?: string;
+  package_tier?: string;
+  adults?: number;
+  children?: number;
+  country_of_residence?: string;
+  occasion: string;
+  message?: string;
+  source_url?: string;
+}
+
 export interface HomeContent {
   fallbackImages: {
     hero: string;

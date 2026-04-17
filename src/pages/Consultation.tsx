@@ -17,7 +17,6 @@ import {
   Star,
   Ticket,
   User,
-  Users,
   Wallet,
 } from 'lucide-react';
 
@@ -194,7 +193,6 @@ export default function Consultation() {
                 <p className="text-brand-600 leading-relaxed text-base sm:text-lg max-w-2xl">{dynamicDescription}</p>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <ExpectCard title="Tailored Guidance" text="We shape the consultation around your destination style, timing, and comfort level." />
-                  <ExpectCard title="Flexible Dates" text="Choose a preferred date and a backup option so planning stays easy." />
                   <ExpectCard title="Clear Next Step" text="Use a valid consultation code or continue with secure payment at confirmation." />
                 </div>
               </div>
@@ -405,17 +403,10 @@ export default function Consultation() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                  <Field icon={Calendar} label="Alternate Date (Backup)" type="date" value={formData.alternateDate} placeholder="" onChange={(value) => setFormData((current) => ({ ...current, alternateDate: value }))} />
                   <Field icon={Globe} label="Country of Residence" type="text" value={formData.countryOfResidence} placeholder="e.g. Nigeria" onChange={(value) => setFormData((current) => ({ ...current, countryOfResidence: value }))} required />
                 </div>
 
-                <div className="space-y-3 sm:space-y-4">
-                  <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Travellers</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <NumberField value={formData.adults} min={1} suffix="Adults" onChange={(value) => setFormData((current) => ({ ...current, adults: value }))} />
-                    <NumberField value={formData.children} min={0} suffix="Kids" onChange={(value) => setFormData((current) => ({ ...current, children: value }))} />
-                  </div>
-                </div>
+                {/* Travellers section removed as requested */}
 
                 <div className="space-y-3 sm:space-y-4">
                   <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Trip Vision & Notes</label>
@@ -529,25 +520,6 @@ function Field({ icon: Icon, label, type, value, placeholder, onChange, required
         <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
         <input required={required} type={type} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base min-h-[52px]" />
       </div>
-    </div>
-  );
-}
-
-function NumberField({ value, min, suffix, onChange }: { value: number; min: number; suffix: string; onChange: (value: number) => void; }) {
-  return (
-    <div className="relative">
-      <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={16} />
-      <input
-        type="number"
-        min={min}
-        value={value}
-        onChange={(event) => {
-          const parsed = Number.parseInt(event.target.value, 10);
-          onChange(Number.isNaN(parsed) ? min : Math.max(min, parsed));
-        }}
-        className="w-full pl-10 pr-16 py-3.5 rounded-xl border border-brand-100 text-sm min-h-[52px]"
-      />
-      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-bold">{suffix}</span>
     </div>
   );
 }

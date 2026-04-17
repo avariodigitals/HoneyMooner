@@ -55,8 +55,10 @@ add_action('plugins_loaded', function () {
     add_action('admin_enqueue_scripts', function ($hook) {
         if (strpos((string) $hook, 'hm_') !== false || in_array($hook, ['post.php', 'post-new.php'], true)) {
             wp_enqueue_media();
+            wp_enqueue_style('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css', [], '4.6.13');
+            wp_enqueue_script('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr', [], '4.6.13', true);
             wp_enqueue_style('hm-core-admin', HM_CORE_URL . 'assets/css/admin.css', [], HM_CORE_VERSION);
-            wp_enqueue_script('hm-core-admin', HM_CORE_URL . 'assets/js/admin.js', ['jquery'], HM_CORE_VERSION, true);
+            wp_enqueue_script('hm-core-admin', HM_CORE_URL . 'assets/js/admin.js', ['jquery', 'flatpickr'], HM_CORE_VERSION, true);
         }
     });
 });

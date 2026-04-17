@@ -134,13 +134,22 @@ class HM_REST {
                     'intro' => ['type' => 'string'],
                     'audience' => ['type' => 'string'],
                     'hero_image' => ['type' => 'string'],
-                    'destinations' => ['type' => 'array'],
+                    'destinations' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
                     'match_categories' => ['type' => 'string'],
                     'match_countries' => ['type' => 'string'],
                     'match_destinations' => ['type' => 'string'],
                     'match_tags' => ['type' => 'string'],
-                    'highlights' => ['type' => 'array'],
-                    'route_stops' => ['type' => 'array'],
+                    'highlights' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'route_stops' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'object']
+                    ],
                 ],
                 'context' => ['view', 'edit'],
             ],
@@ -173,7 +182,41 @@ class HM_REST {
                     'match_destination_countries' => hm_get_array_meta($post_id, 'match_destination_countries'),
                 ];
             },
-            'schema' => ['type' => 'object', 'context' => ['view', 'edit']],
+            'schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'eyebrow' => ['type' => 'string'],
+                    'audience' => ['type' => 'string'],
+                    'tagline' => ['type' => 'string'],
+                    'intro' => ['type' => 'string'],
+                    'hero_image' => ['type' => 'string'],
+                    'highlights' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'destinations' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'match_categories' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'match_tags' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'match_destination_names' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'match_destination_countries' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                ],
+                'context' => ['view', 'edit'],
+            ],
         ]);
 
         register_rest_field('packages', 'hm_package_data', [
@@ -204,7 +247,49 @@ class HM_REST {
                     'canonical_url' => get_post_meta($post_id, 'canonical_url', true),
                 ];
             },
-            'schema' => ['type' => 'object', 'context' => ['view', 'edit']],
+            'schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'package_id' => ['type' => 'string'],
+                    'destination_id' => ['type' => 'integer'],
+                    'category' => ['type' => 'string'],
+                    'subtitle' => ['type' => 'string'],
+                    'summary' => ['type' => 'string'],
+                    'intro_content' => ['type' => 'string'],
+                    'experience_content' => ['type' => 'string'],
+                    'days' => ['type' => 'integer'],
+                    'nights' => ['type' => 'integer'],
+                    'starting_price' => ['type' => 'number'],
+                    'currency' => ['type' => 'string'],
+                    'pricing_basis' => ['type' => 'string'],
+                    'rating' => ['type' => 'number'],
+                    'review_count' => ['type' => 'integer'],
+                    'pricing_tiers' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'object']
+                    ],
+                    'inclusions' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'exclusions' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                    'departures' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'object']
+                    ],
+                    'itinerary' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'object']
+                    ],
+                    'seo_title' => ['type' => 'string'],
+                    'meta_description' => ['type' => 'string'],
+                    'canonical_url' => ['type' => 'string'],
+                ],
+                'context' => ['view', 'edit'],
+            ],
         ]);
 
         register_rest_field('destinations', 'hm_destination_data', [
@@ -224,7 +309,26 @@ class HM_REST {
                     'highlights' => hm_get_array_meta($post_id, 'highlights'),
                 ];
             },
-            'schema' => ['type' => 'object', 'context' => ['view', 'edit']],
+            'schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'country' => ['type' => 'string'],
+                    'continent' => ['type' => 'string'],
+                    'image' => ['type' => 'string'],
+                    'starting_price' => ['type' => 'number'],
+                    'subtitle' => ['type' => 'string'],
+                    'intro_content' => ['type' => 'string'],
+                    'best_time_to_visit' => ['type' => 'string'],
+                    'seo_title' => ['type' => 'string'],
+                    'meta_description' => ['type' => 'string'],
+                    'canonical_url' => ['type' => 'string'],
+                    'highlights' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string']
+                    ],
+                ],
+                'context' => ['view', 'edit'],
+            ],
         ]);
     }
 

@@ -249,7 +249,9 @@ class HM_Post_Types {
             register_post_meta('route_ideas', $key, [
                 'single' => true,
                 'type' => $type,
-                'show_in_rest' => true,
+                'show_in_rest' => [
+                    'schema' => self::rest_schema_for_type($type),
+                ],
                 'sanitize_callback' => [self::class, 'sanitize_meta_value'],
                 'auth_callback' => function () {
                     return current_user_can('edit_posts');
@@ -274,7 +276,9 @@ class HM_Post_Types {
             register_post_meta('themes', $key, [
                 'single' => true,
                 'type' => $type,
-                'show_in_rest' => true,
+                'show_in_rest' => [
+                    'schema' => self::rest_schema_for_type($type),
+                ],
                 'sanitize_callback' => [self::class, 'sanitize_meta_value'],
                 'auth_callback' => function () {
                     return current_user_can('edit_posts');
@@ -295,20 +299,17 @@ class HM_Post_Types {
 
     private static function rest_schema_for_type(string $type): array {
         if ($type !== 'array') {
-            return ['type' => $type];
+            return [
+                'type' => $type,
+                'context' => ['view', 'edit'],
+            ];
         }
 
         return [
             'type' => 'array',
+            'context' => ['view', 'edit'],
             'items' => [
-                'anyOf' => [
-                    ['type' => 'object'],
-                    ['type' => 'string'],
-                    ['type' => 'number'],
-                    ['type' => 'integer'],
-                    ['type' => 'boolean'],
-                    ['type' => 'array'],
-                ],
+                'type' => 'string',
             ],
         ];
     }

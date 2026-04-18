@@ -1,14 +1,31 @@
-import { useEffect, useMemo, useState, type ElementType } from 'react';
+import { useEffect, useMemo, useState, useCallback, type ElementType } from 'react';
 import { useConsultation } from '../hooks/useConsultation';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
+  isSameDay,
+  addDays,
+  isBefore,
+  startOfDay,
+  parseISO
+} from 'date-fns';
 import {
   ArrowLeft,
   ArrowRight,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
   CreditCard,
-  Globe,
+  Globe, 
   Heart,
   Loader2,
   Mail,
@@ -85,6 +102,30 @@ export default function Consultation() {
     setError: setConsultationError,
     setSuccess: setConsultationSuccess
   } = useConsultation();
+
+  const isDateBlocked = useCallback((date: Date) => {
+    if (!consultationSettings) return false;
+
+    // Past dates are always blocked
+    if (isBefore(startOfDay(date), startOfDay(new Date()))) return true;
+
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const { available_dates, closed_dates, working_days } = consultationSettings;
+
+    // 1. Manual Blackout Dates
+    if (closed_dates?.includes(dateStr)) return true;
+
+    // 2. Specific Available Dates (if defined, they override working days)
+    if (available_dates && available_dates.length > 0) {
+      return !available_dates.includes(dateStr);
+    }
+
+    // 3. Working Days Check
+    const dayName = format(date, 'EEEE').toLowerCase();
+    if (working_days && !working_days.includes(dayName)) return true;
+
+    return false;
+  }, [consultationSettings]);
 
   // Fetch slots when date changes
   useEffect(() => {
@@ -337,20 +378,13 @@ export default function Consultation() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                  <div className="space-y-3 sm:space-y-4">
-                    <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Preferred Consultation Date</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
-                      <input 
-                        required 
-                        type="date" 
-                        min={new Date().toISOString().split('T')[0]}
-                        value={formData.preferredDate} 
-                        onChange={(event) => setFormData((current) => ({ ...current, preferredDate: event.target.value }))} 
-                        className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base" 
-                      />
-                    </div>
-                  </div>
+                  <CustomDatePicker
+                    required
+                    label="Preferred Consultation Date"
+                    value={formData.preferredDate}
+                    onChange={(value) => setFormData((current) => ({ ...current, preferredDate: value }))}
+                    isDateBlocked={isDateBlocked}
+                  />
 
                   <div className="space-y-3 sm:space-y-4">
                     <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">Available Time Slots</label>
@@ -526,6 +560,124 @@ function SummaryRow({ label, value, accent = false }: { label: string; value: st
     <div className="flex justify-between items-center text-xs sm:text-sm gap-4">
       <span className="text-brand-400">{label}</span>
       <span className={accent ? 'font-bold text-brand-accent uppercase tracking-widest text-right' : 'font-medium text-brand-900 text-right'}>{value}</span>
+    </div>
+  );
+}
+
+function CustomDatePicker({ 
+  label, 
+  value, 
+  onChange, 
+  isDateBlocked, 
+  required = false 
+}: { 
+  label: string; 
+  value: string; 
+  onChange: (value: string) => void; 
+  isDateBlocked: (date: Date) => boolean;
+  required?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(value ? parseISO(value) : new Date());
+
+  const daysInMonth = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth));
+    const end = endOfWeek(endOfMonth(currentMonth));
+    const days = [];
+    let day = start;
+    while (day <= end) {
+      days.push(day);
+      day = addDays(day, 1);
+    }
+    return days;
+  }, [currentMonth]);
+
+  const handleDateSelect = (date: Date) => {
+    if (isDateBlocked(date)) return;
+    onChange(format(date, 'yyyy-MM-dd'));
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="space-y-3 sm:space-y-4 relative">
+      <label className="text-[10px] sm:text-xs font-bold text-brand-400 uppercase tracking-widest block">{label}</label>
+      <div className="relative">
+        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-200" size={18} />
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full pl-12 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-brand-100 focus:ring-2 focus:ring-brand-accent/20 text-sm sm:text-base text-left bg-white min-h-[52px]"
+        >
+          {value ? format(parseISO(value), 'MMMM d, yyyy') : 'Select a date'}
+        </button>
+        {required && <input type="hidden" value={value} required />}
+      </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <div className="fixed inset-0 z-[100]" onClick={() => setIsOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              className="absolute left-0 top-full mt-2 z-[101] bg-white rounded-[24px] border border-brand-100 shadow-2xl p-5 w-[320px] sm:w-[350px]"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <button type="button" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-brand-50 rounded-lg transition-colors">
+                  <ChevronLeft size={20} className="text-brand-600" />
+                </button>
+                <h4 className="font-serif text-lg text-brand-900">{format(currentMonth, 'MMMM yyyy')}</h4>
+                <button type="button" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-brand-50 rounded-lg transition-colors">
+                  <ChevronRight size={20} className="text-brand-600" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => (
+                  <div key={d} className="text-center text-[10px] font-bold text-brand-300 py-1">{d}</div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {daysInMonth.map((day) => {
+                  const blocked = isDateBlocked(day);
+                  const selected = value && isSameDay(day, parseISO(value));
+                  const currentM = isSameMonth(day, currentMonth);
+
+                  return (
+                    <button
+                      key={day.toISOString()}
+                      type="button"
+                      disabled={blocked}
+                      onClick={() => handleDateSelect(day)}
+                      className={`
+                        h-10 w-full rounded-xl text-sm transition-all flex items-center justify-center relative
+                        ${!currentM ? 'text-brand-200' : 'text-brand-700'}
+                        ${selected ? 'bg-brand-accent text-white font-bold shadow-md' : ''}
+                        ${blocked ? 'opacity-20 cursor-not-allowed' : 'hover:bg-brand-50 hover:text-brand-accent'}
+                      `}
+                    >
+                      {format(day, 'd')}
+                      {selected && (
+                        <motion.div layoutId="activeDate" className="absolute inset-0 border-2 border-brand-accent rounded-xl" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="mt-4 w-full py-2.5 text-xs font-bold uppercase tracking-widest text-brand-400 hover:text-brand-accent transition-colors border-t border-brand-50 pt-4"
+              >
+                Close Calendar
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

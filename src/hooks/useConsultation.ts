@@ -8,6 +8,13 @@ export interface ConsultationSettings {
   fee_amount: number;
   fee_currency: string;
   payment_enabled: boolean;
+  available_dates: string[];
+  closed_dates: string[];
+  working_days: string[];
+  working_hours_start: string;
+  working_hours_end: string;
+  slot_interval: number;
+  open_by_default: boolean;
   [key: string]: unknown; // Allow for other fields from WP
 }
 

@@ -164,6 +164,7 @@ const Account = () => {
         title="Account"
         description="Sign in to manage your saved honeymoon destinations, bookings, and personalized romantic travel plans."
         keywords="honeymoon account, travel login, manage bookings"
+        noindex
       />
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">

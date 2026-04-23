@@ -48,7 +48,7 @@ const Footer = () => {
             />
           </Link>
           <p className="text-brand-300 leading-relaxed text-sm max-w-xs mx-auto sm:mx-0">
-            Crafting intimate, premium, and unforgettable romantic travel experiences for couples worldwide.
+            The Honeymooner Travel crafts intimate, premium, and unforgettable honeymoon and romantic travel experiences for couples worldwide.
           </p>
           <div className="flex items-center justify-center sm:justify-start gap-4 pt-2">
             <a href="https://www.instagram.com/thehoneymooner/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-accent transition-colors">

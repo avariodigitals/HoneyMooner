@@ -73,6 +73,50 @@ const Home = () => {
     }
   };
 
+  const homeSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebPage',
+        '@id': 'https://thehoneymoonertravel.com/#webpage',
+        url: 'https://thehoneymoonertravel.com/',
+        name: 'Luxury Honeymoon Packages & Romantic Getaways | The Honeymooner Travel',
+        isPartOf: {
+          '@id': 'https://thehoneymoonertravel.com/#website'
+        },
+        about: {
+          '@id': 'https://thehoneymoonertravel.com/#organization'
+        },
+        description:
+          'Discover curated honeymoon packages, romantic escapes, destination inspiration, and unforgettable travel experiences with The Honeymooner Travel.'
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://thehoneymoonertravel.com/#website',
+        url: 'https://thehoneymoonertravel.com/',
+        name: 'The Honeymooner Travel',
+        alternateName: 'Honeymooner Travel',
+        publisher: {
+          '@id': 'https://thehoneymoonertravel.com/#organization'
+        }
+      },
+      {
+        '@type': 'Organization',
+        '@id': 'https://thehoneymoonertravel.com/#organization',
+        name: 'The Honeymooner Travel',
+        url: 'https://thehoneymoonertravel.com/',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://thehoneymoonertravel.com/images/logo-colored.png'
+        },
+        sameAs: [
+          'https://www.instagram.com/thehoneymooner/',
+          'https://web.facebook.com/thehoneymoonertravel'
+        ]
+      }
+    ]
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -85,8 +129,32 @@ const Home = () => {
         title="Luxury Honeymoon Packages & Romantic Getaways | The Honeymooner Travel"
         description="Discover curated honeymoon packages, romantic escapes, destination inspiration, and unforgettable travel experiences with The Honeymooner Travel."
         canonical="https://thehoneymoonertravel.com/"
+        keywords="the honeymooner travel, honeymooner travel, luxury honeymoon packages, romantic getaways, honeymoon destinations"
+        schema={homeSchema}
       />
       <Hero />
+
+      {/* Brand Entity Section */}
+      <section className="section-container pt-8 sm:pt-10">
+        <div className="mx-auto max-w-5xl rounded-3xl border border-brand-100 bg-white px-6 py-8 sm:px-10 sm:py-12 shadow-sm">
+          <h2 className="text-3xl sm:text-4xl font-serif text-brand-900 mb-4 text-center">About The Honeymooner Travel</h2>
+          <p className="text-brand-700 leading-relaxed text-base sm:text-lg text-center max-w-3xl mx-auto">
+            The Honeymooner Travel is a luxury honeymoon planning company focused on personalized romantic getaways,
+            curated destination experiences, and concierge-led couples travel.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm sm:text-base">
+            <Link to="/packages" className="underline underline-offset-4 text-brand-800 hover:text-brand-accent transition-colors">
+              The Honeymooner Travel honeymoon packages
+            </Link>
+            <Link to="/destinations" className="underline underline-offset-4 text-brand-800 hover:text-brand-accent transition-colors">
+              The Honeymooner Travel destinations
+            </Link>
+            <Link to="/consultation" className="underline underline-offset-4 text-brand-800 hover:text-brand-accent transition-colors">
+              Consultation with The Honeymooner Travel
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Featured Destinations */}
       <section className="section-container">

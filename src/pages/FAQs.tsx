@@ -62,6 +62,21 @@ const FAQs = () => {
     )
   })).filter(category => category.questions.length > 0);
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqCategories.flatMap((category) =>
+      category.questions.map((faq) => ({
+        '@type': 'Question',
+        name: faq.q,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.a,
+        },
+      }))
+    )
+  };
+
   return (
     <div className="pt-24 min-h-screen bg-brand-50">
       <SEO
@@ -69,6 +84,7 @@ const FAQs = () => {
         description="Find answers about honeymoon booking timelines, payment options, cancellations, visa support, and concierge service."
         canonical="https://thehoneymoonertravel.com/faqs"
         keywords="honeymoon FAQ, travel planning questions, honeymoon payment policy"
+        schema={faqSchema}
       />
       <Breadcrumbs />
 

@@ -44,6 +44,7 @@ const Wishlist = () => {
         title="Wishlist"
         description="View and manage your saved honeymoon packages and quickly continue planning your next romantic escape."
         keywords="wishlist honeymoon packages, saved romantic trips, travel shortlist"
+        noindex
       />
       {/* Breadcrumbs Overlay - Fixed positioning */}
       <div className="pt-24 lg:pt-28 pb-4">

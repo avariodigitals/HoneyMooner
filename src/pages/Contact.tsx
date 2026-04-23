@@ -102,7 +102,7 @@ const Contact = () => {
     "@type": "Organization",
     "name": "The Honeymooner Travel",
     "url": "https://thehoneymoonertravel.com",
-    "logo": "https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png",
+    "logo": "https://thehoneymoonertravel.com/images/logo-colored.png",
     "description": "Curated luxury honeymoon packages and romantic escapes. Discover the world's most intimate destinations with The Honeymooner Travel.",
     "address": {
       "@type": "PostalAddress",

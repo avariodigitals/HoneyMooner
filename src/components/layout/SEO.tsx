@@ -16,7 +16,7 @@ const SEO: React.FC<SEOProps> = ({
   title = 'The Honeymooner Travel | Luxury Romantic Travel & Honeymoon Packages',
   description = 'Curated luxury honeymoon packages and romantic escapes. Discover the world\'s most intimate destinations with The Honeymooner Travel.',
   keywords = 'honeymoon, romantic travel, luxury travel, honeymoon packages, romantic getaways, destination wedding',
-  image = 'https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png',
+  image = 'https://thehoneymoonertravel.com/images/logo-colored.png',
   url = 'https://thehoneymoonner.com',
   canonical,
   type = 'website',

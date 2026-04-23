@@ -49,7 +49,7 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Destinations', path: '/destinations' },
     { name: 'Packages', path: '/packages' },
-    { name: 'Consult', path: '/consultation' },
+    { name: 'Consultation', path: '/consultation' },
     { name: 'Journal', path: '/journal' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
@@ -63,9 +63,9 @@ const Navbar = () => {
 
   const isTransparent = !isScrolled && (location.pathname === '/' || location.pathname === '/account') && !isOpen;
 
-  const logoUrl = isTransparent 
-    ? "https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20White%20only.png" 
-    : "https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20Sec%20Color.png";
+  const logoUrl = (isTransparent || isOpen)
+    ? '/images/logo-white.png'
+    : '/images/logo-colored.png';
 
   return (
     <nav
@@ -93,7 +93,7 @@ const Navbar = () => {
 
         {/* Desktop Links - Show on Large Screens */}
         <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-          {navLinks.filter(link => link.name !== 'Consult').map((link) => {
+          {navLinks.filter(link => link.path !== '/consultation').map((link) => {
             if (link.name === 'Packages') {
               const isPackagesActive = location.pathname.startsWith('/packages') || location.pathname.startsWith('/gift-cards');
               return (

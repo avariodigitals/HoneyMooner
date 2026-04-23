@@ -42,7 +42,7 @@ const Footer = () => {
         <div className="space-y-6 text-center sm:text-left">
           <Link to="/" className="flex items-center justify-center sm:justify-start gap-2">
             <img 
-              src="https://ik.imagekit.io/lrnty9ku6/HoneyMooner/Full%20Logo%20No%20BG%20-%20White%20only.png" 
+              src="/images/logo-white.png"
               alt="The Honeymooner Travel" 
               className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
             />
